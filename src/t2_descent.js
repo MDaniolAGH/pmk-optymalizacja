@@ -136,7 +136,7 @@ Numer iteracji zapisujemy w indeksie górnym, w nawiasie: $\mathbf{x}^{(k)}$ ozn
         card.insertAdjacentHTML('beforeend', legend([['line', C.green, 'trajektoria'], ['line', C.ghost, 'kierunek gradientu $\\nabla f$'], ['dash', C.red, 'planowany krok $-\\alpha\\nabla f$']]));
         return {
           draw(s) {
-            const far = s.pts.some(q => Math.abs(q[0]) > 4.9 || Math.abs(q[1]) > 4.9);
+            const far = s.pts.some(q => Math.abs(q[0]) > 5.5 || Math.abs(q[1]) > 5.5);
             p.setView(...(far ? [-7, 7, -7, 7] : fn.view));
             p.draw = q => {
               drawField(q, fn);

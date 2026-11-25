@@ -258,6 +258,7 @@ footer { max-width: 1400px; margin: auto; padding: 0 22px 30px; font: 13.5px var
 /* ---------- clickable symbols + glossary dialog ---------- */
 .katex [data-g], .gl { cursor: help; border-radius: 4px; transition: background-color .12s; }
 .katex [data-g] { padding: .3em .17em; margin: 0 -.17em; }   /* larger target, no change of layout */
+.katex [data-g] [data-g] { padding: 0; margin: 0; }
 .katex, .dm { cursor: help; }
 .katex [data-g]:hover, .gl:hover { background: var(--green-t2); }
 .gl { border-bottom: 1px dotted var(--ink3); }

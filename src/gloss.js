@@ -30,23 +30,54 @@ const G_LET = { f: 'f', J: 'jac', H: 'hess', L: 'Lip', m: 'mcurv', h: 'hstep', k
   s: 'subs', v: 'vrate', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
 const G_ITER = /\^\{(\((?:[^(){}]|\{[^{}]*\})*\))\}/y, G_CWRE = /\\([a-zA-Z]+|[\s\S])/y;
 
+/* A symbol together with its indices is one unit: x^{(k)}, \alpha_k, p^{\top}, H^{-1}. Powers are not indices. */
+const G_SUF = [/\^\{\((?:[^(){}]|\{[^{}]*\})*\)\}/y, /\^\{\*\}/y, /\^\{\\top\}/y, /\^\{-1\}/y, /\^\{[+-]\}/y, /_\{[^{}]*\}/y, /_[0-9a-zA-Z]/y];
+const G_RAW = [], G_RAWID = new Map();   // TeX of each clicked unit, shown as the heading of its explanation
+const G_OWN = new Set(['fstar', 'alphaopt', 'betaopt', 'xstar', 'unitvec', 'JtJ', 'Jtr', 'thalf', 'Vmax', 'Km', 'ka', 'ke', 'c1', 'tmax', 'Cmax', 'xnew', 'xpm', 'fpm', 'cost', 'VF', 'nsteps', 'gprime', 'fprime']);   // indices are part of the name
+function unitMods(key, tex) {
+  if (G_OWN.has(key)) return '';
+  const m = [];
+  if (/\^\{\(/.test(tex)) m.push('iter');
+  if (/\^\{\*\}/.test(tex)) m.push('star');
+  if (/\^\{\\top\}/.test(tex)) m.push('top');
+  if (/\^\{-1\}/.test(tex)) m.push('inv');
+  const s = tex.match(/_(?:\{([^{}]*)\}|([0-9a-zA-Z]))/);
+  if (s) { const c = s[1] ?? s[2]; if (/^k([+-]\d+)?$/.test(c)) m.push('subk'); else if (/^(i|j|ij|\d+)$/.test(c)) m.push('subi'); }
+  return m.join('.');
+}
+const G_NOTE = {
+  iter: R`Indeks górny w nawiasie to **numer iteracji**: wartość tej wielkości po tylu krokach algorytmu. Zapis z literą $k$ oznacza dowolny krok, a z liczbą konkretny. To nie jest potęga.`,
+  subk: R`Indeks dolny to **numer iteracji**: wartość tej wielkości w kroku o tym numerze. Numer $0$ oznacza wartość początkową.`,
+  subi: R`Indeks dolny to **numer elementu**: współrzędnej wektora, wiersza lub kolumny macierzy albo pomiaru.`,
+  star: R`Gwiazdka oznacza wartość **optymalną** albo dokładne rozwiązanie, do którego metoda ma dążyć.`,
+  top: R`Znak $\top$ oznacza **transpozycję**: wektor kolumnowy staje się wierszowy, dzięki czemu można go pomnożyć przez inny wektor lub macierz.`,
+  inv: R`Wykładnik $-1$ oznacza **macierz odwrotną**. W obliczeniach nie wyznacza się jej jawnie: zamiast tego rozwiązuje się układ równań.`,
+};
+
 function annot(src) {
   let out = '', i = 0, brace = false; const n = src.length;
-  const wrap = (key, body) => { const w = `\\htmlData{g=${key}}{${body}}`; out += brace ? `{${w}}` : w; brace = false; };
+  const withIdx = j => { for (let any = true; any;) { any = false; for (const re of G_SUF) { re.lastIndex = j; if (re.exec(src)) { j = re.lastIndex; any = true; break; } } } return j; };
+  const emit = (attr, tex) => { const w = `\\htmlData{${attr}}{${tex}}`; out += brace ? `{${w}}` : w; brace = false; };
+  const unit = (key, from, to) => {   // src[from:to] is the base symbol; the indices that follow belong to it
+    const end = withIdx(to), tex = src.slice(from, end), mods = unitMods(key, tex);
+    let attr = `g=${key}` + (mods ? `,m=${mods}` : '');
+    if (end > to || (to - from > 1 && !G_CW[tex])) { const raw = tex.replace(/\^[0-9]$/, ''); let id = G_RAWID.get(raw); if (id == null) { id = G_RAW.push(raw) - 1; G_RAWID.set(raw, id); } attr += `,r=${id}`; }   // heading without a trailing power
+    emit(attr, tex); return end;
+  };
   const closing = j => { let d = 0; for (; j < n; j++) { if (src[j] === '\\') { j++; continue; } if (src[j] === '{') d++; else if (src[j] === '}' && --d === 0) return j; } return n - 1; };
   scan: while (i < n) {
     const ch = src[i];
     if (ch === '^') { G_ITER.lastIndex = i; const m = G_ITER.exec(src); if (m) { out += `^{\\htmlData{g=iter}{${m[1]}}}`; i = G_ITER.lastIndex; brace = false; continue; } }
-    if (src.startsWith('\\lVert', i)) { const j = src.indexOf('\\rVert', i + 6); if (j > 0) { wrap('norm', '\\lVert ' + annot(src.slice(i + 6, j)) + '\\rVert'); i = j + 6; continue; } }
-    for (const [re, key] of G_ATOM) { re.lastIndex = i; const m = re.exec(src); if (m) { wrap(key, m[0]); i = re.lastIndex; continue scan; } }
+    if (src.startsWith('\\lVert', i)) { const j = src.indexOf('\\rVert', i + 6); if (j > 0) { emit('g=norm', '\\lVert ' + annot(src.slice(i + 6, j)) + '\\rVert'); i = j + 6; continue; } }
+    for (const [re, key] of G_ATOM) { re.lastIndex = i; if (re.exec(src)) { i = unit(key, i, re.lastIndex); continue scan; } }
     if (ch === '\\') {
-      G_CWRE.lastIndex = i; const cw = G_CWRE.exec(src)[0]; i = G_CWRE.lastIndex;
+      G_CWRE.lastIndex = i; const cw = G_CWRE.exec(src)[0], at = i; i = G_CWRE.lastIndex;
       if (cw === '\\\\') { out += cw; if (src[i] === '[') { const j = src.indexOf(']', i); out += src.slice(i, j + 1); i = j + 1; } brace = false; continue; }
       if (G_SKIP.has(cw)) { out += cw; while (src[i] === ' ') out += src[i++]; if (src[i] === '{') { const j = closing(i); out += src.slice(i, j + 1); i = j + 1; } brace = false; continue; }
-      if (G_CW[cw]) { wrap(G_CW[cw], cw); continue; }
+      if (G_CW[cw]) { i = unit(G_CW[cw], at, i); continue; }
       out += cw; brace = /^\\[a-zA-Z]/.test(cw); continue;
     }
-    if (G_LET[ch]) { wrap(G_LET[ch], ch); i++; continue; }
+    if (G_LET[ch]) { i = unit(G_LET[ch], i, i + 1); continue; }
     out += ch; i++;
     if (ch === '_' || ch === '^') brace = true; else if (ch !== ' ') brace = false;
   }
@@ -392,24 +423,29 @@ const Gloss = (() => {
     dlg.innerHTML = `<div class="gl-bar"><button type="button" class="btn sm link gl-back">← Poprzednie hasło</button><button type="button" class="btn sm gl-index">Wszystkie hasła</button><button type="button" class="btn sm pri gl-close">Zamknij</button></div><div class="gl-body"></div>`;
     body = dlg.querySelector('.gl-body'); back = dlg.querySelector('.gl-back');
     dlg.querySelector('.gl-close').addEventListener('click', () => dlg.close());
-    dlg.querySelector('.gl-index').addEventListener('click', () => show('__index', true));
-    back.addEventListener('click', () => { stack.pop(); show(stack.pop(), true); });
+    dlg.querySelector('.gl-index').addEventListener('click', () => show({ key: '__index' }, true));
+    back.addEventListener('click', () => { stack.pop(); show(stack.pop(), true); });   // entries: { key, mods, raw }
     dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
     document.body.append(dlg);
   }
-  function show(key, push) {
-    if (push) stack.push(key);
+  function show(entry, push) {
+    const key = entry.key;
+    if (push) stack.push(entry);
     back.hidden = stack.length < 2;
     if (key === '__index' || key.startsWith('__pick:')) {
       const all = key === '__index';
       const items = all ? Object.entries(GLOSS).sort((a, b) => a[1].t.localeCompare(b[1].t, 'pl')) : key.slice(7).split(',').map(k => [k, GLOSS[k]]);
       body.innerHTML = (all ? `<h2 id="gloss-title">Słownik symboli i pojęć</h2><p class="note">Wybierz hasło. Na każdej stronie możesz też kliknąć dowolny symbol we wzorze, w tabeli lub na wykresie.</p>`
         : `<h2 id="gloss-title">Symbole w tym wzorze</h2><p class="note">Wybierz symbol, który chcesz objaśnić.</p>`) + `<div class="gl-list">${items.map(([k, g]) => `<button type="button" class="gl-item" data-key="${k}"><span>${K(g.s)}</span>${g.t}</button>`).join('')}</div>`;
-      body.querySelectorAll('.gl-item').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); show(b.dataset.key, true); }));
+      body.querySelectorAll('.gl-item').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); show({ key: b.dataset.key }, true); }));
     } else {
       const g = GLOSS[key];
-      body.innerHTML = `<div class="gl-sym">${K(g.s, true)}</div><h2 id="gloss-title">${g.t}</h2>
+      let mods = (entry.mods || '').split('.').filter(m => G_NOTE[m]);
+      if (key === 'xk') mods = mods.map(m => (m === 'subi' ? 'subk' : m));   // on the root-finding pages the subscript counts iterations
+      mods = [...new Set(mods)];
+      body.innerHTML = `<div class="gl-sym">${K(entry.raw || g.s, true)}</div><h2 id="gloss-title">${g.t}</h2>
         <section><h3>Co to jest?</h3>${md(g.what)}</section>
+        ${mods.length ? `<section><h3>Indeksy w tym zapisie</h3>${mods.map(m => md(G_NOTE[m])).join('')}</section>` : ''}
         <section><h3>Jak się to oblicza?</h3><ol>${g.how.map(h => `<li>${mdi(h)}</li>`).join('')}</ol></section>
         <section><h3>Dlaczego to ważne?</h3>${md(g.why)}</section>
         <p class="note">Symbole w tym objaśnieniu też są klikalne.</p>`;
@@ -422,7 +458,8 @@ const Gloss = (() => {
     if (!dlg.open) { stack = []; context(from); }
     key = key === '__index' ? key : resolve(key);
     if (key !== '__index' && !GLOSS[key]) return;
-    show(key, true);
+    const ds = (from && from.dataset) || {};
+    show({ key, mods: ds.m || '', raw: ds.r != null ? G_RAW[+ds.r] : null }, true);
     if (!dlg.open) dlg.showModal();
   }
   function pick(keys, from) {   // several symbols to choose from
@@ -430,7 +467,7 @@ const Gloss = (() => {
     if (!dlg.open) { stack = []; context(from); }
     const ks = [...new Set(keys.map(resolve))].filter(k => GLOSS[k]); if (!ks.length) return;
     if (ks.length === 1) { open(ks[0], from); return; }
-    show('__pick:' + ks.join(','), true);
+    show({ key: '__pick:' + ks.join(',') }, true);
     if (!dlg.open) dlg.showModal();
   }
   document.addEventListener('click', e => {

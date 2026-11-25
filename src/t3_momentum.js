@@ -34,7 +34,7 @@ Poniżej ta sama funkcja i ten sam punkt startowy co w poprzednim temacie ($\alp
         card.insertAdjacentHTML('beforeend', legend([['line', C.red, 'z momentem'], ['line', C.green, 'zwykły spadek gradientu'], ['dash', C.black, 'składowa momentu $-\\alpha\\beta\\mathbf{v}$'], ['dash', C.ghost, 'nowy gradient $-\\alpha\\mathbf{g}$']]));
         return {
           draw(s) {
-            const far = s.pts.concat(s.gd).some(q => Math.abs(q[0]) > 4.9 || Math.abs(q[1]) > 4.9);
+            const far = s.pts.concat(s.gd).some(q => Math.abs(q[0]) > 5.5 || Math.abs(q[1]) > 5.5);
             p.setView(...(far ? [-7, 7, -7, 7] : fn.view));
             p.draw = q => {
               drawField(q, fn);
