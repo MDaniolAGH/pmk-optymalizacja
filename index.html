@@ -1035,6 +1035,8 @@ const G_ITER = /\^\{(\((?:[^(){}]|\{[^{}]*\})*\))\}/y, G_CWRE = /\\([a-zA-Z]+|[\
 /* A symbol together with its indices is one unit: x^{(k)}, \alpha_k, p^{\top}, H^{-1}. Powers are not indices. */
 const G_SUF = [/\^\{\((?:[^(){}]|\{[^{}]*\})*\)\}/y, /\^\{\*\}/y, /\^\{\\top\}/y, /\^\{-1\}/y, /\^\{[+-]\}/y, /_\{[^{}]*\}/y, /_[0-9a-zA-Z]/y];
 const G_RAW = [], G_RAWID = new Map();   // TeX of each clicked unit, shown as the heading of its explanation
+const G_INNER = [];                      // for |...| and ||...||: the symbols inside, offered in the explanation
+function rawId(tex) { let id = G_RAWID.get(tex); if (id == null) { id = G_RAW.push(tex) - 1; G_RAWID.set(tex, id); } return id; }
 const G_OWN = new Set(['fstar', 'alphaopt', 'betaopt', 'xstar', 'unitvec', 'JtJ', 'Jtr', 'thalf', 'Vmax', 'Km', 'ka', 'ke', 'c1', 'tmax', 'Cmax', 'xnew', 'xpm', 'fpm', 'cost', 'VF', 'nsteps', 'gprime', 'fprime']);   // indices are part of the name
 function unitMods(key, tex) {
   if (G_OWN.has(key)) return '';
@@ -1063,14 +1065,21 @@ function annot(src) {
   const unit = (key, from, to) => {   // src[from:to] is the base symbol; the indices that follow belong to it
     const end = withIdx(to), tex = src.slice(from, end), mods = unitMods(key, tex);
     let attr = `g=${key}` + (mods ? `,m=${mods}` : '');
-    if (end > to || (to - from > 1 && !G_CW[tex])) { const raw = tex.replace(/\^[0-9]$/, ''); let id = G_RAWID.get(raw); if (id == null) { id = G_RAW.push(raw) - 1; G_RAWID.set(raw, id); } attr += `,r=${id}`; }   // heading without a trailing power
+    if (end > to || (to - from > 1 && !G_CW[tex])) attr += `,r=${rawId(key === 'xcomp' || key === 'ri' ? tex.replace(/\^[0-9]$/, '') : tex)}`;   // x_0^4 is explained as x_0
     emit(attr, tex); return end;
   };
+  const whole = (key, from, to, inside) => {   // |...| or ||...||: one unit; remember which symbols it contains
+    const tex = src.slice(from, to), id = rawId(tex);
+    G_INNER[id] = [...new Set([...annot(inside).matchAll(/\\htmlData\{g=([A-Za-z0-9_]+)/g)].map(m => m[1]))];
+    emit(`g=${key},r=${id}`, tex);
+  };
+  const bar = j => { let d = 0; for (j++; j < n; j++) { const c = src[j]; if (c === '\\') { j++; continue; } if (c === '{') d++; else if (c === '}') { if (d === 0) return -1; d--; } else if (c === '|' && d === 0) return j; } return -1; };
   const closing = j => { let d = 0; for (; j < n; j++) { if (src[j] === '\\') { j++; continue; } if (src[j] === '{') d++; else if (src[j] === '}' && --d === 0) return j; } return n - 1; };
   scan: while (i < n) {
     const ch = src[i];
     if (ch === '^') { G_ITER.lastIndex = i; const m = G_ITER.exec(src); if (m) { out += `^{\\htmlData{g=iter}{${m[1]}}}`; i = G_ITER.lastIndex; brace = false; continue; } }
-    if (src.startsWith('\\lVert', i)) { const j = src.indexOf('\\rVert', i + 6); if (j > 0) { emit('g=norm', '\\lVert ' + annot(src.slice(i + 6, j)) + '\\rVert'); i = j + 6; continue; } }
+    if (src.startsWith('\\lVert', i)) { const j = src.indexOf('\\rVert', i + 6); if (j > 0) { whole('norm', i, j + 6, src.slice(i + 6, j)); i = j + 6; continue; } }
+    if (ch === '|') { const j = bar(i); if (j > 0) { whole('abs', i, j + 1, src.slice(i + 1, j)); i = j + 1; continue; } }
     for (const [re, key] of G_ATOM) { re.lastIndex = i; if (re.exec(src)) { i = unit(key, i, re.lastIndex); continue scan; } }
     if (ch === '\\') {
       G_CWRE.lastIndex = i; const cw = G_CWRE.exec(src)[0], at = i; i = G_CWRE.lastIndex;
@@ -1124,6 +1133,10 @@ const GLOSS = {
     what: R`Jedna nieujemna liczba, która mierzy wielkość całego wektora. Dla wektora na płaszczyźnie jest to zwykła długość strzałki.`,
     how: [R`Każdą składową wektora podnieś do kwadratu.`, R`Zsumuj kwadraty.`, R`Wyciągnij pierwiastek kwadratowy z sumy.`],
     why: R`Pozwala ocenić wektor jedną liczbą. Norma gradientu mówi, jak stromo jest w bieżącym punkcie, i służy jako kryterium zakończenia obliczeń. Norma poprawki mówi, jak długi krok wykonała metoda. Norma wektora reszt mierzy łączny błąd dopasowania modelu.` },
+  abs: { s: R`|a|`, t: 'Moduł, czyli wartość bezwzględna (absolute value)',
+    what: R`Odległość liczby od zera na osi liczbowej, czyli jej wielkość bez znaku. Moduł jest zawsze nieujemny.`,
+    how: [R`Oblicz wartość wyrażenia między pionowymi kreskami.`, R`Jeśli wynik jest ujemny, zmień jego znak. Jeśli jest dodatni albo równy zeru, pozostaw go bez zmian.`],
+    why: R`Pozwala mówić o wielkości bez względu na kierunek. Moduł różnicy między przybliżeniem a dokładnym rozwiązaniem to błąd przybliżenia. Moduł mnożnika błędu decyduje o stabilności metody: błąd maleje tylko wtedy, gdy moduł jest mniejszy od $1$, niezależnie od tego, czy mnożnik jest dodatni, czy ujemny. Dla wektorów tę samą rolę pełni norma.` },
   x: { s: R`\mathbf{x}`, t: 'Punkt, czyli wektor zmiennych',
     what: R`Aktualne położenie w przestrzeni zmiennych. Na tej stronie jest to para liczb $(x_0,\ x_1)$, czyli punkt na płaszczyźnie.`,
     how: [R`Punkt startowy wybierasz samodzielnie, na przykład kliknięciem na wykresie poziomic.`, R`Każdy kolejny punkt wyznacza algorytm na podstawie poprzedniego.`],
@@ -1445,12 +1458,15 @@ const Gloss = (() => {
       let mods = (entry.mods || '').split('.').filter(m => G_NOTE[m]);
       if (key === 'xk') mods = mods.map(m => (m === 'subi' ? 'subk' : m));   // on the root-finding pages the subscript counts iterations
       mods = [...new Set(mods)];
+      const inside = [...new Set((entry.inner || []).map(resolve))].filter(k => GLOSS[k] && k !== key);
       body.innerHTML = `<div class="gl-sym">${K(entry.raw || g.s, true)}</div><h2 id="gloss-title">${g.t}</h2>
         <section><h3>Co to jest?</h3>${md(g.what)}</section>
         ${mods.length ? `<section><h3>Indeksy w tym zapisie</h3>${mods.map(m => md(G_NOTE[m])).join('')}</section>` : ''}
+        ${inside.length ? `<section><h3>Symbole w tym zapisie</h3><div class="gl-list">${inside.map(k => `<button type="button" class="gl-item" data-key="${k}"><span>${K(GLOSS[k].s)}</span>${GLOSS[k].t}</button>`).join('')}</div></section>` : ''}
         <section><h3>Jak się to oblicza?</h3><ol>${g.how.map(h => `<li>${mdi(h)}</li>`).join('')}</ol></section>
         <section><h3>Dlaczego to ważne?</h3>${md(g.why)}</section>
         <p class="note">Symbole w tym objaśnieniu też są klikalne.</p>`;
+      body.querySelectorAll('.gl-item').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); show({ key: b.dataset.key }, true); }));
     }
     body.scrollTop = 0;
   }
@@ -1461,7 +1477,7 @@ const Gloss = (() => {
     key = key === '__index' ? key : resolve(key);
     if (key !== '__index' && !GLOSS[key]) return;
     const ds = (from && from.dataset) || {};
-    show({ key, mods: ds.m || '', raw: ds.r != null ? G_RAW[+ds.r] : null }, true);
+    show({ key, mods: ds.m || '', raw: ds.r != null ? G_RAW[+ds.r] : null, inner: ds.r != null ? G_INNER[+ds.r] : null }, true);
     if (!dlg.open) dlg.showModal();
   }
   function pick(keys, from) {   // several symbols to choose from
