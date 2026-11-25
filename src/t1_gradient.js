@@ -1,5 +1,5 @@
 /* =====================================================================
-   Topic 1 — numerical gradient by central differences (Zadanie 1, part 1)
+   Topic 1 — numerical gradient by central differences
    ===================================================================== */
 TOPICS.push({
   id: 'gradient', n: 1, title: 'Gradient numeryczny (numerical gradient)', short: 'Gradient', task: 'Różniczkowanie numeryczne',
@@ -9,6 +9,7 @@ TOPICS.push({
   walk() {
     const fn = M.F.bowl, x = [-3, 4];
     return Walk({
+      id: 'gradient', live: pv => ({ hstep: R`$h=${tn(pv.h)}$`, x: R`$\mathbf{x}=(-3,\ 4)$` }),
       intro: R`**Po co?** Każda z omawianych tu metod optymalizacji korzysta z gradientu. W praktyce oblicza go mechanizm automatycznego różniczkowania (autograd), ale warto umieć wyznaczyć go samodzielnie metodą różnic skończonych (finite differences), czyli używając wyłącznie wartości funkcji. To także najprostszy sposób sprawdzenia, czy gradient obliczony inną metodą jest poprawny. Poniżej pełny rachunek dla jednego punktu.
 
 Oznaczenia w tych materiałach: $\mathbf{x}=(x_0,\ x_1)$ to punkt, a $x_0$ i $x_1$ to jego współrzędne, numerowane od zera, tak jak <code>x[0]</code> i <code>x[1]</code> w Pythonie.`,
@@ -180,7 +181,13 @@ Trzy najczęstsze błędy: modyfikowanie <code>x</code> w miejscu zamiast pracy 
     const setH = v => { S.h = v; hS.set(v, false); update(); };
     sel.onchange = setFn; hS.oninput = v => { S.h = v; update(); };
     pA.pickable((x, y) => { const v = FN[S.fn].view; S.x = [Math.max(v[0], Math.min(v[1], x)), Math.max(v[2], Math.min(v[3], y))]; recompute(); update(); });
-    const missions = Missions([
+    root._live = () => {
+      const fn = FN[S.fn], pair = v => `$${tv(v, 6)}$`;
+      return { hstep: R`$h=${tn(S.h, 2)}$`, x: `$${tv(S.x, 3)}$`, xcomp: `$${tv(S.x, 3)}$`, f: R`$f(\mathbf{x})=${tn(fn.f(S.x), 5)}$`, grad: 'ze wzoru: ' + pair(fn.g(S.x)),
+        cdiff: pair(M.numgrad(fn.f, S.x, S.h)), fdiff: pair(M.numgrad(fn.f, S.x, S.h, 'forward')),
+        graderr: `różnice centralne: $${tn(errOf(fn, S.h, 'central'), 3)}$; różnice w przód: $${tn(errOf(fn, S.h, 'forward'), 3)}$` };
+    };
+    const missions = Missions('gradient', [
       { t: 'Gradient a poziomice', q: R`Wybierz funkcję falistą i przeciągaj punkt po wykresie. **Zastanów się:** pod jakim kątem wektor gradientu przecina poziomice? Co stanie się z jego długością na wierzchołku wzniesienia?`,
         acts: [['Funkcja falista', () => setFn('wave')]],
         a: R`Gradient jest zawsze **prostopadły** do poziomicy i wskazuje kierunek wzrostu funkcji. Jego długość (norma) określa stromość zbocza w danym punkcie. W maksimum, w minimum i w punkcie siodłowym (saddle point) gradient się zeruje: $\nabla f=0$. Są to punkty stacjonarne (stationary points) i właśnie ich szukają wszystkie omawiane tu metody.` },

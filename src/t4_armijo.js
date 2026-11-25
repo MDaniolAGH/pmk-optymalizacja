@@ -9,6 +9,7 @@ TOPICS.push({
   walk() {
     const fn = M.F.valley, x = [5, 5];
     return Walk({
+      id: 'armijo', live: pv => ({ c1: R`$c_1=${tn(pv.c1)}$`, rho: R`$\rho=${tn(pv.rho)}$` }),
       intro: R`**Po co?** W poprzednich tematach współczynnik uczenia $\alpha$ trzeba było dobierać ręcznie: zbyt duży prowadził do rozbieżności, a zbyt mały do bardzo wolnej zbieżności. Poszukiwanie w kierunku (line search) dobiera długość kroku automatycznie, osobno w każdej iteracji. Najprostszy wariant to metoda z nawrotami (backtracking): zaczynamy od długiego kroku i skracamy go, dopóki nie zostanie spełniony warunek Armijo. Poniżej pełny przykład liczbowy.`,
       params: [
         { id: 'c1', label: R`Stała $c_1$`, value: 1e-4, options: [{ v: 1e-4, label: '$10^{-4}$ (wartość typowa)' }, { v: 0.3, label: '$0.3$' }] },
@@ -100,7 +101,11 @@ Koszt: $${tn(r.f0)}\ \to\ ${tn(last.phi, 5)}$ po $${r.trials.length}$ próbach, 
     const RANGE = { valley: [0.0002, 0.03, 0.0002, 0.0198], bowl: [0.005, 0.6, 0.005, 0.1], cosh: [0.01, 1, 0.01, 0.1], twin: [0.005, 0.4, 0.005, 0.05] };
     const pA = new Plot({ ylog: true, xlabel: 'k', ylabel: R`\alpha_k`, aria: 'Długość kroku przyjęta w kolejnych iteracjach' });
     return TrajLab({
-      fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 30,
+      fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 30, mid: 'armijo',
+      live: api => { const as = api.runs[1] ? api.runs[1].st.as : []; return {
+        c1: R`$c_1=${tn(cS.value, 2)}$`, rho: R`$\rho=${tn(rS.value)}$`,
+        alpha: R`stały współczynnik: $\alpha=${tn(aS.value, 4)}$; ostatnia długość kroku zaakceptowana przez poszukiwanie w kierunku: ` + (as.length ? R`$\alpha=${tn(as[as.length - 1], 4)}$` : 'jeszcze nie wykonano kroku'),
+        evals: api.runs.map(r => r.m.name + ': ' + r.st.ev).join('; ') }; },
       controls(api) {
         cS = Slider({ label: R`Stała $c_1$ w warunku Armijo`, aria: 'stała c1', min: 1e-4, max: 0.9, value: 1e-4, log: true, sig: 2 });
         rS = Slider({ label: R`Współczynnik skracania $\rho$`, aria: 'współczynnik skracania ro', min: 0.1, max: 0.9, step: 0.05, value: 0.5 });

@@ -1,5 +1,5 @@
 /* =====================================================================
-   Topic 3 — momentum (heavy-ball), torch.optim.SGD convention (Zadanie 2)
+   Topic 3 — momentum (heavy-ball), torch.optim.SGD convention
    ===================================================================== */
 TOPICS.push({
   id: 'moment', n: 3, title: 'Metoda z momentem (momentum)', short: 'Moment', task: 'Metoda pierwszego rzędu',
@@ -9,6 +9,7 @@ TOPICS.push({
   walk() {
     const fn = M.F.bowl, x0 = [-3, 4], a = 0.1;
     return Walk({
+      id: 'moment', live: pv => ({ alpha: R`$\alpha=0.1$`, beta: R`$\beta=${tn(pv.b)}$`, Lip: '$L=5$', mcurv: '$m=1$', kappa: R`$\kappa=L/m=5$` }),
       intro: R`**Po co?** Zwykła metoda spadku gradientu w każdym kroku „zapomina” o dotychczasowym przebiegu. Metoda z momentem (momentum), nazywana też metodą ciężkiej kuli (heavy-ball method), dodaje jej pamięć: bufor prędkości (velocity buffer) $\mathbf{v}$, w którym kumulują się kolejne gradienty. Poniższa reguła jest zapisana w tej samej konwencji co <code>torch.optim.SGD</code>.
 
 Poniżej ta sama funkcja i ten sam punkt startowy co w poprzednim temacie ($\alpha=0.1$), co ułatwia porównanie obu metod.`,
@@ -118,7 +119,8 @@ Dobrym przykładem testowym jest funkcja o wąskiej dolinie $f(\mathbf{x})=\tfra
     let aS, bS;
     const RANGE = { valley: [0.0002, 0.04, 0.0002, 0.0198], bowl: [0.005, 0.8, 0.005, 0.1], cosh: [0.01, 1, 0.01, 0.1], twin: [0.005, 0.3, 0.005, 0.05] };
     return TrajLab({
-      fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 30,
+      fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 30, mid: 'moment',
+      live: () => ({ alpha: R`$\alpha=${tn(aS.value, 4)}$`, beta: R`$\beta=${tn(bS.value, 4)}$` }),
       controls(api) {
         aS = Slider({ label: R`Współczynnik uczenia $\alpha$ (wspólny)`, aria: 'współczynnik uczenia alfa', min: 0.0002, max: 0.04, step: 0.0002, value: 0.0198 });
         bS = Slider({ label: R`Współczynnik momentu $\beta$`, aria: 'współczynnik momentu beta', min: 0, max: 0.99, step: 0.001, value: 0.669, hint: R`Dla $\beta=0$ obie metody są identyczne.` });

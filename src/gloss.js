@@ -467,7 +467,7 @@ const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'c
 
 /* ---------- 3. the dialog ---------- */
 const Gloss = (() => {
-  let dlg, body, back, stack = [], ctx = [];
+  let dlg, body, back, stack = [], ctx = [], live = null;
   const resolve = key => { for (const c of ctx) if (GLOSS_CTX[c] && GLOSS_CTX[c][key]) return GLOSS_CTX[c][key]; return key; };
   function build() {
     dlg = el('dialog', 'gloss'); dlg.setAttribute('aria-labelledby', 'gloss-title');
@@ -495,8 +495,10 @@ const Gloss = (() => {
       if (key === 'xk') mods = mods.map(m => (m === 'subi' ? 'subk' : m));   // on the root-finding pages the subscript counts iterations
       mods = [...new Set(mods)];
       const inside = [...new Set((entry.inner || []).map(resolve))].filter(k => GLOSS[k] && k !== key);
+      const now = live && (live[key] || live[entry.orig]);
       body.innerHTML = `<div class="gl-sym">${K(entry.raw || g.s, true)}</div><h2 id="gloss-title">${g.t}</h2>
         <section><h3>Co to jest?</h3>${md(g.what)}</section>
+        ${now ? `<section class="gl-now"><h3>Bieżąca wartość</h3>${md(now)}</section>` : ''}
         ${mods.length ? `<section><h3>Jak czytać ten zapis</h3>${mods.map(m => md(G_NOTE[m])).join('')}</section>` : ''}
         ${inside.length ? `<section><h3>Symbole w tym zapisie</h3><div class="gl-list">${inside.map(k => `<button type="button" class="gl-item" data-key="${k}"><span>${K(GLOSS[k].s)}</span>${GLOSS[k].t}</button>`).join('')}</div></section>` : ''}
         <section><h3>Jak się to oblicza?</h3><ol>${g.how.map(h => `<li>${mdi(h)}</li>`).join('')}</ol></section>
@@ -506,14 +508,19 @@ const Gloss = (() => {
     }
     body.scrollTop = 0;
   }
-  function context(from) { ctx = []; for (let n = from; n; n = n.parentElement && n.parentElement.closest('[data-ctx]')) { if (n.dataset && n.dataset.ctx) ctx.push(n.dataset.ctx); if (!n.parentElement) break; } }
+  function context(from) {
+    live = null;   // current values supplied by the experiment the symbol was clicked in
+    for (let n = from; n; n = n.parentElement) if (typeof n._live === 'function') { try { live = n._live(); } catch (e) { live = null; } break; }
+    ctx = []; for (let n = from; n; n = n.parentElement && n.parentElement.closest('[data-ctx]')) { if (n.dataset && n.dataset.ctx) ctx.push(n.dataset.ctx); if (!n.parentElement) break; }
+  }
   function open(key, from) {
     if (!dlg) build();
     if (!dlg.open) { stack = []; context(from); }
+    const orig = key;
     key = key === '__index' ? key : resolve(key);
     if (key !== '__index' && !GLOSS[key]) return;
     const ds = (from && from.dataset) || {};
-    show({ key, mods: ds.m || '', raw: ds.r != null ? G_RAW[+ds.r] : null, inner: ds.r != null ? G_INNER[+ds.r] : null }, true);
+    show({ key, orig, mods: ds.m || '', raw: ds.r != null ? G_RAW[+ds.r] : null, inner: ds.r != null ? G_INNER[+ds.r] : null }, true);
     if (!dlg.open) dlg.showModal();
   }
   function pick(keys, from) {   // several symbols to choose from
@@ -540,6 +547,13 @@ const Gloss = (() => {
     if (!n) { const host = t.closest('dt, th, .stats > div, .ctl > label, .ctl-l, .plot-t, .ax, .legend > span'); if (host) n = host.matches('[data-g]') ? host : host.querySelector('[data-g]'); }
     if (!n || !n.dataset.g) return;
     e.preventDefault(); open(n.dataset.g, n);
+  });
+  document.addEventListener('keydown', e => {   // keyboard: Tab to a formula, Enter or Space to explain its symbols
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const fm = document.activeElement; if (!fm || !fm.matches || !fm.matches('.katex[tabindex]')) return;
+    const tagged = [...fm.querySelectorAll('[data-g]')].filter(s => !s.parentElement.closest('[data-g]')); if (!tagged.length) return;
+    e.preventDefault();
+    if (tagged.length === 1) open(tagged[0].dataset.g, tagged[0]); else pick([...new Set(tagged.map(s => s.dataset.g))], fm);
   });
   return { open };
 })();

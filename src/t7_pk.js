@@ -29,6 +29,7 @@ TOPICS.push({
   walk() {
     const P = M.pk(1), th0 = M.PK_START, runs = M.pkRuns(P, th0), fit = runs.gn.th, e = v => v.map(Math.exp);
     return Walk({
+      id: 'pk',
       intro: R`**Po co?** To studium przypadku łączy wszystkie poprzednie tematy: budujemy model i funkcję reszt, a parametry wyznaczamy poznanymi metodami. Poniżej pełny tok postępowania dla pacjenta nr 1: od surowych pomiarów do okresu półtrwania leku.`,
       algo: {
         title: 'Plan obliczeń',
@@ -188,7 +189,13 @@ Wyniki dla pacjenta 1, z którymi możesz porównać swoje: $k_a\approx${tn(ka, 
     const manual = () => { prev = null; th = [Math.log(kaS.value), Math.log(keS.value), Math.log(vS.value)]; hist.push(P.cost(th)); status.className = 'status'; status.textContent = ''; draw(); };
     kaS.oninput = keS.oninput = vS.oninput = manual; sel.onchange = v => load(v);
     const pick = id => { sel.set(id, false); load(id); };
-    main.append(info, status, plots, stats.el, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions([
+    root._live = () => {
+      const [a, b, v] = th.map(Math.exp), tm = Math.log(a / b) / (a - b), c = `$${tn(P.cost(th), 5)}$`, vol = R`$V/F=${tn(v, 4)}$ L`;
+      return { ka: R`$k_a=${tn(a, 4)}$ 1/h`, ke: R`$k_e=${tn(b, 4)}$ 1/h`, vol, VF: vol, costnow: c, cost: c, f: c, bestcost: `$${tn(cmp.gn.fs[cmp.gn.fs.length - 1], 5)}$`,
+        thalf: R`$t_{1/2}=\ln 2/k_e=${tn(Math.log(2) / b, 4)}$ h`, tmax: R`$t_{\max}=${tn(tm, 3)}$ h`, Cmax: R`$C_{\max}=${tn(P.model(th, tm), 4)}$ mg/L`,
+        dose: R`$D=${tn(P.D, 4)}$ mg`, theta: `$${tv(th, 4)}$`, thetaj: `$${tv(th, 4)}$` };
+    };
+    main.append(info, status, plots, stats.el, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions('pk', [
       { t: 'Wpływ poszczególnych parametrów', q: R`Zmieniaj położenie tylko **jednego** suwaka naraz. Przed każdą zmianą **zastanów się**, która część krzywej się zmieni: faza narastania, maksimum czy faza eliminacji?`,
         acts: [['Domyślny punkt startowy', () => setTheta(M.PK_START, true)]],
         a: R`Stała $k_a$ wpływa na początek krzywej: większa wartość oznacza szybsze narastanie oraz wcześniejsze i wyższe maksimum, natomiast faza eliminacji prawie się nie zmienia. Stała $k_e$ wpływa na fazę eliminacji: większa wartość oznacza szybszy spadek stężenia i krótszy okres półtrwania. Objętość $V$ skaluje całą krzywą w pionie: dwukrotnie większa objętość dystrybucji oznacza dwukrotnie mniejsze stężenia.` },

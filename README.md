@@ -7,8 +7,9 @@ Materiały do przedmiotu **Podstawy Metod Komputerowych w Obliczeniach Inżynier
 
 ## Zawartość
 
-Siedem tematów, każdy w dwóch częściach: „Krok po kroku” (jedna iteracja algorytmu rozpisana
-na liczbach) oraz „Eksperymentuj” (interaktywne eksperymenty z misjami).
+Siedem tematów, każdy w trzech częściach: „Krok po kroku” (jedna iteracja algorytmu rozpisana
+na liczbach), „Eksperymentuj” (interaktywne eksperymenty z misjami) oraz „Sprawdź się” (kilka pytań
+z natychmiastową odpowiedzią).
 
 1. Gradient numeryczny (różnice skończone)
 2. Metoda spadku gradientu
@@ -18,8 +19,12 @@ na liczbach) oraz „Eksperymentuj” (interaktywne eksperymenty z misjami).
 6. Metoda Gaussa–Newtona
 7. Farmakokinetyka teofiliny (studium przypadku)
 
-Każdy symbol na stronie można kliknąć, aby zobaczyć objaśnienie: co oznacza, jak się go oblicza
-i dlaczego jest ważny.
+Dwie strony podsumowujące: „Porównaj metody” (cztery metody na jednej funkcji) oraz „Znajdź błąd”
+(rozpoznawanie typowych błędów implementacji po kształcie trajektorii).
+
+Każdy symbol na stronie można kliknąć, aby zobaczyć objaśnienie: co oznacza, jak się go oblicza,
+dlaczego jest ważny i jaką ma w danej chwili wartość. Postęp nauki jest zapisywany wyłącznie
+w przeglądarce użytkownika (`localStorage`); strona niczego nie wysyła.
 
 ## Budowanie
 
@@ -38,6 +43,7 @@ npm run build    # składa index.html
 | `src/core.js` | wykresy, kontrolki, odtwarzacz „krok po kroku” |
 | `src/gloss.js` | słownik symboli i okno objaśnień |
 | `src/t1_…` – `src/t7_…` | treść i eksperymenty poszczególnych tematów |
+| `src/extras.js` | pytania „Sprawdź się”, strony „Porównaj metody” i „Znajdź błąd” |
 | `src/main.js` | strona główna i nawigacja |
 | `src/style.css` | wygląd |
 

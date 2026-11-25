@@ -1,5 +1,5 @@
 /* =====================================================================
-   Topic 5 — Newton's method: 1-D root finding and n-D minimisation (Zadanie 3)
+   Topic 5 — Newton's method: 1-D root finding and n-D minimisation
    ===================================================================== */
 function switcher(label, options, builders) {
   const wrap = el('div'), host = el('div'), cache = {};
@@ -24,6 +24,7 @@ TOPICS.push({
   walkRoot() {
     const fn = M.G.sqrt2, root = fn.root;
     return ctxWalk('newton1', {
+      id: 'newton-a',
       intro: R`**Po co?** Metoda Newtona, nazywana też metodą stycznych, wyznacza pierwiastek równania $g(x)=0$. Idea: równanie nieliniowe trudno rozwiązać wprost, ale liniowe łatwo. Zastępujemy więc krzywą jej **styczną** i wyznaczamy miejsce zerowe stycznej. Klasyczny przykład: $g(x)=x^2-2$, którego pierwiastkiem jest $\sqrt2$.`,
       params: [{ id: 'x0', label: 'Punkt startowy $x_0$', value: 1, options: [{ v: 1, label: '$1$' }, { v: 3, label: '$3$' }, { v: 0.3, label: '$0.3$' }] }],
       algo: {
@@ -51,7 +52,7 @@ TOPICS.push({
             const hw = Math.max(3.2 * err, 0.004);
             if (zoom) p.setView(root - hw, root + hw, fn.g(root - hw), fn.g(root + hw));
             else { const hi = Math.max(3.4, ...xs.map(v => v * 1.08)); p.setView(-0.4, hi, -3, Math.max(8, fn.g(hi))); }
-            note.textContent = zoom ? `Powiększenie wokół pierwiastka: szerokość okna ${num(2 * hw, 2)}.` : '';
+            note.textContent = zoom ? `Powiększenie wokół pierwiastka: szerokość okna ${num(2 * hw, 2)}.` : '\u00a0';   // the line is always there, so the card keeps its height
             p.draw = q => {
               q.hline(0, { color: C.ink3 });
               q.fn(fn.g, { color: C.black, width: 2.4 });
@@ -125,6 +126,7 @@ W przypadku wielowymiarowym pochodną zastępuje gradient, drugą pochodną hesj
   walkMin() {
     const fn = M.F.cosh, x0 = [4, 3], aGD = 0.1;
     return Walk({
+      id: 'newton-b',
       intro: R`**Po co?** Metoda spadku gradientu wykorzystuje tylko nachylenie funkcji. Metoda Newtona wykorzystuje także jej **krzywiznę**: w bieżącym punkcie buduje model kwadratowy funkcji (rozwinięcie Taylora drugiego rzędu) i przechodzi bezpośrednio do jego minimum. Poniżej te operacje wykonano krok po kroku dla funkcji zbudowanej z cosinusów hiperbolicznych.`,
       algo: {
         title: 'Algorytm: metoda Newtona dla minimalizacji',
@@ -277,7 +279,12 @@ ${k === 2 ? 'Z dala od minimum postęp jest umiarkowany: model kwadratowy słabo
     const setFn = (id, x0) => { S.fn = id; sel.set(id, false); const g = G(); xS.setRange(g.view[0], g.view[1], 0.01, x0 ?? g.x0); reset(); };
     sel.onchange = v => setFn(v); xS.oninput = () => reset();
     p.pickable(x => { const v = G().view; reset(parseFloat(Math.max(v[0], Math.min(v[1], x)).toFixed(2))); });
-    main.append(el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions([
+    root._live = () => {
+      const g = G(), k = S.xs.length - 1, x = S.xs[k], v = R`$x_{${k}}=${tn(x, 10)}$`;
+      return { xk: v, xcomp: v, xscal: v, kiter: `$k=${k}$`, gfun: R`$g(x_{${k}})=${tn(g.g(x), 5)}$`, gprime: R`$g'(x_{${k}})=${tn(g.d(x), 5)}$`,
+        xstar: R`$x^{*}=${g.root.toFixed(10)}$`, abs: R`$|x_{${k}}-x^{*}|=${tn(Math.abs(x - g.root), 3)}$`, digits: 'około ' + digits(Math.abs(x - g.root)) };
+    };
+    main.append(el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions('newton-a', [
       { t: 'Ile kroków do dziesięciu poprawnych cyfr?', q: R`Równanie $x^2-2=0$, punkt startowy $x_0=1$. **Zastanów się:** po ilu krokach przybliżenie będzie miało $10$ poprawnych cyfr: po pięciu czy po dwudziestu?`,
         acts: [['Ustaw $x_0=1$', () => setFn('sqrt2', 1)]],
         a: R`Po czterech. Liczba poprawnych cyfr rośnie w przybliżeniu następująco: $0,\ 1,\ 2,\ 5,\ 11,\ 16$. Na tym polega zbieżność kwadratowa: liczba poprawnych cyfr mniej więcej podwaja się w każdym kroku.` },
@@ -300,7 +307,8 @@ ${k === 2 ? 'Z dala od minimum postęp jest umiarkowany: model kwadratowy słabo
     const RANGE = { cosh: [0.01, 1, 0.01, 0.1], bowl: [0.005, 0.6, 0.005, 0.1], valley: [0.0002, 0.03, 0.0002, 0.0198], twin: [0.005, 0.3, 0.005, 0.05] };
     const kind = (r, fn) => { const e = M.eig2(fn.H(r.pts[r.pts.length - 1])); return e[0] > 1e-9 ? 'dodatnio określony' : e[1] < -1e-9 ? '<span style="color:var(--red)">ujemnie określony</span>' : '<span style="color:var(--red)">nieokreślony</span>'; };
     return TrajLab({
-      fn: 'cosh', fns: ['cosh', 'bowl', 'valley', 'twin'], speed: 3, maxSteps: 2000,
+      fn: 'cosh', fns: ['cosh', 'bowl', 'valley', 'twin'], speed: 3, maxSteps: 2000, mid: 'newton-b',
+      live: () => ({ alpha: R`spadek gradientu: $\alpha=${tn(aS.value, 4)}$; metoda Newtona nie ma współczynnika uczenia` }),
       controls(api) {
         aS = Slider({ label: R`Współczynnik uczenia $\alpha$ (spadek gradientu)`, aria: 'współczynnik uczenia alfa', min: 0.01, max: 1, step: 0.01, value: 0.1, hint: 'Metoda Newtona nie ma współczynnika uczenia.' });
         aS.oninput = () => api.reset();

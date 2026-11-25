@@ -42,7 +42,7 @@ for (const [fam, dir, slug, w, st] of faces) for (const sub of ['latin', 'latin-
 
 const kjs = readFileSync(join(KDIR, 'katex.min.js'), 'utf8').replace(/<\/script/gi, '<\\/script');
 const js = ['math.js', 'core.js', 'gloss.js', 't1_gradient.js', 't2_descent.js', 't3_momentum.js', 't4_armijo.js',
-  't5_newton.js', 't6_gaussnewton.js', 't7_pk.js', 'main.js'].map(src).join('\n\n');
+  't5_newton.js', 't6_gaussnewton.js', 't7_pk.js', 'extras.js', 'main.js'].map(src).join('\n\n');
 if (/<\/script/i.test(js)) throw new Error('app JS contains a closing script tag');
 
 const html = `<!DOCTYPE html>

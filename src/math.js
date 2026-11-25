@@ -50,7 +50,7 @@ const M = (() => {
     return [t / 2 - d, t / 2 + d];
   }
 
-  /* ---------- finite-difference gradients (Zadanie 1) ---------- */
+  /* ---------- finite-difference gradients ---------- */
   function numgrad(f, x, h, kind = 'central') {
     const g = new Array(x.length).fill(0), f0 = kind === 'forward' ? f(x) : 0;
     for (let i = 0; i < x.length; i++) {
@@ -143,7 +143,7 @@ const M = (() => {
   };
   const newton1 = (fn, x) => x - fn.g(x) / fn.d(x);
 
-  /* ---------- Michaelis–Menten (Zadanie 4); v = notebook data (numpy default_rng(2026), sigma = 4) ---------- */
+  /* ---------- Michaelis–Menten; v = reference data set (numpy default_rng(2026), sigma = 4) ---------- */
   const MM_S = [0.02, 0.06, 0.11, 0.22, 0.56, 1.10, 0.02, 0.06, 0.11, 0.22, 0.56, 1.10];
   const MM_V = [47.303701, 103.54293, 126.437683, 169.808439, 192.809589, 199.175453,
     49.228393, 103.795987, 132.952347, 163.321717, 193.136682, 202.402463];

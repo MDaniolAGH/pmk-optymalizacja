@@ -1,5 +1,5 @@
 /* =====================================================================
-   Topic 6 — Gauss–Newton for nonlinear least squares, Michaelis–Menten kinetics (Zadanie 4)
+   Topic 6 — Gauss–Newton for nonlinear least squares, Michaelis–Menten kinetics
    ===================================================================== */
 const MM_LEVELS = [60, 90, 150, 300, 600, 1200, 2500, 5000, 10000, 20000, 40000, 80000];
 function mmDataPlot(ratio = '1 / 0.66') { return new Plot({ ratio, xlabel: 's', ylabel: 'v', aria: 'Pomiary szybkości reakcji i krzywa modelu Michaelisa-Menten' }).setView(0, 1.2, 0, 260); }
@@ -21,6 +21,7 @@ TOPICS.push({
   walk() {
     const P = M.mm();
     return Walk({
+      id: 'gauss-newton',
       intro: R`**Po co?** Dopasowanie modelu do danych to minimalizacja sumy kwadratów **reszt** (residuals), czyli różnic między wartościami modelu a pomiarami. Ta szczególna postać funkcji kosztu pozwala zbudować krok Newtona bez obliczania hesjanu: wystarczy jakobian (Jacobian) reszt, czyli macierz ich pierwszych pochodnych. Poniżej metoda Gaussa–Newtona krok po kroku na przykładowych danych: $12$ pomiarach szybkości reakcji enzymatycznej.`,
       params: [{ id: 's', label: R`Punkt startowy $(V_{\max},\ K_m)$`, value: 'a', options: [{ v: 'a', label: '$(150,\\ 0.1)$' }, { v: 'b', label: '$(280,\\ 0.03)$' }] }],
       algo: {
@@ -189,7 +190,13 @@ Zwróć uwagę na wymiary: jakobian jest macierzą $12\times2$, wektor reszt ma 
     sig.onchange = () => { makeData(); reset(); }; lamS.oninput = () => reset();
     pP.pickable((x, y) => { S.th0 = [parseFloat(Math.max(45, Math.min(415, x)).toFixed(0)), parseFloat(Math.max(0.005, Math.min(0.495, y)).toFixed(3))]; reset(); });
     const set = (th0, lam, data) => { if (data !== undefined) { sig.set(data, false); makeData(); } S.th0 = th0; lamS.set(lam, false); reset(); runner.start(); };
-    main.append(info, status, plots, stats.el, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions([
+    root._live = () => {
+      const th = path[path.length - 1], st = M.gnStep(P, th, lamS.value), e = M.eig2(st.A), c = `$${tn(costs[costs.length - 1], 6)}$`, kap = R`$\kappa(J^{\top}J)=${tn(e[1] / e[0], 3)}$`;
+      return { theta: `$${tv(th, 5)}$`, Vmax: R`$V_{\max}=${tn(th[0], 6)}$`, Km: `$K_m=${tn(th[1], 4)}$`, cost: c, f: c, kiter: `$k=${path.length - 1}$`,
+        lambda: R`$\lambda=${tn(lamS.value)}$`, sigma: R`$\sigma=${sig.value === 'nb' ? 4 : sig.value}$`, cond: kap, kappa: kap, JtJ: `$${tm(st.A, 4)}$`,
+        p: st.p ? `następna poprawka: $${tv(st.p, 3)}$` : 'układu nie da się rozwiązać', r: R`największa co do modułu reszta: $${tn(Math.max(...st.r.map(Math.abs)), 4)}$` };
+    };
+    main.append(info, status, plots, stats.el, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions('gauss-newton', [
       { t: 'Przykład podstawowy', q: R`Dane przykładowe, punkt startowy $(150,\ 0.1)$, $\lambda=0$. **Zastanów się:** ile kroków wystarczy, aby krzywa dopasowała się do punktów pomiarowych? Porównaj to z tysiącami kroków metody spadku gradientu.`,
         acts: [['Uruchom przykład', () => set([150, 0.1], 0, 'nb')]],
         a: R`Od czterech do pięciu kroków. Wynik: $V_{\max}\approx214.687$, $K_m\approx0.06720$, koszt około $52.69$. Takie same wartości zwraca funkcja biblioteczna <code>scipy.optimize.least_squares</code>.` },

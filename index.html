@@ -278,7 +278,7 @@ footer { max-width: 1400px; margin: auto; padding: 0 22px 30px; font: 13.5px var
 dt, th, .ctl > label, .ctl-l, .plot-t { cursor: default; }
 .stats > div[data-g], th[data-g] { cursor: help; }
 .stats > div[data-g]:hover, .stats > div:has([data-g]):hover { background: var(--green-t); }
-p.hint { font: 14.5px/1.4 var(--sans); color: var(--ink2); background: var(--paper); border: 1px dashed var(--line2); border-radius: 7px; padding: 8px 12px; margin: -6px 0 18px !important; }
+p.hint { font: 14.5px/1.4 var(--sans); color: var(--ink2); background: var(--paper); border: 1px dashed var(--line2); border-radius: 7px; padding: 6px 8px 6px 12px; margin: -6px 0 18px !important; display: flex; gap: 10px; align-items: center; justify-content: space-between; }
 .hint b { font-weight: 600; color: var(--green-d); }
 .bar .btn.gl-open { margin-left: 2px; padding: 6px 10px; }
 .bar-in { flex-wrap: nowrap; } .nav { flex-wrap: nowrap; min-width: 0; }
@@ -299,6 +299,124 @@ dialog.gloss::backdrop { background: rgba(30, 30, 30, .45); }
 .gl-item { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; font: 15px/1.3 var(--sans); padding: 8px 10px; border: 1px solid var(--line); border-radius: 7px; background: var(--paper); cursor: pointer; min-height: 52px; }
 .gl-item:hover { border-color: var(--green); background: var(--green-t); }
 .gl-item > span { overflow: hidden; text-align: center; pointer-events: none; } .gl-item .katex { font-size: 1em; }
+
+/* ---------- collapsible introduction of a walkthrough ---------- */
+details.why { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); font: 15.5px/1.45 var(--sans); }
+details.why > summary { list-style: none; cursor: pointer; padding: 9px 14px; display: flex; gap: 10px; align-items: baseline; }
+details.why > summary::-webkit-details-marker { display: none; }
+details.why > summary > b { font-weight: 600; color: var(--green-d); white-space: nowrap; }
+details.why > summary > .why-lead { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink2); }
+details.why > summary > i { font-style: normal; font-weight: 600; font-size: 14px; color: var(--green-d); text-decoration: underline; text-underline-offset: 3px; white-space: nowrap; }
+details.why[open] > summary > .why-lead { visibility: hidden; }
+details.why[open] > summary > i { font-size: 0; } details.why[open] > summary > i::after { content: "zwiń"; font-size: 14px; }
+details.why > .prose { padding: 0 14px 10px; font: 17px/1.55 var(--serif); }
+.walk-top { margin-bottom: 12px; grid-template-columns: minmax(0, 1fr); }
+details.why, details.why > summary { min-width: 0; }
+
+/* ---------- progress ---------- */
+.tprog { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font: 600 12.5px/1 var(--sans); }
+.tprog > span { padding: 5px 9px; border-radius: 999px; border: 1px solid var(--line2); color: var(--ink2); background: var(--paper); white-space: nowrap; }
+.tprog > span.full { border-color: var(--green); background: var(--green-t); color: var(--green-d); }
+.tprog > span.full::before { content: "✓ "; }
+.mission h4 .tick { display: none; margin-left: auto; color: var(--green); font-weight: 600; }
+.mission.done h4 .tick { display: inline; }
+.topic-foot { flex-wrap: nowrap; justify-content: flex-end; }
+.extras-h { margin: 26px 0 10px; }
+.extras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.xcard { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 20px; display: flex; gap: 18px; align-items: center; justify-content: space-between; }
+.xcard:hover { border-color: var(--green); }
+.xcard h3 { font-size: 20px; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.xcard h3 a { color: inherit; text-decoration: none; } .xcard h3 a:hover { color: var(--green-d); text-decoration: underline; text-underline-offset: 4px; }
+.xcard p { font: 15.5px/1.45 var(--sans); color: var(--ink2); margin: 4px 0 0; }
+p.clear { font: 14px/1.4 var(--sans); color: var(--ink3); margin-top: 16px; }
+.xhead { margin-bottom: 16px; }
+
+/* ---------- questions: self-check and "find the bug" ---------- */
+.quiz-page { display: grid; gap: 14px; max-width: 900px; }
+.qhead { display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.qhead .qscore { font: 16px var(--sans); margin: 0; } .qhead .note { max-width: 46em; }
+.qlist { display: grid; gap: 14px; }
+.qcard { display: grid; gap: 10px; }
+.qcard h3 { font: 600 12.5px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--green-d); }
+.qcard h3 i { font-style: normal; }
+.qtext p:last-child { margin-bottom: 0; }
+.qbody { display: grid; gap: 7px; }
+.qopt { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; align-items: center; text-align: left; font: 16px/1.4 var(--sans); color: var(--ink); padding: 9px 12px; border: 1px solid var(--line2); border-radius: 7px; background: var(--paper); cursor: pointer; min-height: 46px; }
+.qopt > i { font-style: normal; font-weight: 600; font-size: 13px; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--grey-t); color: var(--ink2); }
+.qopt:hover:not(:disabled) { border-color: var(--green); background: var(--green-t); }
+.qopt:disabled { cursor: default; }
+.qopt.right { border-color: var(--green); background: var(--green-t); } .qopt.right > i { background: var(--green); color: #fff; }
+.qopt.wrong { border-color: var(--red-t2); background: var(--red-t); color: var(--ink2); } .qopt.wrong > i { background: var(--red); color: #fff; }
+.qopt .katex, .qopt .katex [data-g] { cursor: inherit; }
+.qnum { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font: 15.5px var(--sans); }
+.qnum input { width: 140px; }
+.qfb { font: 15.5px/1.5 var(--sans); min-height: 1.5em; }
+.qfb p { margin: 0 0 .4em; } .qfb p:last-child { margin-bottom: 0; }
+.qfb.ok { background: var(--green-t); border: 1px solid var(--green-t2); border-radius: 7px; padding: 10px 12px; }
+.qfb.no { color: var(--red); }
+.chk { display: flex; gap: 8px; align-items: center; font: 14.5px var(--sans); color: var(--ink2); margin-top: 8px; cursor: pointer; }
+.bugs > .prose { margin-bottom: 14px; }
+.bugs .wnav .pills { margin-left: 6px; }
+.tbl.fixedt td .wrap { white-space: normal; display: block; line-height: 1.25; font-size: 13.5px; }
+
+/* ---------- current values in the explanation of a symbol ---------- */
+.gl-now { background: var(--grey-t); border: 1px solid var(--line); border-radius: 8px; padding: 2px 14px 10px; margin-top: 14px; }
+.gl-now p { margin: 0; font: 16px/1.5 var(--sans); }
+
+/* ---------- keyboard ---------- */
+.katex[tabindex]:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 4px; }
+.katex[tabindex]:focus:not(:focus-visible) { outline: none; }
+
+/* ---------- narrow screens ---------- */
+@media (max-width: 980px) {
+  .extras { grid-template-columns: minmax(0, 1fr); }
+  .topic-foot { justify-content: flex-start; flex-wrap: wrap; }
+}
+@media (max-width: 760px) {
+  .bar { position: static; }                       /* the bar wraps to several rows: do not let it cover the content */
+  .wnav { top: 0; }
+  .tabs { overflow-x: auto; } .tabs a { white-space: nowrap; padding-inline: 12px; }
+  .xcard { flex-direction: column; align-items: flex-start; gap: 10px; }
+  details.why > summary { flex-wrap: wrap; } details.why > summary > .why-lead { flex-basis: 100%; order: 3; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  details.why[open] > summary > .why-lead { display: none; }
+  .tblw, .card:has(> table) { overflow-x: auto; }
+  .gl-body { padding: 14px 16px 18px; }
+  .gl-bar { flex-wrap: wrap; }
+  p.hint { align-items: flex-start; }
+}
+
+/* ---------- compact page head: the picture and the current step fit on the first screen ---------- */
+.thead { align-items: baseline; margin-bottom: 0; }
+.thead.xhead { margin-bottom: 16px; }
+.thead .crumb { margin: 0; }
+.tabs { margin: 10px 0 14px; }
+p.hint { margin: -2px 0 12px !important; }
+.walk-top { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+details.why { flex: 1 1 420px; }
+details.why[open] { flex-basis: 100%; }
+.parambar { flex: 0 1 auto; }
+.lg-row { display: flex; flex-wrap: wrap; gap: 4px 18px; align-items: center; justify-content: space-between; }
+.lg-row .chk { margin-top: 0; }
+@media (max-width: 760px) { .pager .btn { white-space: normal; line-height: 1.25; max-width: 100%; } }
+
+/* ---------- one column: picture, buttons and the current step first; algorithm and table after them ---------- */
+@media (max-width: 980px) {
+  .walk-grid:not(.bug-grid) > .walk-left, .walk-grid:not(.bug-grid) > .walk-right { display: contents; }
+  .walk-grid:not(.bug-grid) > .walk-left > .card:first-child { order: 1; }
+  .walk-grid:not(.bug-grid) .wnav { order: 2; }
+  .walk-grid:not(.bug-grid) .stage { order: 3; }
+  .walk-grid:not(.bug-grid) > .walk-left > .card + .card { order: 4; }
+  .walk-grid:not(.bug-grid) > .walk-right > .card:not(.stage) { order: 5; }
+}
+@media (max-width: 760px) {
+  .bar-in { gap: 8px 12px; }
+  .bar .btn.gl-open { order: 2; margin-left: auto; }
+  .nav { order: 3; flex-basis: 100%; margin-left: 0; justify-content: space-between; }
+  .tabs { overflow-y: hidden; scrollbar-width: none; } .tabs::-webkit-scrollbar { display: none; }
+  .tabs a { padding: 9px 10px 8px; font-size: 15px; }
+  .thead h1 { flex-basis: 100%; }
+}
+@media (max-width: 760px) { .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; } }
 
 </style>
 </head>
@@ -358,7 +476,7 @@ const M = (() => {
     return [t / 2 - d, t / 2 + d];
   }
 
-  /* ---------- finite-difference gradients (Zadanie 1) ---------- */
+  /* ---------- finite-difference gradients ---------- */
   function numgrad(f, x, h, kind = 'central') {
     const g = new Array(x.length).fill(0), f0 = kind === 'forward' ? f(x) : 0;
     for (let i = 0; i < x.length; i++) {
@@ -451,7 +569,7 @@ const M = (() => {
   };
   const newton1 = (fn, x) => x - fn.g(x) / fn.d(x);
 
-  /* ---------- Michaelis–Menten (Zadanie 4); v = notebook data (numpy default_rng(2026), sigma = 4) ---------- */
+  /* ---------- Michaelis–Menten; v = reference data set (numpy default_rng(2026), sigma = 4) ---------- */
   const MM_S = [0.02, 0.06, 0.11, 0.22, 0.56, 1.10, 0.02, 0.06, 0.11, 0.22, 0.56, 1.10];
   const MM_V = [47.303701, 103.54293, 126.437683, 169.808439, 192.809589, 199.175453,
     49.228393, 103.795987, 132.952347, 163.321717, 193.136682, 202.402463];
@@ -550,11 +668,18 @@ const M = (() => {
    Shared UI: typesetting, number formatting, plots, controls, the step-by-step player.
    ===================================================================== */
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+/* progress and preferences kept in the browser (nothing leaves the device) */
+const Store = (() => {
+  const KEY = 'pmk-optymalizacja-v1'; let d = {};
+  try { d = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { d = {}; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* private mode: keep in memory */ } };
+  return { get: (k, def) => (k in d ? d[k] : def), set(k, v) { d[k] = v; save(); }, clear() { d = {}; save(); } };
+})();
 const KOPT = { throwOnError: false, output: 'html', strict: false, trust: true };
 const K = (t, disp = false) => {   // symbols are tagged first, so that each of them opens its glossary entry
   try {
     const html = katex.renderToString(annot(t), Object.assign({ displayMode: disp }, KOPT));
-    if (!html.includes('katex-error')) return html;
+    if (!html.includes('katex-error')) return html.includes('data-g') ? html.replace('<span class="katex">', '<span class="katex" tabindex="0">') : html;   // formulas with symbols can be reached with Tab; Enter opens their explanation
     (window.__kfall = window.__kfall || []).push(t);   // tagging failed for this formula: render it untagged
     return katex.renderToString(t, Object.assign({ displayMode: disp }, KOPT));
   } catch (e) { return `<code>${t}</code>`; }
@@ -576,6 +701,7 @@ function md(src, inline = false) {
   return s.replace(/[\u0001\u0002](\d+)[\u0001\u0002]/g, (m, i) => stash[+i]);
 }
 const mdi = s => md(s, true);
+const noTab = e => { e.querySelectorAll('.katex[tabindex]').forEach(k => k.removeAttribute('tabindex')); return e; };   // formulas inside buttons are not separate tab stops
 const box = (kind, label, body) => `<div class="box ${kind}"><span class="box-l">${label}</span>${md(body)}</div>`;
 
 /* ---------- numbers ---------- */
@@ -840,7 +966,7 @@ function Chips(o) {
   const w = el('div', 'ctl'), g = el('div', 'chips'); g.setAttribute('role', 'group');
   if (o.label) { w.append(el('span', 'ctl-l', mdi(o.label))); g.setAttribute('aria-label', o.aria || o.label.replace(/[$\\{}]/g, '')); }
   w.append(g); let val = o.value;
-  const btns = o.options.map(op => { const b = el('button', 'chip', mdi(op.label)); b.type = 'button'; b.addEventListener('click', () => api.set(op.v)); g.append(b); return [op.v, b]; });
+  const btns = o.options.map(op => { const b = noTab(el('button', 'chip', mdi(op.label))); b.type = 'button'; b.addEventListener('click', () => api.set(op.v)); g.append(b); return [op.v, b]; });
   const paint = () => btns.forEach(([v, b]) => { b.classList.toggle('on', v === val); b.setAttribute('aria-pressed', String(v === val)); });
   const api = { el: w, onchange: null, get value() { return val; }, set(v, fire = true) { val = v; paint(); if (fire && api.onchange) api.onchange(v); } };
   paint(); return api;
@@ -853,19 +979,21 @@ function Select(o) {
   s.addEventListener('change', () => api.onchange && api.onchange(s.value));
   return api;
 }
-function Btn(label, cls, fn) { const b = el('button', 'btn ' + (cls || ''), label); b.type = 'button'; b.addEventListener('click', fn); return b; }
+function Btn(label, cls, fn) { const b = noTab(el('button', 'btn ' + (cls || ''), label)); b.type = 'button'; b.addEventListener('click', fn); return b; }
 function Stats(rows) {
   const dl = el('dl', 'stats'), map = {};
   for (const [id, label, key] of rows) { const d = el('div'); if (key) d.dataset.g = key; d.innerHTML = `<dt>${mdi(label)}</dt><dd>—</dd>`; map[id] = d.lastChild; dl.append(d); }
   return { el: dl, set(vals) { for (const k in vals) { const v = vals[k], dd = map[k]; if (!dd) continue; if (v && typeof v === 'object') { dd.textContent = v.t; dd.className = v.c || ''; } else { dd.textContent = v; dd.className = ''; } } } };
 }
-function Missions(list) {
-  const w = el('div', 'missions');
+function Missions(id, list) {
+  const w = el('div', 'missions'), key = 'm:' + id, done = new Set(id ? Store.get(key, []) : []);
+  if (id) Store.set('mt:' + id, list.length);
   list.forEach((m, i) => {
-    const c = el('article', 'mission');
-    c.innerHTML = `<h4><i>Misja ${i + 1}</i><span>${mdi(m.t)}</span></h4><div>${md(m.q)}</div>`;
+    const c = el('article', 'mission' + (done.has(i) ? ' done' : ''));
+    c.innerHTML = `<h4><i>Misja ${i + 1}</i><span>${mdi(m.t)}</span><b class="tick" title="Odpowiedź była już otwierana">✓</b></h4><div>${md(m.q)}</div>`;
     if (m.acts) { const row = el('div', 'btns'); m.acts.forEach(([label, fn]) => row.append(Btn(mdi(label), 'sm', fn))); c.append(row); }
     const d = el('details'); d.innerHTML = `<summary>Pokaż odpowiedź</summary><div>${md(m.a)}</div>`; c.append(d);
+    d.addEventListener('toggle', () => { if (d.open && id && !done.has(i)) { done.add(i); c.classList.add('done'); Store.set(key, [...done]); } });
     w.append(c);
   });
   return w;
@@ -905,7 +1033,13 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) stopA
    at a time in a panel whose height is reserved for the tallest step, and the results table has a fixed number of rows. */
 function Walk(cfg) {
   const root = el('div', 'walk'), top = el('div', 'walk-top'), pv = {};
-  if (cfg.intro) top.append(el('div', 'prose', md(cfg.intro)));
+  if (cfg.intro) {   // one line by default, so that the picture and the steps fit on the first screen
+    const d = el('details', 'why'), lead = cfg.intro.trim().split(/\n\s*\n/)[0].replace(/^\*\*Po co\?\*\*\s*/, '');
+    d.innerHTML = `<summary><b>Po co ten temat?</b><span class="why-lead">${mdi(lead)}</span><i>rozwiń</i></summary><div class="prose">${md(cfg.intro)}</div>`;
+    noTab(d.querySelector('summary')); d.open = !!Store.get('why-open', false);
+    d.addEventListener('toggle', () => Store.set('why-open', d.open));
+    top.append(d);
+  }
   if (cfg.params) {
     const bar = el('div', 'parambar');
     cfg.params.forEach(p => { pv[p.id] = p.value; const ch = Chips(p); ch.onchange = v => { pv[p.id] = v; rebuild(); }; bar.append(ch.el); });
@@ -913,9 +1047,8 @@ function Walk(cfg) {
   }
   const grid = el('div', 'walk-grid'), left = el('div', 'walk-left'), right = el('div', 'walk-right');
   const visCard = el('section', 'card'), vis = cfg.visual(visCard);
-  left.append(visCard);
   let logCard = null;
-  if (cfg.logHead) { logCard = el('section', 'card'); left.append(logCard); }
+  if (cfg.logHead) logCard = el('section', 'card');
   const algo = el('section', 'card');
   algo.innerHTML = `<h3 class="card-h">${cfg.algo.title}</h3><ol class="algo">${cfg.algo.lines.map(l => { const ind = l.match(/^ */)[0].length / 4; return `<li class="${ind ? 'in' + ind : ''}"><span>${mdi(l.trim())}</span></li>`; }).join('')}</ol>`;
   const nav = el('div', 'wnav');
@@ -926,7 +1059,8 @@ function Walk(cfg) {
   const stage = el('section', 'card stage');
   stage.innerHTML = `<div class="stage-h"><h3 class="grp"></h3><ol class="pills" aria-label="Kroki tego etapu"></ol></div><div class="stage-in"></div><div class="stage-m" aria-hidden="true"></div>`;
   const grp = stage.querySelector('.grp'), pills = stage.querySelector('.pills'), inner = stage.querySelector('.stage-in'), meter = stage.querySelector('.stage-m');
-  right.append(nav, algo, stage);
+  left.append(visCard, algo);          // picture and algorithm stay in view; the step and the table of results scroll beside them
+  right.append(nav, stage); if (logCard) right.append(logCard);
   grid.append(left, right); root.append(top, grid);
 
   let frames = [], pos = 0, logRows = 0, measuredW = 0;
@@ -940,7 +1074,7 @@ function Walk(cfg) {
       const variants = f.quiz ? [f.html + QUIZ('m'), f.html + f.quiz.reveal + '<p class="fb ok">Zgadza się.</p>'] : [f.html];
       for (const v of variants) { meter.innerHTML = block(f, 1, v); hmax = Math.max(hmax, meter.offsetHeight); }
     }
-    meter.innerHTML = ''; inner.style.minHeight = Math.ceil(hmax) + 'px';
+    meter.innerHTML = ''; inner.style.minHeight = Math.ceil(hmax) + 1 + 'px';   // offsetHeight is rounded: one spare pixel keeps the cards below still
   }
   new ResizeObserver(() => { if (Math.abs(inner.clientWidth - measuredW) > 1) measure(); }).observe(stage);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => measure());   // text reflows once the web fonts arrive
@@ -985,14 +1119,25 @@ function Walk(cfg) {
     bar2.firstChild.style.width = (100 * (pos + 1) / frames.length).toFixed(1) + '%';
     if (inner.offsetHeight > parseFloat(inner.style.minHeight || 0) + 1) inner.style.minHeight = inner.offsetHeight + 'px';   // never shrink back
   }
-  function go(i) { pos = Math.max(0, Math.min(frames.length - 1, i)); show(); }
-  function rebuild() { frames = cfg.build(pv); logRows = Math.min(8, frames.filter(x => x.log).length); pos = 0; measure(); show(); }
+  const pkey = 'w:' + (cfg.id || '?'), defaults = JSON.stringify(pv);
+  function remember() {
+    if (!cfg.id) return;
+    const s = Store.get(pkey, {}), std = JSON.stringify(pv) === defaults;
+    Store.set(pkey, { n: frames.length, max: Math.max(s.max || 0, pos), pos: std ? pos : (s.pos || 0), done: !!s.done || pos === frames.length - 1 });
+  }
+  function go(i) { pos = Math.max(0, Math.min(frames.length - 1, i)); show(); remember(); }
+  function rebuild(first) {
+    frames = cfg.build(pv); logRows = Math.min(8, frames.filter(x => x.log).length); pos = 0;
+    if (first && cfg.id) { const s = Store.get(pkey, null); if (s && s.n === frames.length && s.pos > 0 && s.pos < frames.length - 1) pos = s.pos; }   // resume where the student stopped (a finished walkthrough starts again from the top)
+    measure(); show();
+  }
+  root._live = () => (cfg.live ? cfg.live(pv, frames[pos]) : null);
   root.tabIndex = -1;
   root.addEventListener('keydown', e => {
     if (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (e.key === 'ArrowRight') { go(pos + 1); e.preventDefault(); } else if (e.key === 'ArrowLeft') { go(pos - 1); e.preventDefault(); }
   });
-  rebuild();
+  rebuild(true);
   return { el: root };
 }
 
@@ -1469,7 +1614,7 @@ const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'c
 
 /* ---------- 3. the dialog ---------- */
 const Gloss = (() => {
-  let dlg, body, back, stack = [], ctx = [];
+  let dlg, body, back, stack = [], ctx = [], live = null;
   const resolve = key => { for (const c of ctx) if (GLOSS_CTX[c] && GLOSS_CTX[c][key]) return GLOSS_CTX[c][key]; return key; };
   function build() {
     dlg = el('dialog', 'gloss'); dlg.setAttribute('aria-labelledby', 'gloss-title');
@@ -1497,8 +1642,10 @@ const Gloss = (() => {
       if (key === 'xk') mods = mods.map(m => (m === 'subi' ? 'subk' : m));   // on the root-finding pages the subscript counts iterations
       mods = [...new Set(mods)];
       const inside = [...new Set((entry.inner || []).map(resolve))].filter(k => GLOSS[k] && k !== key);
+      const now = live && (live[key] || live[entry.orig]);
       body.innerHTML = `<div class="gl-sym">${K(entry.raw || g.s, true)}</div><h2 id="gloss-title">${g.t}</h2>
         <section><h3>Co to jest?</h3>${md(g.what)}</section>
+        ${now ? `<section class="gl-now"><h3>Bieżąca wartość</h3>${md(now)}</section>` : ''}
         ${mods.length ? `<section><h3>Jak czytać ten zapis</h3>${mods.map(m => md(G_NOTE[m])).join('')}</section>` : ''}
         ${inside.length ? `<section><h3>Symbole w tym zapisie</h3><div class="gl-list">${inside.map(k => `<button type="button" class="gl-item" data-key="${k}"><span>${K(GLOSS[k].s)}</span>${GLOSS[k].t}</button>`).join('')}</div></section>` : ''}
         <section><h3>Jak się to oblicza?</h3><ol>${g.how.map(h => `<li>${mdi(h)}</li>`).join('')}</ol></section>
@@ -1508,14 +1655,19 @@ const Gloss = (() => {
     }
     body.scrollTop = 0;
   }
-  function context(from) { ctx = []; for (let n = from; n; n = n.parentElement && n.parentElement.closest('[data-ctx]')) { if (n.dataset && n.dataset.ctx) ctx.push(n.dataset.ctx); if (!n.parentElement) break; } }
+  function context(from) {
+    live = null;   // current values supplied by the experiment the symbol was clicked in
+    for (let n = from; n; n = n.parentElement) if (typeof n._live === 'function') { try { live = n._live(); } catch (e) { live = null; } break; }
+    ctx = []; for (let n = from; n; n = n.parentElement && n.parentElement.closest('[data-ctx]')) { if (n.dataset && n.dataset.ctx) ctx.push(n.dataset.ctx); if (!n.parentElement) break; }
+  }
   function open(key, from) {
     if (!dlg) build();
     if (!dlg.open) { stack = []; context(from); }
+    const orig = key;
     key = key === '__index' ? key : resolve(key);
     if (key !== '__index' && !GLOSS[key]) return;
     const ds = (from && from.dataset) || {};
-    show({ key, mods: ds.m || '', raw: ds.r != null ? G_RAW[+ds.r] : null, inner: ds.r != null ? G_INNER[+ds.r] : null }, true);
+    show({ key, orig, mods: ds.m || '', raw: ds.r != null ? G_RAW[+ds.r] : null, inner: ds.r != null ? G_INNER[+ds.r] : null }, true);
     if (!dlg.open) dlg.showModal();
   }
   function pick(keys, from) {   // several symbols to choose from
@@ -1543,12 +1695,19 @@ const Gloss = (() => {
     if (!n || !n.dataset.g) return;
     e.preventDefault(); open(n.dataset.g, n);
   });
+  document.addEventListener('keydown', e => {   // keyboard: Tab to a formula, Enter or Space to explain its symbols
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const fm = document.activeElement; if (!fm || !fm.matches || !fm.matches('.katex[tabindex]')) return;
+    const tagged = [...fm.querySelectorAll('[data-g]')].filter(s => !s.parentElement.closest('[data-g]')); if (!tagged.length) return;
+    e.preventDefault();
+    if (tagged.length === 1) open(tagged[0].dataset.g, tagged[0]); else pick([...new Set(tagged.map(s => s.dataset.g))], fm);
+  });
   return { open };
 })();
 
 
 /* =====================================================================
-   Topic 1 — numerical gradient by central differences (Zadanie 1, part 1)
+   Topic 1 — numerical gradient by central differences
    ===================================================================== */
 TOPICS.push({
   id: 'gradient', n: 1, title: 'Gradient numeryczny (numerical gradient)', short: 'Gradient', task: 'Różniczkowanie numeryczne',
@@ -1558,6 +1717,7 @@ TOPICS.push({
   walk() {
     const fn = M.F.bowl, x = [-3, 4];
     return Walk({
+      id: 'gradient', live: pv => ({ hstep: R`$h=${tn(pv.h)}$`, x: R`$\mathbf{x}=(-3,\ 4)$` }),
       intro: R`**Po co?** Każda z omawianych tu metod optymalizacji korzysta z gradientu. W praktyce oblicza go mechanizm automatycznego różniczkowania (autograd), ale warto umieć wyznaczyć go samodzielnie metodą różnic skończonych (finite differences), czyli używając wyłącznie wartości funkcji. To także najprostszy sposób sprawdzenia, czy gradient obliczony inną metodą jest poprawny. Poniżej pełny rachunek dla jednego punktu.
 
 Oznaczenia w tych materiałach: $\mathbf{x}=(x_0,\ x_1)$ to punkt, a $x_0$ i $x_1$ to jego współrzędne, numerowane od zera, tak jak <code>x[0]</code> i <code>x[1]</code> w Pythonie.`,
@@ -1729,7 +1889,13 @@ Trzy najczęstsze błędy: modyfikowanie <code>x</code> w miejscu zamiast pracy 
     const setH = v => { S.h = v; hS.set(v, false); update(); };
     sel.onchange = setFn; hS.oninput = v => { S.h = v; update(); };
     pA.pickable((x, y) => { const v = FN[S.fn].view; S.x = [Math.max(v[0], Math.min(v[1], x)), Math.max(v[2], Math.min(v[3], y))]; recompute(); update(); });
-    const missions = Missions([
+    root._live = () => {
+      const fn = FN[S.fn], pair = v => `$${tv(v, 6)}$`;
+      return { hstep: R`$h=${tn(S.h, 2)}$`, x: `$${tv(S.x, 3)}$`, xcomp: `$${tv(S.x, 3)}$`, f: R`$f(\mathbf{x})=${tn(fn.f(S.x), 5)}$`, grad: 'ze wzoru: ' + pair(fn.g(S.x)),
+        cdiff: pair(M.numgrad(fn.f, S.x, S.h)), fdiff: pair(M.numgrad(fn.f, S.x, S.h, 'forward')),
+        graderr: `różnice centralne: $${tn(errOf(fn, S.h, 'central'), 3)}$; różnice w przód: $${tn(errOf(fn, S.h, 'forward'), 3)}$` };
+    };
+    const missions = Missions('gradient', [
       { t: 'Gradient a poziomice', q: R`Wybierz funkcję falistą i przeciągaj punkt po wykresie. **Zastanów się:** pod jakim kątem wektor gradientu przecina poziomice? Co stanie się z jego długością na wierzchołku wzniesienia?`,
         acts: [['Funkcja falista', () => setFn('wave')]],
         a: R`Gradient jest zawsze **prostopadły** do poziomicy i wskazuje kierunek wzrostu funkcji. Jego długość (norma) określa stromość zbocza w danym punkcie. W maksimum, w minimum i w punkcie siodłowym (saddle point) gradient się zeruje: $\nabla f=0$. Są to punkty stacjonarne (stationary points) i właśnie ich szukają wszystkie omawiane tu metody.` },
@@ -1797,8 +1963,17 @@ function TrajLab(cfg) {
   plots.append(fCard, plotCard('Historia kosztu <small>skala logarytmiczna</small>', pC, '<p class="note">Linia przerywana: próg 10⁻⁶. Wartości poniżej 10⁻¹⁴ są rysowane na dolnej krawędzi wykresu.</p>'));
   if (cfg.extra) plots.append(plotCard(cfg.extra.title, cfg.extra.plot, cfg.extra.legend || ''));
   main.append(info, status, plots, table);
-  if (cfg.missions) main.append(el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions(cfg.missions(api)));
+  if (cfg.missions) main.append(el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions(cfg.mid, cfg.missions(api)));
   root.append(side, main);
+  root._live = () => {   // current values, shown when a symbol is explained
+    const fn = api.fn, last = r => r.pts[r.pts.length - 1], per = f => runs.map(r => (runs.length > 1 ? r.m.name + ': ' : '') + f(r)).join('; ');
+    const o = { kiter: `$k=${S.k}$`, x: per(r => `$${tv(last(r), 4)}$`), f: per(r => `$f=${tn(fn.f(last(r)), 5)}$`), fstar: `$f^{*}=${tn(fn.fmin, 5)}$`,
+      grad: per(r => `$${tv(fn.g(last(r)), 4)}$`), norm: per(r => R`$\lVert\nabla f\rVert=${tn(M.norm(fn.g(last(r))), 4)}$`),
+      hit: per(r => (r.hit === null ? 'próg nie został jeszcze osiągnięty' : `$k=${r.hit}$`)) };
+    o.xcomp = o.x; o.gvec = o.grad;
+    if (fn.eig) { o.mcurv = `$m=${fn.eig[0]}$`; o.Lip = `$L=${fn.eig[1]}$`; o.kappa = R`$\kappa=L/m=${tn(fn.eig[1] / fn.eig[0])}$`; }
+    return Object.assign(o, cfg.live ? cfg.live(api) : {});
+  };
 
   function build() {
     const fn = api.fn;
@@ -1856,7 +2031,7 @@ function TrajLab(cfg) {
 }
 
 /* =====================================================================
-   Topic 2 — gradient descent and the step-size condition (Zadanie 1, part 2)
+   Topic 2 — gradient descent and the step-size condition
    ===================================================================== */
 TOPICS.push({
   id: 'spadek', n: 2, title: 'Metoda spadku gradientu (gradient descent)', short: 'Spadek gradientu', task: 'Metoda pierwszego rzędu',
@@ -1866,6 +2041,7 @@ TOPICS.push({
   walk() {
     const fn = M.F.bowl, x0 = [-3, 4];
     return Walk({
+      id: 'spadek', live: pv => ({ alpha: R`$\alpha=${tn(pv.a)}$`, Lip: '$L=5$', mcurv: '$m=1$', kappa: R`$\kappa=L/m=5$` }),
       intro: R`**Po co?** Metoda spadku gradientu (gradient descent), w polskiej literaturze nazywana też metodą gradientu prostego, to najprostszy algorytm minimalizacji i punkt wyjścia dla wszystkich pozostałych. Jest to pętla powtarzająca jedną operację: krok w kierunku przeciwnym do gradientu. Prześledź tę operację na liczbach, zanim zapiszesz ją w kodzie.
 
 Numer iteracji zapisujemy w indeksie górnym, w nawiasie: $\mathbf{x}^{(k)}$ oznacza punkt po $k$ krokach. Dzięki temu nie myli się on z numerem współrzędnej ($x_0$, $x_1$). W literaturze ten sam wzór zapisuje się często jako $x_{k+1}=x_k-\alpha\,\nabla f(x_k)$. Liczba $\alpha$ to współczynnik uczenia (learning rate), nazywany też tempem uczenia; w teorii optymalizacji mówi się o długości kroku (step size).`,
@@ -1983,7 +2159,8 @@ Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz
     let aS;
     const RANGE = { bowl: [0.005, 0.6, 0.005, 0.05], valley: [0.0002, 0.03, 0.0002, 0.0198], cosh: [0.01, 1, 0.01, 0.1], twin: [0.005, 0.3, 0.005, 0.05] };
     const lab = TrajLab({
-      fn: 'bowl', fns: ['bowl', 'valley', 'cosh', 'twin'], speed: 10,
+      fn: 'bowl', fns: ['bowl', 'valley', 'cosh', 'twin'], speed: 10, mid: 'spadek',
+      live: api => Object.assign({ alpha: R`$\alpha=${tn(aS.value, 4)}$` }, api.fn.eig ? { alphaopt: R`$\alpha^{*}=${tn(2 / (api.fn.eig[0] + api.fn.eig[1]), 3)}$` } : {}),
       controls(api) {
         aS = Slider({ label: R`Współczynnik uczenia $\alpha$`, aria: 'współczynnik uczenia alfa', min: 0.005, max: 0.6, step: 0.005, value: 0.05 });
         aS.oninput = () => api.reset();
@@ -2031,7 +2208,7 @@ Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz
 
 
 /* =====================================================================
-   Topic 3 — momentum (heavy-ball), torch.optim.SGD convention (Zadanie 2)
+   Topic 3 — momentum (heavy-ball), torch.optim.SGD convention
    ===================================================================== */
 TOPICS.push({
   id: 'moment', n: 3, title: 'Metoda z momentem (momentum)', short: 'Moment', task: 'Metoda pierwszego rzędu',
@@ -2041,6 +2218,7 @@ TOPICS.push({
   walk() {
     const fn = M.F.bowl, x0 = [-3, 4], a = 0.1;
     return Walk({
+      id: 'moment', live: pv => ({ alpha: R`$\alpha=0.1$`, beta: R`$\beta=${tn(pv.b)}$`, Lip: '$L=5$', mcurv: '$m=1$', kappa: R`$\kappa=L/m=5$` }),
       intro: R`**Po co?** Zwykła metoda spadku gradientu w każdym kroku „zapomina” o dotychczasowym przebiegu. Metoda z momentem (momentum), nazywana też metodą ciężkiej kuli (heavy-ball method), dodaje jej pamięć: bufor prędkości (velocity buffer) $\mathbf{v}$, w którym kumulują się kolejne gradienty. Poniższa reguła jest zapisana w tej samej konwencji co <code>torch.optim.SGD</code>.
 
 Poniżej ta sama funkcja i ten sam punkt startowy co w poprzednim temacie ($\alpha=0.1$), co ułatwia porównanie obu metod.`,
@@ -2150,7 +2328,8 @@ Dobrym przykładem testowym jest funkcja o wąskiej dolinie $f(\mathbf{x})=\tfra
     let aS, bS;
     const RANGE = { valley: [0.0002, 0.04, 0.0002, 0.0198], bowl: [0.005, 0.8, 0.005, 0.1], cosh: [0.01, 1, 0.01, 0.1], twin: [0.005, 0.3, 0.005, 0.05] };
     return TrajLab({
-      fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 30,
+      fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 30, mid: 'moment',
+      live: () => ({ alpha: R`$\alpha=${tn(aS.value, 4)}$`, beta: R`$\beta=${tn(bS.value, 4)}$` }),
       controls(api) {
         aS = Slider({ label: R`Współczynnik uczenia $\alpha$ (wspólny)`, aria: 'współczynnik uczenia alfa', min: 0.0002, max: 0.04, step: 0.0002, value: 0.0198 });
         bS = Slider({ label: R`Współczynnik momentu $\beta$`, aria: 'współczynnik momentu beta', min: 0, max: 0.99, step: 0.001, value: 0.669, hint: R`Dla $\beta=0$ obie metody są identyczne.` });
@@ -2206,6 +2385,7 @@ TOPICS.push({
   walk() {
     const fn = M.F.valley, x = [5, 5];
     return Walk({
+      id: 'armijo', live: pv => ({ c1: R`$c_1=${tn(pv.c1)}$`, rho: R`$\rho=${tn(pv.rho)}$` }),
       intro: R`**Po co?** W poprzednich tematach współczynnik uczenia $\alpha$ trzeba było dobierać ręcznie: zbyt duży prowadził do rozbieżności, a zbyt mały do bardzo wolnej zbieżności. Poszukiwanie w kierunku (line search) dobiera długość kroku automatycznie, osobno w każdej iteracji. Najprostszy wariant to metoda z nawrotami (backtracking): zaczynamy od długiego kroku i skracamy go, dopóki nie zostanie spełniony warunek Armijo. Poniżej pełny przykład liczbowy.`,
       params: [
         { id: 'c1', label: R`Stała $c_1$`, value: 1e-4, options: [{ v: 1e-4, label: '$10^{-4}$ (wartość typowa)' }, { v: 0.3, label: '$0.3$' }] },
@@ -2297,7 +2477,11 @@ Koszt: $${tn(r.f0)}\ \to\ ${tn(last.phi, 5)}$ po $${r.trials.length}$ próbach, 
     const RANGE = { valley: [0.0002, 0.03, 0.0002, 0.0198], bowl: [0.005, 0.6, 0.005, 0.1], cosh: [0.01, 1, 0.01, 0.1], twin: [0.005, 0.4, 0.005, 0.05] };
     const pA = new Plot({ ylog: true, xlabel: 'k', ylabel: R`\alpha_k`, aria: 'Długość kroku przyjęta w kolejnych iteracjach' });
     return TrajLab({
-      fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 30,
+      fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 30, mid: 'armijo',
+      live: api => { const as = api.runs[1] ? api.runs[1].st.as : []; return {
+        c1: R`$c_1=${tn(cS.value, 2)}$`, rho: R`$\rho=${tn(rS.value)}$`,
+        alpha: R`stały współczynnik: $\alpha=${tn(aS.value, 4)}$; ostatnia długość kroku zaakceptowana przez poszukiwanie w kierunku: ` + (as.length ? R`$\alpha=${tn(as[as.length - 1], 4)}$` : 'jeszcze nie wykonano kroku'),
+        evals: api.runs.map(r => r.m.name + ': ' + r.st.ev).join('; ') }; },
       controls(api) {
         cS = Slider({ label: R`Stała $c_1$ w warunku Armijo`, aria: 'stała c1', min: 1e-4, max: 0.9, value: 1e-4, log: true, sig: 2 });
         rS = Slider({ label: R`Współczynnik skracania $\rho$`, aria: 'współczynnik skracania ro', min: 0.1, max: 0.9, step: 0.05, value: 0.5 });
@@ -2348,7 +2532,7 @@ Koszt: $${tn(r.f0)}\ \to\ ${tn(last.phi, 5)}$ po $${r.trials.length}$ próbach, 
 
 
 /* =====================================================================
-   Topic 5 — Newton's method: 1-D root finding and n-D minimisation (Zadanie 3)
+   Topic 5 — Newton's method: 1-D root finding and n-D minimisation
    ===================================================================== */
 function switcher(label, options, builders) {
   const wrap = el('div'), host = el('div'), cache = {};
@@ -2373,6 +2557,7 @@ TOPICS.push({
   walkRoot() {
     const fn = M.G.sqrt2, root = fn.root;
     return ctxWalk('newton1', {
+      id: 'newton-a',
       intro: R`**Po co?** Metoda Newtona, nazywana też metodą stycznych, wyznacza pierwiastek równania $g(x)=0$. Idea: równanie nieliniowe trudno rozwiązać wprost, ale liniowe łatwo. Zastępujemy więc krzywą jej **styczną** i wyznaczamy miejsce zerowe stycznej. Klasyczny przykład: $g(x)=x^2-2$, którego pierwiastkiem jest $\sqrt2$.`,
       params: [{ id: 'x0', label: 'Punkt startowy $x_0$', value: 1, options: [{ v: 1, label: '$1$' }, { v: 3, label: '$3$' }, { v: 0.3, label: '$0.3$' }] }],
       algo: {
@@ -2400,7 +2585,7 @@ TOPICS.push({
             const hw = Math.max(3.2 * err, 0.004);
             if (zoom) p.setView(root - hw, root + hw, fn.g(root - hw), fn.g(root + hw));
             else { const hi = Math.max(3.4, ...xs.map(v => v * 1.08)); p.setView(-0.4, hi, -3, Math.max(8, fn.g(hi))); }
-            note.textContent = zoom ? `Powiększenie wokół pierwiastka: szerokość okna ${num(2 * hw, 2)}.` : '';
+            note.textContent = zoom ? `Powiększenie wokół pierwiastka: szerokość okna ${num(2 * hw, 2)}.` : '\u00a0';   // the line is always there, so the card keeps its height
             p.draw = q => {
               q.hline(0, { color: C.ink3 });
               q.fn(fn.g, { color: C.black, width: 2.4 });
@@ -2474,6 +2659,7 @@ W przypadku wielowymiarowym pochodną zastępuje gradient, drugą pochodną hesj
   walkMin() {
     const fn = M.F.cosh, x0 = [4, 3], aGD = 0.1;
     return Walk({
+      id: 'newton-b',
       intro: R`**Po co?** Metoda spadku gradientu wykorzystuje tylko nachylenie funkcji. Metoda Newtona wykorzystuje także jej **krzywiznę**: w bieżącym punkcie buduje model kwadratowy funkcji (rozwinięcie Taylora drugiego rzędu) i przechodzi bezpośrednio do jego minimum. Poniżej te operacje wykonano krok po kroku dla funkcji zbudowanej z cosinusów hiperbolicznych.`,
       algo: {
         title: 'Algorytm: metoda Newtona dla minimalizacji',
@@ -2626,7 +2812,12 @@ ${k === 2 ? 'Z dala od minimum postęp jest umiarkowany: model kwadratowy słabo
     const setFn = (id, x0) => { S.fn = id; sel.set(id, false); const g = G(); xS.setRange(g.view[0], g.view[1], 0.01, x0 ?? g.x0); reset(); };
     sel.onchange = v => setFn(v); xS.oninput = () => reset();
     p.pickable(x => { const v = G().view; reset(parseFloat(Math.max(v[0], Math.min(v[1], x)).toFixed(2))); });
-    main.append(el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions([
+    root._live = () => {
+      const g = G(), k = S.xs.length - 1, x = S.xs[k], v = R`$x_{${k}}=${tn(x, 10)}$`;
+      return { xk: v, xcomp: v, xscal: v, kiter: `$k=${k}$`, gfun: R`$g(x_{${k}})=${tn(g.g(x), 5)}$`, gprime: R`$g'(x_{${k}})=${tn(g.d(x), 5)}$`,
+        xstar: R`$x^{*}=${g.root.toFixed(10)}$`, abs: R`$|x_{${k}}-x^{*}|=${tn(Math.abs(x - g.root), 3)}$`, digits: 'około ' + digits(Math.abs(x - g.root)) };
+    };
+    main.append(el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions('newton-a', [
       { t: 'Ile kroków do dziesięciu poprawnych cyfr?', q: R`Równanie $x^2-2=0$, punkt startowy $x_0=1$. **Zastanów się:** po ilu krokach przybliżenie będzie miało $10$ poprawnych cyfr: po pięciu czy po dwudziestu?`,
         acts: [['Ustaw $x_0=1$', () => setFn('sqrt2', 1)]],
         a: R`Po czterech. Liczba poprawnych cyfr rośnie w przybliżeniu następująco: $0,\ 1,\ 2,\ 5,\ 11,\ 16$. Na tym polega zbieżność kwadratowa: liczba poprawnych cyfr mniej więcej podwaja się w każdym kroku.` },
@@ -2649,7 +2840,8 @@ ${k === 2 ? 'Z dala od minimum postęp jest umiarkowany: model kwadratowy słabo
     const RANGE = { cosh: [0.01, 1, 0.01, 0.1], bowl: [0.005, 0.6, 0.005, 0.1], valley: [0.0002, 0.03, 0.0002, 0.0198], twin: [0.005, 0.3, 0.005, 0.05] };
     const kind = (r, fn) => { const e = M.eig2(fn.H(r.pts[r.pts.length - 1])); return e[0] > 1e-9 ? 'dodatnio określony' : e[1] < -1e-9 ? '<span style="color:var(--red)">ujemnie określony</span>' : '<span style="color:var(--red)">nieokreślony</span>'; };
     return TrajLab({
-      fn: 'cosh', fns: ['cosh', 'bowl', 'valley', 'twin'], speed: 3, maxSteps: 2000,
+      fn: 'cosh', fns: ['cosh', 'bowl', 'valley', 'twin'], speed: 3, maxSteps: 2000, mid: 'newton-b',
+      live: () => ({ alpha: R`spadek gradientu: $\alpha=${tn(aS.value, 4)}$; metoda Newtona nie ma współczynnika uczenia` }),
       controls(api) {
         aS = Slider({ label: R`Współczynnik uczenia $\alpha$ (spadek gradientu)`, aria: 'współczynnik uczenia alfa', min: 0.01, max: 1, step: 0.01, value: 0.1, hint: 'Metoda Newtona nie ma współczynnika uczenia.' });
         aS.oninput = () => api.reset();
@@ -2682,7 +2874,7 @@ ${k === 2 ? 'Z dala od minimum postęp jest umiarkowany: model kwadratowy słabo
 
 
 /* =====================================================================
-   Topic 6 — Gauss–Newton for nonlinear least squares, Michaelis–Menten kinetics (Zadanie 4)
+   Topic 6 — Gauss–Newton for nonlinear least squares, Michaelis–Menten kinetics
    ===================================================================== */
 const MM_LEVELS = [60, 90, 150, 300, 600, 1200, 2500, 5000, 10000, 20000, 40000, 80000];
 function mmDataPlot(ratio = '1 / 0.66') { return new Plot({ ratio, xlabel: 's', ylabel: 'v', aria: 'Pomiary szybkości reakcji i krzywa modelu Michaelisa-Menten' }).setView(0, 1.2, 0, 260); }
@@ -2704,6 +2896,7 @@ TOPICS.push({
   walk() {
     const P = M.mm();
     return Walk({
+      id: 'gauss-newton',
       intro: R`**Po co?** Dopasowanie modelu do danych to minimalizacja sumy kwadratów **reszt** (residuals), czyli różnic między wartościami modelu a pomiarami. Ta szczególna postać funkcji kosztu pozwala zbudować krok Newtona bez obliczania hesjanu: wystarczy jakobian (Jacobian) reszt, czyli macierz ich pierwszych pochodnych. Poniżej metoda Gaussa–Newtona krok po kroku na przykładowych danych: $12$ pomiarach szybkości reakcji enzymatycznej.`,
       params: [{ id: 's', label: R`Punkt startowy $(V_{\max},\ K_m)$`, value: 'a', options: [{ v: 'a', label: '$(150,\\ 0.1)$' }, { v: 'b', label: '$(280,\\ 0.03)$' }] }],
       algo: {
@@ -2872,7 +3065,13 @@ Zwróć uwagę na wymiary: jakobian jest macierzą $12\times2$, wektor reszt ma 
     sig.onchange = () => { makeData(); reset(); }; lamS.oninput = () => reset();
     pP.pickable((x, y) => { S.th0 = [parseFloat(Math.max(45, Math.min(415, x)).toFixed(0)), parseFloat(Math.max(0.005, Math.min(0.495, y)).toFixed(3))]; reset(); });
     const set = (th0, lam, data) => { if (data !== undefined) { sig.set(data, false); makeData(); } S.th0 = th0; lamS.set(lam, false); reset(); runner.start(); };
-    main.append(info, status, plots, stats.el, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions([
+    root._live = () => {
+      const th = path[path.length - 1], st = M.gnStep(P, th, lamS.value), e = M.eig2(st.A), c = `$${tn(costs[costs.length - 1], 6)}$`, kap = R`$\kappa(J^{\top}J)=${tn(e[1] / e[0], 3)}$`;
+      return { theta: `$${tv(th, 5)}$`, Vmax: R`$V_{\max}=${tn(th[0], 6)}$`, Km: `$K_m=${tn(th[1], 4)}$`, cost: c, f: c, kiter: `$k=${path.length - 1}$`,
+        lambda: R`$\lambda=${tn(lamS.value)}$`, sigma: R`$\sigma=${sig.value === 'nb' ? 4 : sig.value}$`, cond: kap, kappa: kap, JtJ: `$${tm(st.A, 4)}$`,
+        p: st.p ? `następna poprawka: $${tv(st.p, 3)}$` : 'układu nie da się rozwiązać', r: R`największa co do modułu reszta: $${tn(Math.max(...st.r.map(Math.abs)), 4)}$` };
+    };
+    main.append(info, status, plots, stats.el, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions('gauss-newton', [
       { t: 'Przykład podstawowy', q: R`Dane przykładowe, punkt startowy $(150,\ 0.1)$, $\lambda=0$. **Zastanów się:** ile kroków wystarczy, aby krzywa dopasowała się do punktów pomiarowych? Porównaj to z tysiącami kroków metody spadku gradientu.`,
         acts: [['Uruchom przykład', () => set([150, 0.1], 0, 'nb')]],
         a: R`Od czterech do pięciu kroków. Wynik: $V_{\max}\approx214.687$, $K_m\approx0.06720$, koszt około $52.69$. Takie same wartości zwraca funkcja biblioteczna <code>scipy.optimize.least_squares</code>.` },
@@ -2923,6 +3122,7 @@ TOPICS.push({
   walk() {
     const P = M.pk(1), th0 = M.PK_START, runs = M.pkRuns(P, th0), fit = runs.gn.th, e = v => v.map(Math.exp);
     return Walk({
+      id: 'pk',
       intro: R`**Po co?** To studium przypadku łączy wszystkie poprzednie tematy: budujemy model i funkcję reszt, a parametry wyznaczamy poznanymi metodami. Poniżej pełny tok postępowania dla pacjenta nr 1: od surowych pomiarów do okresu półtrwania leku.`,
       algo: {
         title: 'Plan obliczeń',
@@ -3082,7 +3282,13 @@ Wyniki dla pacjenta 1, z którymi możesz porównać swoje: $k_a\approx${tn(ka, 
     const manual = () => { prev = null; th = [Math.log(kaS.value), Math.log(keS.value), Math.log(vS.value)]; hist.push(P.cost(th)); status.className = 'status'; status.textContent = ''; draw(); };
     kaS.oninput = keS.oninput = vS.oninput = manual; sel.onchange = v => load(v);
     const pick = id => { sel.set(id, false); load(id); };
-    main.append(info, status, plots, stats.el, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions([
+    root._live = () => {
+      const [a, b, v] = th.map(Math.exp), tm = Math.log(a / b) / (a - b), c = `$${tn(P.cost(th), 5)}$`, vol = R`$V/F=${tn(v, 4)}$ L`;
+      return { ka: R`$k_a=${tn(a, 4)}$ 1/h`, ke: R`$k_e=${tn(b, 4)}$ 1/h`, vol, VF: vol, costnow: c, cost: c, f: c, bestcost: `$${tn(cmp.gn.fs[cmp.gn.fs.length - 1], 5)}$`,
+        thalf: R`$t_{1/2}=\ln 2/k_e=${tn(Math.log(2) / b, 4)}$ h`, tmax: R`$t_{\max}=${tn(tm, 3)}$ h`, Cmax: R`$C_{\max}=${tn(P.model(th, tm), 4)}$ mg/L`,
+        dose: R`$D=${tn(P.D, 4)}$ mg`, theta: `$${tv(th, 4)}$`, thetaj: `$${tv(th, 4)}$` };
+    };
+    main.append(info, status, plots, stats.el, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions('pk', [
       { t: 'Wpływ poszczególnych parametrów', q: R`Zmieniaj położenie tylko **jednego** suwaka naraz. Przed każdą zmianą **zastanów się**, która część krzywej się zmieni: faza narastania, maksimum czy faza eliminacji?`,
         acts: [['Domyślny punkt startowy', () => setTheta(M.PK_START, true)]],
         a: R`Stała $k_a$ wpływa na początek krzywej: większa wartość oznacza szybsze narastanie oraz wcześniejsze i wyższe maksimum, natomiast faza eliminacji prawie się nie zmienia. Stała $k_e$ wpływa na fazę eliminacji: większa wartość oznacza szybszy spadek stężenia i krótszy okres półtrwania. Objętość $V$ skaluje całą krzywą w pionie: dwukrotnie większa objętość dystrybucji oznacza dwukrotnie mniejsze stężenia.` },
@@ -3106,12 +3312,304 @@ Wyniki dla pacjenta 1, z którymi możesz porównać swoje: $k_a\approx${tn(ka, 
 
 
 /* =====================================================================
-   Menu, routing (#topic or #topic-lab) and page chrome
+   Self-check quizzes (one per topic), the "compare the methods" page and the "find the bug" page
+   ===================================================================== */
+
+/* ---------- a question with immediate feedback (multiple choice or a number) ----------
+   q: { q, opts[], ok, why }  or  { q, num, tol, why };  st: { t: tries, ok, shown } kept by the caller */
+function Question(q, n, st, onChange, label = 'Pytanie') {
+  const c = el('article', 'card qcard');
+  c.innerHTML = `<h3><i>${label} ${n}</i></h3><div class="qtext">${md(q.q)}</div><div class="qbody"></div><div class="qfb" role="status"></div>`;
+  const body = c.querySelector('.qbody'), fb = c.querySelector('.qfb');
+  const solved = () => { fb.className = 'qfb ok'; fb.innerHTML = `<p><strong>${st.shown ? 'Rozwiązanie.' : st.t === 1 ? 'Dobrze, za pierwszym razem.' : 'Dobrze.'}</strong></p>` + md(q.why); };
+  if (q.opts) {
+    const btns = q.opts.map((o, i) => {
+      const b = noTab(el('button', 'qopt', `<i>${'ABCD'[i]}</i><span>${mdi(o)}</span>`)); b.type = 'button';
+      b.addEventListener('click', () => {
+        if (st.ok) return;
+        st.t = (st.t || 0) + 1;
+        if (i === q.ok) { st.ok = true; paint(); solved(); } else { (st.bad = st.bad || []).push(i); paint(); fb.className = 'qfb no'; fb.innerHTML = '<p><strong>To nie ta odpowiedź.</strong> Zastanów się jeszcze raz i wybierz inną.</p>'; }
+        onChange();
+      });
+      body.append(b); return b;
+    });
+    const paint = () => btns.forEach((b, i) => { b.classList.toggle('right', !!st.ok && i === q.ok); b.classList.toggle('wrong', (st.bad || []).includes(i)); b.disabled = !!st.ok || (st.bad || []).includes(i); });
+    paint(); if (st.ok) solved();
+  } else {
+    const id = 'f' + (++UID), f = el('form', 'qnum');
+    f.innerHTML = `<label for="${id}">Twój wynik:</label><input id="${id}" type="text" inputmode="decimal" autocomplete="off" spellcheck="false"><button class="btn sm pri" type="submit">Sprawdź</button><button class="btn sm link" type="button" hidden>Pokaż rozwiązanie</button>`;
+    const inp = f.querySelector('input'), show = f.querySelector('button[type=button]');
+    const lock = () => { inp.disabled = true; f.querySelector('button[type=submit]').disabled = true; show.hidden = true; };
+    f.addEventListener('submit', e => {
+      e.preventDefault(); if (st.ok || st.shown) return;
+      const v = parseFloat(String(inp.value).replace(',', '.'));
+      if (!Number.isFinite(v)) { fb.className = 'qfb no'; fb.innerHTML = '<p>Wpisz liczbę.</p>'; return; }
+      st.t = (st.t || 0) + 1;
+      if (Math.abs(v - q.num) <= (q.tol || 5e-3) * Math.max(1, Math.abs(q.num))) { st.ok = true; st.v = String(inp.value).trim().slice(0, 24); lock(); solved(); }
+      else { fb.className = 'qfb no'; fb.innerHTML = '<p><strong>To jeszcze nie ten wynik.</strong> Sprawdź znaki i kolejność działań.</p>'; if (st.t >= 2) show.hidden = false; }
+      onChange();
+    });
+    show.addEventListener('click', () => { st.shown = true; lock(); solved(); onChange(); });
+    body.append(f);
+    if (st.ok || st.shown) { if (st.v) inp.value = st.v; lock(); solved(); } else if ((st.t || 0) >= 2) show.hidden = false;
+  }
+  return c;
+}
+
+const QUIZ = {
+  gradient: [
+    { q: R`Dana jest funkcja $f(\mathbf{x})=x_0^2+3\,x_1$ i punkt $\mathbf{x}=(2,\ 1)$. Oblicz różnicą centralną z krokiem $h=0.5$ przybliżenie pochodnej $\partial f/\partial x_0$.`, num: 4, tol: 1e-3,
+      why: R`Przesuwamy tylko $x_0$: $f(2.5,\ 1)=6.25+3=9.25$ oraz $f(1.5,\ 1)=2.25+3=5.25$. Iloraz: $(9.25-5.25)/(2\cdot0.5)=4$. Wynik jest dokładny, bo funkcja jest kwadratowa względem $x_0$.` },
+    { q: R`Jak zmienia się błąd obcięcia różnic centralnych, gdy krok $h$ maleje dziesięciokrotnie?`, opts: ['Maleje dziesięciokrotnie.', 'Maleje stukrotnie.', 'Nie zmienia się.', 'Rośnie dziesięciokrotnie.'], ok: 1,
+      why: R`Błąd obcięcia różnic centralnych jest proporcjonalny do $h^2$, więc dziesięciokrotnie mniejszy krok daje stukrotnie mniejszy błąd. Dla różnic w przód błąd jest proporcjonalny do $h$.` },
+    { q: R`Dlaczego dla bardzo małego kroku, na przykład $h=10^{-13}$, gradient numeryczny staje się niedokładny?`, opts: ['Bo rośnie błąd obcięcia szeregu Taylora.', 'Bo odejmujemy dwie prawie równe liczby, a wynik dzielimy przez bardzo małą liczbę.', 'Bo funkcja przestaje być różniczkowalna.', 'Bo krok jest mniejszy od epsilonu maszynowego.'], ok: 1,
+      why: R`Wartości funkcji w obu punktach różnią się dopiero na ostatnich cyfrach znaczących. Odejmowanie je znosi, a dzielenie przez $2h$ wzmacnia błąd zaokrągleń do rzędu $\varepsilon/h$. Błąd obcięcia jest wtedy pomijalny.` },
+    { q: R`Ile obliczeń wartości funkcji wymaga gradient numeryczny metodą różnic centralnych dla funkcji $n$ zmiennych?`, opts: ['$n$', '$n+1$', '$2n$', '$n^2$'], ok: 2,
+      why: R`Dla każdej z $n$ współrzędnych obliczamy funkcję w dwóch punktach: przesuniętym o $+h$ i o $-h$. Różnice w przód wymagają $n+1$ obliczeń, ale są mniej dokładne.` },
+    { q: R`Ile wynosi gradient gładkiej funkcji w punkcie, w którym osiąga ona minimum?`, opts: ['Jest wektorem zerowym.', 'Jest prostopadły do poziomicy i ma długość $1$.', 'Jest równy wartości funkcji w tym punkcie.', 'Wskazuje kierunek najszybszego spadku.'], ok: 0,
+      why: R`W minimum funkcja nie rośnie ani nie maleje w żadnym kierunku, więc wszystkie pochodne cząstkowe są równe zeru. Warunek $\nabla f=0$ spełniają też maksima i punkty siodłowe.` },
+  ],
+  spadek: [
+    { q: R`Dana jest funkcja $f(\mathbf{x})=\tfrac12\big(x_0^2+4\,x_1^2\big)$, punkt $\mathbf{x}^{(0)}=(2,\ 1)$ i współczynnik uczenia $\alpha=0.1$. Oblicz współrzędną $x_1$ punktu po jednym kroku metody spadku gradientu.`, num: 0.6, tol: 1e-3,
+      why: R`Gradient: $\nabla f=(x_0,\ 4x_1)=(2,\ 4)$. Krok: $-\alpha\nabla f=(-0.2,\ -0.4)$. Nowy punkt: $(1.8,\ 0.6)$, więc $x_1=0.6$.` },
+    { q: R`Dla funkcji kwadratowej o krzywiznach $m=1$ i $L=4$ metoda spadku gradientu jest zbieżna, gdy współczynnik uczenia spełnia warunek:`, opts: [R`$\alpha<0.25$`, R`$\alpha<0.5$`, R`$\alpha<1$`, R`$\alpha<2$`], ok: 1,
+      why: R`Granica stabilności to $2/L=2/4=0.5$. Decyduje największa krzywizna, bo w tym kierunku mnożnik błędu $1-\alpha L$ najszybciej przekracza $-1$.` },
+    { q: R`Dla funkcji z $L=5$ ustawiono $\alpha=0.38$. Mnożnik błędu w kierunku stromym wynosi $1-\alpha L=-0.9$. Co zobaczysz na wykresie trajektorii?`, opts: ['Gładkie zejście do minimum bez przeskoków.', 'Przeskakiwanie na przemian na obie strony doliny, z coraz mniejszym wychyleniem.', 'Przeskakiwanie na obie strony doliny, z coraz większym wychyleniem.', 'Punkt, który nie rusza się z miejsca.'], ok: 1,
+      why: R`Ujemny mnożnik oznacza zmianę znaku błędu w każdym kroku, czyli przeskok na drugą stronę doliny. Ponieważ $|-0.9|<1$, wychylenia maleją i metoda jest zbieżna.` },
+    { q: R`Co jest główną przyczyną bardzo wolnej zbieżności metody spadku gradientu w wąskiej dolinie?`, opts: ['Zbyt duża liczba zmiennych.', 'Duży wskaźnik uwarunkowania, czyli duża różnica krzywizn w różnych kierunkach.', 'Zbyt mała wartość funkcji kosztu w punkcie startowym.', 'Błędy zaokrągleń w gradiencie.'], ok: 1,
+      why: R`Współczynnik uczenia musi być mały ze względu na kierunek stromy ($\alpha<2/L$), a wtedy w kierunku łagodnym błąd maleje w jednym kroku tylko o czynnik $1-\alpha m$, bliski jedynce. Liczba kroków rośnie proporcjonalnie do $\kappa=L/m$.` },
+    { q: R`Oblicz optymalny współczynnik uczenia $\alpha^{*}$ dla funkcji kwadratowej o krzywiznach $m=1$ i $L=5$.`, num: 1 / 3, tol: 0.02,
+      why: R`$\alpha^{*}=\dfrac{2}{m+L}=\dfrac{2}{6}\approx0.333$. Dla tej wartości oba mnożniki błędu mają ten sam moduł $\tfrac23$.` },
+  ],
+  moment: [
+    { q: R`Bufor prędkości ma wartość $\mathbf{v}=(2,\ -1)$, bieżący gradient to $\mathbf{g}=(1,\ 3)$, a $\beta=0.5$. Oblicz pierwszą składową nowej prędkości.`, num: 2, tol: 1e-3,
+      why: R`Nowa prędkość to $\beta\,\mathbf{v}+\mathbf{g}=0.5\cdot(2,\ -1)+(1,\ 3)=(2,\ 2.5)$. Pierwsza składowa wynosi $2$.` },
+    { q: R`Czym staje się metoda z momentem dla $\beta=0$?`, opts: ['Metodą Newtona.', 'Zwykłą metodą spadku gradientu.', 'Metodą, która nie wykonuje żadnego kroku.', 'Poszukiwaniem w kierunku.'], ok: 1,
+      why: R`Dla $\beta=0$ nowa prędkość jest równa bieżącemu gradientowi, więc krok to $-\alpha\nabla f$, dokładnie jak w metodzie spadku gradientu.` },
+    { q: R`Gradient przez wiele kroków ma ten sam kierunek i zwrot. Ile razy dłuższy od kroku zwykłej metody spadku gradientu staje się krok metody z momentem dla $\beta=0.9$?`, opts: ['$1.9$ razy', '$9$ razy', '$10$ razy', '$90$ razy'], ok: 2,
+      why: R`Prędkość dąży do $\mathbf{g}/(1-\beta)$. Dla $\beta=0.9$ jest to $10\,\mathbf{g}$, więc krok wydłuża się dziesięciokrotnie.` },
+    { q: R`Co się dzieje, gdy współczynnik momentu jest zbyt bliski $1$?`, opts: ['Metoda staje się identyczna ze spadkiem gradientu.', 'Punkt mija minimum i długo wokół niego oscyluje.', 'Prędkość maleje do zera i metoda się zatrzymuje.', 'Znika potrzeba doboru współczynnika uczenia.'], ok: 1,
+      why: R`Długa pamięć oznacza dużą bezwładność: punkt przelatuje przez minimum, zawraca i powtarza to wiele razy. Koszt przestaje maleć monotonicznie, a liczba kroków rośnie.` },
+    { q: R`Która reguła aktualizacji jest zgodna z konwencją używaną przez <code>torch.optim.SGD</code>?`, opts: [R`$\mathbf{v}\leftarrow\beta\mathbf{v}+\mathbf{g}$, potem $\mathbf{x}\leftarrow\mathbf{x}-\alpha\mathbf{v}$`, R`$\mathbf{v}\leftarrow\beta\mathbf{v}+(1-\beta)\,\mathbf{g}$, potem $\mathbf{x}\leftarrow\mathbf{x}-\alpha\mathbf{v}$`, R`$\mathbf{x}\leftarrow\mathbf{x}-\alpha\mathbf{v}$, potem $\mathbf{v}\leftarrow\beta\mathbf{v}+\mathbf{g}$`, R`$\mathbf{v}\leftarrow\mathbf{g}$, potem $\mathbf{x}\leftarrow\mathbf{x}-\alpha\beta\mathbf{v}$`], ok: 0,
+      why: R`Najpierw aktualizujemy prędkość, bez czynnika $(1-\beta)$ przy gradiencie, a dopiero potem punkt. Bufor ma początkowo wartość zerową.` },
+  ],
+  armijo: [
+    { q: R`Co robi metoda z nawrotami po próbie, która nie spełniła warunku Armijo?`, opts: [R`Mnoży długość kroku przez $\rho<1$ i próbuje ponownie.`, 'Zmienia kierunek kroku na przeciwny.', 'Zwiększa długość kroku dwukrotnie.', 'Kończy obliczenia z błędem.'], ok: 0,
+      why: R`Kierunek pozostaje ten sam. Zmienia się tylko długość kroku: $\alpha\leftarrow\rho\,\alpha$, aż krok zapewni dostateczny spadek kosztu.` },
+    { q: R`W bieżącym punkcie $f(\mathbf{x})=10$, a $\nabla f(\mathbf{x})^{\top}\mathbf{p}=-20$. Dla $c_1=0.1$ oblicz granicę Armijo dla próby o długości $\alpha=0.5$.`, num: 9, tol: 1e-3,
+      why: R`Granica to $f+c_1\,\alpha\,\nabla f^{\top}\mathbf{p}=10+0.1\cdot0.5\cdot(-20)=10-1=9$. Krok zostanie zaakceptowany, jeśli koszt po kroku nie przekroczy $9$.` },
+    { q: R`Granica Armijo dla badanej próby wynosi $9$, a koszt po wykonaniu kroku wyniósłby $9.5$. Jaka jest decyzja?`, opts: ['Krok zostaje zaakceptowany, bo koszt zmalał z $10$.', 'Krok zostaje odrzucony i skrócony.', 'Krok zostaje wydłużony.', 'Obliczenia się kończą.'], ok: 1,
+      why: R`Koszt zmalał, ale za mało: $9.5>9$. Warunek Armijo wymaga spadku proporcjonalnego do długości kroku, a nie jakiegokolwiek spadku.` },
+    { q: R`Które zdanie o poszukiwaniu w kierunku jest prawdziwe?`, opts: ['Dobiera długość kroku, ale nie zmienia jego kierunku, więc nie usuwa oscylacji w wąskiej dolinie.', 'Zmienia kierunek kroku tak, by wskazywał minimum.', 'Wymaga znajomości największej krzywizny funkcji.', 'Zawsze znajduje najlepszą możliwą długość kroku.'], ok: 0,
+      why: R`Kierunek to nadal antygradient, więc trajektoria wciąż przeskakuje w poprzek doliny. Zaletą jest to, że nie trzeba znać bezpiecznej wartości $\alpha$, a wadą dodatkowe obliczenia funkcji.` },
+    { q: R`Jak zmiana współczynnika skracania z $\rho=0.8$ na $\rho=0.2$ wpływa na jedną iterację?`, opts: ['Prób jest mniej, ale zaakceptowany krok bywa znacznie krótszy, niż mógłby być.', 'Prób jest więcej, a zaakceptowany krok jest dłuższy.', 'Nic się nie zmienia, bo liczy się tylko stała $c_1$.', 'Warunek Armijo przestaje być sprawdzany.'], ok: 0,
+      why: R`Agresywne skracanie szybko dochodzi do akceptowalnej długości, ale przeskakuje nad dłuższymi krokami, które też byłyby dobre. Ostrożne skracanie znajduje dłuższy krok kosztem większej liczby prób.` },
+  ],
+  newton: [
+    { q: R`Szukamy pierwiastka równania $g(x)=x^2-9=0$ metodą Newtona, startując z $x_0=5$. Oblicz $x_1$.`, num: 3.4, tol: 1e-3,
+      why: R`$g(5)=16$, $g'(5)=2\cdot5=10$, więc $x_1=5-16/10=3.4$. Dokładny pierwiastek to $3$.` },
+    { q: R`Co w praktyce oznacza zbieżność kwadratowa?`, opts: ['Błąd maleje w każdym kroku o połowę.', 'Liczba poprawnych cyfr mniej więcej podwaja się w każdym kroku.', 'Metoda potrzebuje liczby kroków równej kwadratowi liczby zmiennych.', 'Metoda działa tylko dla funkcji kwadratowych.'], ok: 1,
+      why: R`Nowy błąd jest proporcjonalny do kwadratu poprzedniego: z błędu rzędu $10^{-3}$ robi się $10^{-6}$, potem $10^{-12}$. Dotyczy to otoczenia rozwiązania.` },
+    { q: R`Ile kroków potrzebuje metoda Newtona, aby znaleźć minimum funkcji kwadratowej?`, opts: ['Jeden, niezależnie od wskaźnika uwarunkowania.', 'Tyle, ile wynosi wskaźnik uwarunkowania.', 'Dwa razy mniej niż metoda spadku gradientu.', 'Nieskończenie wiele.'], ok: 0,
+      why: R`Model kwadratowy jest wtedy dokładny, więc przejście do jego minimum jest przejściem do minimum funkcji. Hesjan kompensuje różnice krzywizn.` },
+    { q: R`Co może się zdarzyć, gdy hesjan w bieżącym punkcie nie jest dodatnio określony?`, opts: ['Metoda zawsze się zatrzymuje.', 'Krok może prowadzić do punktu siodłowego albo w kierunku wzrostu funkcji.', 'Metoda automatycznie przechodzi w spadek gradientu.', 'Nic: określoność hesjanu nie ma znaczenia.'], ok: 1,
+      why: R`Metoda Newtona szuka punktu, w którym $\nabla f=0$, i nie odróżnia minimum od punktu siodłowego ani maksimum. Model kwadratowy bez minimum nie daje sensownego kierunku spadku.` },
+    { q: R`Co najbardziej ogranicza stosowanie metody Newtona w zadaniach o bardzo wielu zmiennych?`, opts: ['Konieczność doboru współczynnika uczenia.', R`Koszt wyznaczenia hesjanu o wymiarze $n\times n$ i rozwiązania układu równań.`, 'Wolna, liniowa zbieżność.', 'Brak możliwości obliczenia gradientu.'], ok: 1,
+      why: R`Hesjan ma $n^2$ elementów, a rozwiązanie układu równań wymaga rzędu $n^3$ działań. Dla milionów parametrów jest to niewykonalne.` },
+  ],
+  'gauss-newton': [
+    { q: R`Czym metoda Gaussa–Newtona zastępuje hesjan funkcji kosztu?`, opts: [R`Macierzą $J^{\top}J$.`, 'Macierzą jednostkową.', R`Wektorem $J^{\top}\mathbf{r}$.`, 'Hesjanem obliczonym różnicami skończonymi.'], ok: 0,
+      why: R`Pełny hesjan to $J^{\top}J$ plus składnik z drugimi pochodnymi reszt. Ten składnik jest mały, gdy reszty są małe, więc się go pomija.` },
+    { q: R`Model ma $2$ parametry, a pomiarów jest $12$. Jaki wymiar ma jakobian reszt?`, opts: [R`$2\times2$`, R`$2\times12$`, R`$12\times2$`, R`$12\times12$`], ok: 2,
+      why: R`Jakobian ma jeden wiersz dla każdego pomiaru i jedną kolumnę dla każdego parametru. Macierz $J^{\top}J$ ma wtedy wymiar $2\times2$.` },
+    { q: R`Wektor reszt wynosi $\mathbf{r}=(1,\ -2,\ 2)$. Oblicz koszt $\tfrac12\lVert\mathbf{r}\rVert^2$.`, num: 4.5, tol: 1e-3,
+      why: R`Suma kwadratów: $1+4+4=9$. Połowa tej sumy to $4.5$.` },
+    { q: R`Dlaczego dla zaszumionych pomiarów koszt po dopasowaniu nie spada do zera?`, opts: ['Bo algorytm zatrzymał się za wcześnie.', 'Bo żadna gładka krzywa nie przechodzi przez wszystkie zaszumione punkty.', 'Bo jakobian jest źle uwarunkowany.', 'Bo punkt startowy był zbyt daleko.'], ok: 1,
+      why: R`Model odtwarza zależność, a nie szum. Reszty pozostają na poziomie porównywalnym z odchyleniem standardowym szumu i to jest wynik poprawny.` },
+    { q: R`Co daje tłumienie w metodzie Levenberga–Marquardta, czyli $\lambda>0$?`, opts: ['Krótszy i bezpieczniejszy krok, obrócony w stronę antygradientu.', 'Dłuższy krok i szybszą zbieżność z każdego punktu.', 'Dokładny hesjan zamiast przybliżenia.', 'Mniejszy szum w danych.'], ok: 0,
+      why: R`Powiększenie przekątnej macierzy układu skraca krok. Metoda staje się wolniejsza, ale nie wyrzuca parametrów poza sensowny zakres, gdy punkt startowy jest daleko od rozwiązania.` },
+  ],
+  pk: [
+    { q: R`Stała szybkości eliminacji wynosi $k_e=0.1$ 1/h. Oblicz okres półtrwania $t_{1/2}$ w godzinach.`, num: Math.log(2) / 0.1, tol: 0.01,
+      why: R`$t_{1/2}=\dfrac{\ln 2}{k_e}=\dfrac{0.693}{0.1}\approx6.93$ h.` },
+    { q: R`Dlaczego zmiennymi optymalizacji są logarytmy parametrów, a nie same parametry?`, opts: ['Parametry pozostają dodatnie, a zadanie jest lepiej uwarunkowane.', 'Logarytm przyspiesza obliczenie funkcji wykładniczej.', 'Dzięki temu model staje się liniowy.', 'Bez logarytmów nie da się obliczyć jakobianu.'], ok: 0,
+      why: R`Funkcja wykładnicza zawsze daje wartość dodatnią, więc żaden krok nie zrobi ze stałej szybkości liczby ujemnej. Logarytmy sprowadzają też parametry o różnych rzędach wielkości do podobnej skali.` },
+    { q: R`Który parametr decyduje o nachyleniu końcowego, opadającego odcinka krzywej stężenia?`, opts: [R`Stała szybkości wchłaniania $k_a$.`, R`Stała szybkości eliminacji $k_e$.`, R`Objętość dystrybucji $V$.`, R`Dawka $D$.`], ok: 1,
+      why: R`Po zakończeniu wchłaniania stężenie maleje jak $e^{-k_e t}$. Objętość i dawka skalują krzywą w pionie, a $k_a$ wpływa na jej początek.` },
+    { q: R`Dlaczego z pomiarów stężenia po podaniu doustnym można wyznaczyć tylko iloraz $V/F$?`, opts: ['Bo oba parametry występują we wzorze wyłącznie razem.', 'Bo objętość dystrybucji jest zawsze równa $1$.', 'Bo biodostępność zależy od czasu.', 'Bo pomiarów jest za mało.'], ok: 0,
+      why: R`Takie parametry nazywamy nieidentyfikowalnymi: każda para o tym samym ilorazie daje identyczną krzywą, więc żadne dane tego typu ich nie rozdzielą.` },
+    { q: R`Dla części pacjentów jedna z trzech metod kończy z kosztem wielokrotnie większym od pozostałych. Która i dlaczego?`, opts: ['Metoda Newtona, bo z dala od minimum hesjan nie musi być dodatnio określony.', 'Metoda Gaussa–Newtona, bo pomija część hesjanu.', 'Metoda spadku gradientu, bo ma za mały współczynnik uczenia.', 'Wszystkie trzy, bo dane zawierają szum.'], ok: 0,
+      why: R`Krok Newtona może wtedy prowadzić do obszaru, w którym funkcja kosztu jest niemal płaska i gradient zanika. Macierz $J^{\top}J$ jest zawsze dodatnio półokreślona, dlatego metoda Gaussa–Newtona jest tu bezpieczniejsza.` },
+  ],
+};
+
+function QuizPage(id) {
+  const qs = QUIZ[id], key = 'q:' + id, root = el('div', 'quiz-page');
+  let st = Store.get(key, null); if (!st || !Array.isArray(st.s) || st.s.length !== qs.length) st = { s: qs.map(() => ({})) };
+  const head = el('div', 'card qhead'), list = el('div', 'qlist');
+  const score = () => {
+    const first = st.s.filter(a => a.ok && a.t === 1).length, done = st.s.filter(a => a.ok || a.shown).length;
+    head.querySelector('.qscore').innerHTML = `Poprawnie za pierwszym razem: <b>${first} z ${qs.length}</b> &nbsp;·&nbsp; rozwiązane: <b>${done} z ${qs.length}</b>`;
+  };
+  const save = () => { Store.set(key, { s: st.s, n: qs.length }); score(); };
+  const render = () => { list.replaceChildren(...qs.map((q, i) => Question(q, i + 1, st.s[i], save))); score(); };
+  head.innerHTML = `<div><h3 class="card-h">Sprawdź się</h3><p class="qscore"></p><p class="note">Odpowiedź sprawdzana jest od razu. Do wyniku liczą się odpowiedzi poprawne za pierwszym razem, ale każde pytanie możesz poprawiać do skutku.</p></div>`;
+  head.append(Btn('Zacznij od nowa', 'sm', () => { st = { s: qs.map(() => ({})) }; Store.set(key, { s: st.s, n: qs.length }); render(); }));
+  root.append(head, list); render();
+  return { el: root };
+}
+
+/* ---------- compare the methods on one function ---------- */
+function ComparePage() {
+  let aS, bS;
+  const RANGE = { valley: [0.0002, 0.04, 0.0002, 0.0198], bowl: [0.005, 0.8, 0.005, 0.1], cosh: [0.01, 1, 0.01, 0.1], twin: [0.005, 0.3, 0.005, 0.05] };
+  const need = t => `<span class="wrap">${t}</span>`;
+  const wrap = el('div');
+  wrap.append(el('div', 'prose', md(R`Wszystkie cztery metody startują z tego samego punktu i minimalizują tę samą funkcję. Metoda spadku gradientu i metoda z momentem używają wspólnego współczynnika uczenia $\alpha$; poszukiwanie w kierunku dobiera długość kroku samo, a metoda Newtona nie ma współczynnika uczenia. Porównuj liczbę kroków, ale też to, czego każda metoda potrzebuje w jednym kroku.`)));
+  const lab = TrajLab({
+    fn: 'valley', fns: ['valley', 'bowl', 'cosh', 'twin'], speed: 120, maxSteps: 1000, mid: 'porownanie',
+    live: () => ({ alpha: R`spadek gradientu i moment: $\alpha=${tn(aS.value, 4)}$`, beta: R`$\beta=${tn(bS.value, 4)}$` }),
+    controls(api) {
+      aS = Slider({ label: R`Współczynnik uczenia $\alpha$ (spadek gradientu i moment)`, aria: 'współczynnik uczenia alfa', min: 0.0002, max: 0.04, step: 0.0002, value: 0.0198 });
+      bS = Slider({ label: R`Współczynnik momentu $\beta$`, aria: 'współczynnik momentu beta', min: 0, max: 0.99, step: 0.001, value: 0.669 });
+      aS.oninput = bS.oninput = () => api.reset();
+      return [aS, bS];
+    },
+    onFn(fn) { const r = RANGE[fn.id]; aS.setRange(r[0], r[1], r[2], r[3]); },
+    methods: () => [
+      { name: 'Spadek gradientu', color: C.green, needs: need('gradient'), step: (st, fn) => ({ x: M.gdStep(fn, st.x, aS.value) }) },
+      { name: 'Metoda z momentem', color: C.red, dash: [7, 4], shape: 'sq', needs: need('gradient i bufor prędkości'), init: x => ({ x: [...x], v: [0, 0] }), step: (st, fn) => M.hbStep(fn, st.x, st.v, aS.value, bS.value) },
+      { name: 'Poszukiwanie w kierunku', color: C.ink3, dash: [2, 4], needs: need('gradient i kilka obliczeń funkcji'), step: (st, fn) => { const r = M.armijo(fn, st.x, 1e-4, 0.5); return r.trials[r.trials.length - 1].ok ? { x: r.x } : null; } },
+      { name: 'Metoda Newtona', color: C.black, dash: [10, 3, 2, 3], shape: 'sq', needs: need('gradient, hesjan i rozwiązanie układu równań'), step: (st, fn) => { const r = M.newtonStep(fn, st.x); return r && { x: r.x }; } },
+    ],
+    extraCol: { head: 'Wymaga w każdym kroku', cell: r => r.m.needs },
+    info: api => `<div>${K(api.fn.tex)}</div><div class="note">Poszukiwanie w kierunku: warunek Armijo ze stałą ${K(R`c_1=10^{-4}`)} i skracaniem ${K(R`\rho=0.5`)}.</div>`,
+    missions(api) {
+      const set = (fn, a, b, x0) => { api.setFn(fn, x0); aS.set(a, false); bS.set(b, false); api.run(); };
+      return [
+        { t: 'Wąska dolina', q: R`Funkcja o wąskiej dolinie ($\kappa=100$), $\alpha=0.0198$, $\beta=0.669$. **Zastanów się:** w jakiej kolejności metody osiągną próg $f-f^{*}<10^{-6}$?`,
+          acts: [['Uruchom', () => set('valley', 0.0198, 0.669)]],
+          a: R`Metoda Newtona: $1$ krok. Metoda z momentem: około $115$. Poszukiwanie w kierunku: około $370$. Spadek gradientu: około $520$. Kolejność odpowiada ilości informacji o funkcji, z której metoda korzysta: krzywizna, pamięć poprzednich gradientów, wartości funkcji wzdłuż kierunku, sam gradient.` },
+        { t: 'Funkcja niekwadratowa', q: R`Funkcja $\cosh$, $\alpha=0.1$, $\beta=0.5$, punkt startowy $(4,\ 3)$. **Zastanów się:** czy kolejność będzie taka sama jak w wąskiej dolinie? Czy wszystkie metody będą zbieżne?`,
+          acts: [['Uruchom', () => set('cosh', 0.1, 0.5, [4, 3])]],
+          a: R`Nie. Poszukiwanie w kierunku potrzebuje $5$ kroków, metoda Newtona $7$, spadek gradientu około $70$, a metoda z momentem **rozbiega się**. Daleko od minimum ta funkcja rośnie wykładniczo: stały współczynnik uczenia, bezpieczny dla zwykłego spadku, okazuje się za duży po dodaniu momentu. Poszukiwanie w kierunku dopasowuje długość kroku do lokalnej stromości i dlatego wygrywa.` },
+        { t: 'Funkcja niewypukła', q: R`Funkcja z dwiema dolinami, punkt startowy $(0.35,\ 1.9)$, $\alpha=0.05$, $\beta=0.5$. **Zastanów się:** która metoda znajdzie minimum globalne?`,
+          acts: [['Uruchom', () => set('twin', 0.05, 0.5, [0.35, 1.9])], ['Start z drugiej strony', () => set('twin', 0.05, 0.5, [-0.4, 1.9])]],
+          a: R`Żadna. Spadek gradientu, metoda z momentem i poszukiwanie w kierunku kończą w minimum lokalnym, a metoda Newtona w punkcie siodłowym. Po starcie z drugiej strony trzy pierwsze metody znajdują minimum globalne, a metoda Newtona znów trafia w punkt siodłowy. Wszystkie te metody są **lokalne**: o wyniku decyduje punkt startowy.` },
+      ];
+    },
+  });
+  wrap.append(lab.el);
+  return { el: wrap };
+}
+
+/* ---------- find the bug ---------- */
+function BugsPage() {
+  const fn = M.F.bowl, x0 = [-3, 4];
+  const gd = (a, n) => { let x = [...x0]; const p = [x]; for (let k = 0; k < n; k++) { x = M.gdStep(fn, x, a); p.push(x); } return p; };
+  const OPT = {
+    sign: R`Krok ma zły znak: punkt przesuwa się zgodnie z gradientem zamiast przeciwnie do niego.`,
+    accum: R`Gradienty z kolejnych kroków się sumują, bo po kroku nie odtworzono punktu jako nowego liścia grafu obliczeń.`,
+    stale: R`Gradient jest obliczany zawsze w punkcie startowym, a nie w bieżącym.`,
+    big: R`Kod jest poprawny, ale współczynnik uczenia przekracza granicę stabilności $2/L$.`,
+    damp: R`W regule momentu gradient pomnożono przez $(1-\beta)$, czego nie ma w przyjętej konwencji.`,
+    small: R`Kod jest poprawny, ale współczynnik uczenia jest zbyt mały.`,
+  };
+  const CASES = [
+    { set: R`Metoda spadku gradientu, $\alpha=0.02$, $12$ kroków.`, view: [-9, 9, -3, 15], opts: ['big', 'sign', 'accum', 'stale'], ok: 'sign',
+      ref: gd(0.02, 12), bug: (() => { let x = [...x0]; const p = [x]; for (let k = 0; k < 12; k++) { x = M.add(x, M.scale(fn.g(x), 0.02)); p.push(x); } return p; })(),
+      why: R`Koszt rośnie od pierwszego kroku, a punkt oddala się od minimum po jednej stronie doliny, bez przeskakiwania. Przy zbyt dużym współczynniku uczenia punkt przeskakiwałby na przemian na obie strony. Poprawka: $\mathbf{x}\leftarrow\mathbf{x}-\alpha\,\nabla f$, ze znakiem minus.` },
+    { set: R`Metoda spadku gradientu, $\alpha=0.1$, $40$ kroków.`, view: [-8, 8, -8, 8], opts: ['damp', 'accum', 'big', 'sign'], ok: 'accum',
+      ref: gd(0.1, 40), bug: (() => { let x = [...x0], acc = [0, 0]; const p = [x]; for (let k = 0; k < 40; k++) { acc = M.add(acc, fn.g(x)); x = M.sub(x, M.scale(acc, 0.1)); p.push(x); } return p; })(),
+      why: R`Pierwszy krok jest poprawny, ale kolejne są coraz dłuższe: punkt mija minimum i krąży wokół niego, a koszt oscyluje, zamiast maleć. Tak działa sumowanie gradientów w <code>x.grad</code>: to pamięć bez żadnego tłumienia, jak moment z $\beta=1$. Poprawka: po każdym kroku odtwórz $\mathbf{x}$ jako nowy liść grafu obliczeń albo wyzeruj gradient.` },
+    { set: R`Metoda spadku gradientu, $\alpha=0.03$, $12$ kroków.`, view: [-6.5, 6.5, -6.5, 6.5], opts: ['small', 'sign', 'stale', 'accum'], ok: 'stale',
+      ref: gd(0.03, 12), bug: (() => { let x = [...x0]; const g0 = fn.g(x0), p = [x]; for (let k = 0; k < 12; k++) { x = M.sub(x, M.scale(g0, 0.03)); p.push(x); } return p; })(),
+      why: R`Wszystkie kroki są identyczne: mają tę samą długość i ten sam kierunek, więc punkty leżą na prostej w równych odstępach. Koszt najpierw maleje, a potem rośnie, bo punkt mija dno doliny i idzie dalej. Poprawka: obliczaj gradient w **bieżącym** punkcie w każdej iteracji.` },
+    { set: R`Metoda z momentem, $\alpha=0.05$, $\beta=0.6$, $60$ kroków. Przebieg wzorcowy to <code>torch.optim.SGD</code> z tymi samymi ustawieniami.`, view: [-5.6, 5.6, -5.6, 5.6], opts: ['small', 'damp', 'accum', 'stale'], ok: 'damp',
+      ref: (() => { let x = [...x0], v = [0, 0]; const p = [x]; for (let k = 0; k < 60; k++) { ({ x, v } = M.hbStep(fn, x, v, 0.05, 0.6)); p.push(x); } return p; })(),
+      bug: (() => { let x = [...x0], v = [0, 0]; const p = [x]; for (let k = 0; k < 60; k++) { v = M.add(M.scale(v, 0.6), M.scale(fn.g(x), 0.4)); x = M.sub(x, M.scale(v, 0.05)); p.push(x); } return p; })(),
+      why: R`Trajektoria jest gładka i zmierza do minimum, ale wyraźnie wolniej niż wzorcowa. Czynnik $(1-\beta)=0.4$ zmniejsza każdy gradient, co działa jak dwuipółkrotnie mniejszy współczynnik uczenia. Sam zbyt mały współczynnik dałby podobny obraz, ale tutaj $\alpha$ jest takie samo jak w przebiegu wzorcowym. Poprawka: $\mathbf{v}\leftarrow\beta\,\mathbf{v}+\mathbf{g}$.` },
+    { set: R`Metoda spadku gradientu, $14$ kroków. Przebieg wzorcowy: $\alpha=0.1$. Przebieg badany: ten sam kod, inne ustawienia.`, view: [-12, 12, -12, 12], opts: ['sign', 'accum', 'big', 'damp'], ok: 'big',
+      ref: gd(0.1, 14), bug: gd(0.41, 14),
+      why: R`Punkt przeskakuje na przemian na obie strony doliny, a każde wychylenie jest większe od poprzedniego. Przy złym znaku kroku punkt oddalałby się po jednej stronie. Mnożnik błędu w kierunku stromym wynosi $1-5\cdot0.41=-1.05$: moduł większy od $1$ oznacza rozbieżność. To nie jest błąd w kodzie: wystarczy $\alpha<2/L=0.4$.` },
+  ];
+  const key = 'bugs'; let st = Store.get(key, null); if (!st || !Array.isArray(st.s) || st.s.length !== CASES.length) st = { s: CASES.map(() => ({})) };
+  let cur = 0, showRef = true;
+  const root = el('div', 'bugs'), nav = el('div', 'wnav'), grid = el('div', 'walk-grid bug-grid'), left = el('div', 'walk-left'), right = el('div', 'walk-right');
+  root.append(el('div', 'prose', md(R`Każdy przypadek pokazuje przebieg wygenerowany przez implementację z jednym błędem (kolor czerwony) na tle przebiegu wzorcowego (szary). Na podstawie kształtu trajektorii i wykresu kosztu rozpoznaj przyczynę. To ta sama umiejętność, której potrzebujesz, gdy własny kod „nie zbiega”.`)));
+  const pills = el('ol', 'pills'), bPrev = Btn('← Wstecz', '', () => go(cur - 1)), bNext = Btn('Dalej →', 'pri', () => go(cur + 1)), prog = el('span', 'prog');
+  nav.append(bPrev, bNext, pills, prog);
+  const pF = new Plot({ equal: true, ratio: '1 / 0.52', xlabel: 'x_0', ylabel: 'x_1', aria: 'Trajektoria implementacji z błędem na tle przebiegu wzorcowego' });   // both plots fit on a laptop screen
+  const pC = new Plot({ ylog: true, ratio: '1 / 0.36', xlabel: 'k', ylabel: R`f(\mathbf{x}^{(k)})`, aria: 'Historia kosztu implementacji z błędem i przebiegu wzorcowego' });
+  const chk = el('label', 'chk', '<input type="checkbox" checked> Pokaż przebieg wzorcowy');
+  chk.querySelector('input').addEventListener('change', e => { showRef = e.target.checked; draw(); });
+  const fCard = plotCard('Trajektoria na tle poziomic', pF), lgRow = el('div', 'lg-row', legend([['line', C.red, 'implementacja badana'], ['dash', C.ghost, 'przebieg wzorcowy'], ['star', C.black, 'minimum']]));
+  lgRow.append(chk); fCard.append(lgRow);
+  left.append(fCard, plotCard('Historia kosztu <small>skala logarytmiczna</small>', pC));
+  const qHost = el('div', 'bug-q');
+  right.append(nav, qHost); grid.append(left, right); root.append(grid);
+  function draw() {
+    const c = CASES[cur], top = Math.max(...[[c.view[0], c.view[2]], [c.view[1], c.view[2]], [c.view[0], c.view[3]], [c.view[1], c.view[3]]].map(fn.f));
+    const lv = Array.from({ length: 14 }, (_, j) => top * ((j + 1) / 15) ** 2.3);
+    pF.setView(...c.view);
+    pF.draw = q => {
+      q.contour('bug' + cur, fn.f, lv); q.star(fn.min[0], fn.min[1]);
+      if (showRef) drawRun(q, c.ref, { color: C.ghost, dash: [6, 4], ghost: true, width: 2 });
+      drawRun(q, c.bug, { color: C.red, shape: 'sq' });
+      q.dots([x0], { fill: '#fff', stroke: C.black, color: C.black, r: 4.5 });
+    };
+    pF.render();
+    drawCost(pC, (showRef ? [{ ys: c.ref.map(fn.f), color: C.ghost, dash: [6, 4] }] : []).concat([{ ys: c.bug.map(fn.f), color: C.red }]), { lo: 1e-3 });
+  }
+  function paint() {
+    pills.innerHTML = '';
+    CASES.forEach((_, j) => { const b = el('button', 'pill' + (j === cur ? ' on' : st.s[j].ok ? ' done' : ''), String(j + 1)); b.type = 'button'; b.title = 'Przypadek ' + (j + 1); b.addEventListener('click', () => go(j)); const li = el('li'); li.append(b); pills.append(li); });
+    bPrev.disabled = cur === 0; bNext.disabled = cur === CASES.length - 1;
+    prog.textContent = `rozpoznane: ${st.s.filter(a => a.ok).length} z ${CASES.length}`;
+  }
+  function go(i) {
+    cur = Math.max(0, Math.min(CASES.length - 1, i));
+    const c = CASES[cur];
+    qHost.replaceChildren(Question({ q: c.set + R` Co jest przyczyną tego, co widać na wykresach?`, opts: c.opts.map(k => OPT[k]), ok: c.opts.indexOf(c.ok), why: c.why }, cur + 1, st.s[cur], () => { Store.set(key, { s: st.s, n: CASES.length }); paint(); }, 'Przypadek'));
+    paint(); draw();
+  }
+  go(0);
+  return { el: root };
+}
+
+
+/* =====================================================================
+   Menu, routing (#topic, #topic-lab, #topic-test, #porownanie, #bledy) and page chrome
    ===================================================================== */
 (function () {
   const app = document.getElementById('app');
   const cache = {};
   const tex = s => mdi(s);
+  const EXTRA = [
+    { id: 'porownanie', title: 'Porównaj metody', tag: 'Podsumowanie', make: () => ComparePage(),
+      menu: 'Cztery metody na jednej funkcji i z jednego punktu startowego: liczba kroków, koszt jednego kroku i sytuacje, w których każda z metod zawodzi.' },
+    { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
+      menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
+  ];
+  const PARTS = { newton: ['newton-a', 'newton-b'] };   // a topic with two walkthroughs and two sets of missions
+
+  /* what the student has already done in a topic, read from the browser store */
+  function progress(t) {
+    const ids = PARTS[t.id] || [t.id], ws = ids.map(id => Store.get('w:' + id, null));
+    const opened = ids.reduce((a, id) => a + Store.get('m:' + id, []).length, 0), totals = ids.map(id => Store.get('mt:' + id, null));
+    const q = Store.get('q:' + t.id, null), first = q && Array.isArray(q.s) ? q.s.filter(a => a.ok && a.t === 1).length : 0, tried = !!(q && Array.isArray(q.s) && q.s.some(a => a.t || a.shown));
+    const out = [];
+    if (ws.some(Boolean)) { const full = ws.every(s => s && s.done); out.push([full ? 'full' : 'part', 'Krok po kroku: ' + (full ? 'ukończono' : 'w toku')]); }
+    if (opened) { const all = totals.every(v => v !== null), n = totals.reduce((a, v) => a + (v || 0), 0); out.push([all && opened >= n ? 'full' : 'part', 'Misje: ' + opened + (all ? ' z ' + n : '')]); }
+    if (tried) out.push([first === QUIZ[t.id].length ? 'full' : 'part', `Sprawdź się: ${first} z ${QUIZ[t.id].length}`]);
+    return out.length ? `<div class="tprog">${out.map(([c, s]) => `<span class="${c}">${s}</span>`).join('')}</div>` : '';
+  }
+  function hint(host) {
+    if (Store.get('hint-off', false)) return;
+    const h = el('p', 'hint', '<span><b>Wskazówka:</b> kliknij dowolny symbol, nazwę wielkości lub opis osi wykresu, aby zobaczyć objaśnienie i bieżącą wartość. Z klawiatury: klawisz Tab, a potem Enter.</span><button type="button" class="btn sm link">Ukryj</button>');
+    h.querySelector('button').addEventListener('click', () => { Store.set('hint-off', true); h.remove(); });
+    host.append(h);
+  }
 
   function bar(cur) {
     const b = el('header', 'bar');
@@ -3135,7 +3633,8 @@ Wyniki dla pacjenta 1, z którymi możesz porównać swoje: $k_a\approx${tn(ka, 
           <ol>
             <li><span><strong>Krok po kroku.</strong> Jedna iteracja algorytmu rozpisana na konkretnych liczbach. W oznaczonych miejscach oblicz wynik samodzielnie.</span></li>
             <li><span><strong>Eksperymentuj.</strong> Zmieniaj parametry i wykonuj misje: najpierw spróbuj przewidzieć wynik, potem poeksperymentuj.</span></li>
-            <li><span><strong>Pytaj o symbole.</strong> Kliknij dowolny symbol lub nazwę wielkości, aby zobaczyć, co oznacza, jak się ją oblicza i dlaczego jest ważna.</span></li>
+            <li><span><strong>Sprawdź się.</strong> Kilka pytań z natychmiastową odpowiedzią na zakończenie tematu.</span></li>
+            <li><span><strong>Pytaj o symbole.</strong> Kliknij dowolny symbol lub nazwę wielkości, aby zobaczyć, co oznacza, jak się ją oblicza i jaką ma teraz wartość.</span></li>
           </ol>
         </div>
       </section>
@@ -3144,10 +3643,21 @@ Wyniki dla pacjenta 1, z którymi możesz porównać swoje: $k_a\approx${tn(ka, 
       <section class="topics">${TOPICS.map(t => `
         <article class="topic">
           <span class="topic-n">${t.n}</span><svg viewBox="0 0 120 72" aria-hidden="true">${t.icon}</svg>
-          <div><h2><a href="#${t.id}">${t.title}</a><span class="tag">${t.task}</span></h2><p>${tex(t.menu)}</p></div>
-          <div class="topic-foot"><a class="btn pri sm" href="#${t.id}">Krok po kroku</a><a class="btn sm" href="#${t.id}-lab">Eksperymentuj</a></div>
+          <div><h2><a href="#${t.id}">${t.title}</a><span class="tag">${t.task}</span></h2><p>${tex(t.menu)}</p>${progress(t)}</div>
+          <div class="topic-foot"><a class="btn pri sm" href="#${t.id}">Krok po kroku</a><a class="btn sm" href="#${t.id}-lab">Eksperymentuj</a><a class="btn sm" href="#${t.id}-test">Sprawdź się</a></div>
         </article>`).join('')}
-      </section>`;
+      </section>
+      <h2 class="h-sec extras-h">Po przerobieniu tematów</h2>
+      <section class="extras">${EXTRA.map(x => `
+        <article class="xcard"><div><h3><a href="#${x.id}">${x.title}</a><span class="tag">${x.tag}</span></h3><p>${x.menu}</p>${x.id === 'bledy' && Store.get('bugs', null) ? `<div class="tprog"><span class="part">Rozpoznane: ${Store.get('bugs').s.filter(a => a.ok).length} z ${Store.get('bugs').s.length}</span></div>` : ''}</div><a class="btn sm" href="#${x.id}">Otwórz</a></article>`).join('')}
+      </section>
+      <p class="clear">Postęp (ukończone kroki, otwarte odpowiedzi do misji i wyniki pytań) jest zapisywany wyłącznie w tej przeglądarce i nigdzie nie jest wysyłany. <button type="button" class="btn sm link">Wyczyść postęp</button></p>`;
+    const clr = m.querySelector('.clear button');
+    clr.addEventListener('click', () => {
+      if (clr.dataset.arm) { Store.clear(); location.hash = '#menu'; location.reload(); return; }
+      clr.dataset.arm = '1'; clr.textContent = 'Na pewno? Kliknij ponownie, aby usunąć zapisany postęp';
+      setTimeout(() => { delete clr.dataset.arm; clr.textContent = 'Wyczyść postęp'; }, 6000);
+    });
     return m;
   }
 
@@ -3155,26 +3665,40 @@ Wyniki dla pacjenta 1, z którymi możesz porównać swoje: $k_a\approx${tn(ka, 
     const m = el('main'), i = TOPICS.indexOf(t), prev = TOPICS[i - 1], next = TOPICS[i + 1];
     m.dataset.ctx = t.id;
     const head = el('div');
-    head.innerHTML = `<div class="crumb"><a href="#menu">← Wszystkie tematy</a><span>Temat ${t.n} z ${TOPICS.length}</span><span class="tag">${t.task}</span></div>
-      <div class="thead"><h1>${t.title}</h1></div>
-      <nav class="tabs" aria-label="Części tematu"><a href="#${t.id}" class="${tab === 'walk' ? 'on' : ''}" ${tab === 'walk' ? 'aria-current="page"' : ''}>Krok po kroku</a><a href="#${t.id}-lab" class="${tab === 'lab' ? 'on' : ''}" ${tab === 'lab' ? 'aria-current="page"' : ''}>Eksperymentuj</a></nav>`;
-    head.insertAdjacentHTML('beforeend', '<p class="hint"><b>Wskazówka:</b> kliknij dowolny symbol we wzorze, w tabeli, na osi wykresu lub w nazwie parametru, aby zobaczyć, co oznacza, jak się go oblicza i dlaczego jest ważny.</p>');
+    head.innerHTML = `<div class="thead"><h1>${t.title}</h1><div class="crumb"><a href="#menu">← Wszystkie tematy</a><span>Temat ${t.n} z ${TOPICS.length}</span><span class="tag">${t.task}</span></div></div>
+      <nav class="tabs" aria-label="Części tematu">${[['walk', '', 'Krok po kroku'], ['lab', '-lab', 'Eksperymentuj'], ['test', '-test', 'Sprawdź się']].map(([k, suf, label]) => `<a href="#${t.id}${suf}" class="${tab === k ? 'on' : ''}" ${tab === k ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
+    hint(head);
     const key = t.id + ':' + tab;
-    if (!cache[key]) cache[key] = tab === 'walk' ? t.walk() : t.lab();
+    if (!cache[key]) cache[key] = tab === 'walk' ? t.walk() : tab === 'lab' ? t.lab() : QuizPage(t.id);
     const pager = el('nav', 'pager'); pager.setAttribute('aria-label', 'Sąsiednie tematy');
     pager.innerHTML = (prev ? `<a class="btn" href="#${prev.id}">← ${prev.n}. ${prev.title}</a>` : '<span></span>') +
-      (tab === 'walk' ? `<a class="btn pri" href="#${t.id}-lab">Dalej: eksperymenty →</a>` : next ? `<a class="btn pri" href="#${next.id}">Dalej: ${next.n}. ${next.title} →</a>` : `<a class="btn pri" href="#menu">Wróć do spisu tematów</a>`);
+      (tab === 'walk' ? `<a class="btn pri" href="#${t.id}-lab">Dalej: eksperymenty →</a>` : tab === 'lab' ? `<a class="btn pri" href="#${t.id}-test">Dalej: sprawdź się →</a>`
+        : next ? `<a class="btn pri" href="#${next.id}">Dalej: ${next.n}. ${next.title} →</a>` : `<a class="btn pri" href="#${EXTRA[0].id}">Dalej: ${EXTRA[0].title} →</a>`);
     m.append(head, cache[key].el, pager);
+    return m;
+  }
+
+  function extra(x) {
+    const m = el('main'), i = EXTRA.indexOf(x), prev = EXTRA[i - 1], next = EXTRA[i + 1], last = TOPICS[TOPICS.length - 1];
+    m.dataset.ctx = x.id;
+    const head = el('div');
+    head.innerHTML = `<div class="thead xhead"><h1>${x.title}</h1><div class="crumb"><a href="#menu">← Wszystkie tematy</a><span class="tag">${x.tag}</span></div></div>`;
+    hint(head);
+    if (!cache[x.id]) cache[x.id] = x.make();
+    const pager = el('nav', 'pager'); pager.setAttribute('aria-label', 'Sąsiednie strony');
+    pager.innerHTML = (prev ? `<a class="btn" href="#${prev.id}">← ${prev.title}</a>` : `<a class="btn" href="#${last.id}">← ${last.n}. ${last.title}</a>`) +
+      (next ? `<a class="btn pri" href="#${next.id}">Dalej: ${next.title} →</a>` : `<a class="btn pri" href="#menu">Wróć do spisu tematów</a>`);
+    m.append(head, cache[x.id].el, pager);
     return m;
   }
 
   function route() {
     stopAll();
-    const h = decodeURIComponent(location.hash.slice(1)), lab = /-lab$/.test(h), id = h.replace(/-lab$/, ''), t = TOPICS.find(x => x.id === id);
-    const page = t ? topic(t, lab ? 'lab' : 'walk') : menu();
+    const h = decodeURIComponent(location.hash.slice(1)), suf = (h.match(/-(lab|test)$/) || [])[1], id = h.replace(/-(lab|test)$/, ''), t = TOPICS.find(x => x.id === id), x = EXTRA.find(e => e.id === h);
+    const page = t ? topic(t, suf || 'walk') : x ? extra(x) : menu();
     const foot = el('footer', '', 'Materiały do przedmiotu Podstawy Metod Komputerowych w Obliczeniach Inżynierskich, AGH. Strona działa bez połączenia z internetem. Obliczenia są wykonywane w przeglądarce w arytmetyce podwójnej precyzji; zaokrąglane są wyłącznie wyświetlane liczby.');
     app.replaceChildren(bar(t ? t.id : ''), page, foot);
-    document.title = (t ? `${t.n}. ${t.title} · ` : '') + 'PMK · Optymalizacja';
+    document.title = (t ? `${t.n}. ${t.title} · ` : x ? `${x.title} · ` : '') + 'PMK · Optymalizacja';
     window.scrollTo(0, 0);
   }
 

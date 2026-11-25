@@ -2,11 +2,18 @@
    Shared UI: typesetting, number formatting, plots, controls, the step-by-step player.
    ===================================================================== */
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+/* progress and preferences kept in the browser (nothing leaves the device) */
+const Store = (() => {
+  const KEY = 'pmk-optymalizacja-v1'; let d = {};
+  try { d = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { d = {}; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch (e) { /* private mode: keep in memory */ } };
+  return { get: (k, def) => (k in d ? d[k] : def), set(k, v) { d[k] = v; save(); }, clear() { d = {}; save(); } };
+})();
 const KOPT = { throwOnError: false, output: 'html', strict: false, trust: true };
 const K = (t, disp = false) => {   // symbols are tagged first, so that each of them opens its glossary entry
   try {
     const html = katex.renderToString(annot(t), Object.assign({ displayMode: disp }, KOPT));
-    if (!html.includes('katex-error')) return html;
+    if (!html.includes('katex-error')) return html.includes('data-g') ? html.replace('<span class="katex">', '<span class="katex" tabindex="0">') : html;   // formulas with symbols can be reached with Tab; Enter opens their explanation
     (window.__kfall = window.__kfall || []).push(t);   // tagging failed for this formula: render it untagged
     return katex.renderToString(t, Object.assign({ displayMode: disp }, KOPT));
   } catch (e) { return `<code>${t}</code>`; }
@@ -28,6 +35,7 @@ function md(src, inline = false) {
   return s.replace(/[\u0001\u0002](\d+)[\u0001\u0002]/g, (m, i) => stash[+i]);
 }
 const mdi = s => md(s, true);
+const noTab = e => { e.querySelectorAll('.katex[tabindex]').forEach(k => k.removeAttribute('tabindex')); return e; };   // formulas inside buttons are not separate tab stops
 const box = (kind, label, body) => `<div class="box ${kind}"><span class="box-l">${label}</span>${md(body)}</div>`;
 
 /* ---------- numbers ---------- */
@@ -292,7 +300,7 @@ function Chips(o) {
   const w = el('div', 'ctl'), g = el('div', 'chips'); g.setAttribute('role', 'group');
   if (o.label) { w.append(el('span', 'ctl-l', mdi(o.label))); g.setAttribute('aria-label', o.aria || o.label.replace(/[$\\{}]/g, '')); }
   w.append(g); let val = o.value;
-  const btns = o.options.map(op => { const b = el('button', 'chip', mdi(op.label)); b.type = 'button'; b.addEventListener('click', () => api.set(op.v)); g.append(b); return [op.v, b]; });
+  const btns = o.options.map(op => { const b = noTab(el('button', 'chip', mdi(op.label))); b.type = 'button'; b.addEventListener('click', () => api.set(op.v)); g.append(b); return [op.v, b]; });
   const paint = () => btns.forEach(([v, b]) => { b.classList.toggle('on', v === val); b.setAttribute('aria-pressed', String(v === val)); });
   const api = { el: w, onchange: null, get value() { return val; }, set(v, fire = true) { val = v; paint(); if (fire && api.onchange) api.onchange(v); } };
   paint(); return api;
@@ -305,19 +313,21 @@ function Select(o) {
   s.addEventListener('change', () => api.onchange && api.onchange(s.value));
   return api;
 }
-function Btn(label, cls, fn) { const b = el('button', 'btn ' + (cls || ''), label); b.type = 'button'; b.addEventListener('click', fn); return b; }
+function Btn(label, cls, fn) { const b = noTab(el('button', 'btn ' + (cls || ''), label)); b.type = 'button'; b.addEventListener('click', fn); return b; }
 function Stats(rows) {
   const dl = el('dl', 'stats'), map = {};
   for (const [id, label, key] of rows) { const d = el('div'); if (key) d.dataset.g = key; d.innerHTML = `<dt>${mdi(label)}</dt><dd>—</dd>`; map[id] = d.lastChild; dl.append(d); }
   return { el: dl, set(vals) { for (const k in vals) { const v = vals[k], dd = map[k]; if (!dd) continue; if (v && typeof v === 'object') { dd.textContent = v.t; dd.className = v.c || ''; } else { dd.textContent = v; dd.className = ''; } } } };
 }
-function Missions(list) {
-  const w = el('div', 'missions');
+function Missions(id, list) {
+  const w = el('div', 'missions'), key = 'm:' + id, done = new Set(id ? Store.get(key, []) : []);
+  if (id) Store.set('mt:' + id, list.length);
   list.forEach((m, i) => {
-    const c = el('article', 'mission');
-    c.innerHTML = `<h4><i>Misja ${i + 1}</i><span>${mdi(m.t)}</span></h4><div>${md(m.q)}</div>`;
+    const c = el('article', 'mission' + (done.has(i) ? ' done' : ''));
+    c.innerHTML = `<h4><i>Misja ${i + 1}</i><span>${mdi(m.t)}</span><b class="tick" title="Odpowiedź była już otwierana">✓</b></h4><div>${md(m.q)}</div>`;
     if (m.acts) { const row = el('div', 'btns'); m.acts.forEach(([label, fn]) => row.append(Btn(mdi(label), 'sm', fn))); c.append(row); }
     const d = el('details'); d.innerHTML = `<summary>Pokaż odpowiedź</summary><div>${md(m.a)}</div>`; c.append(d);
+    d.addEventListener('toggle', () => { if (d.open && id && !done.has(i)) { done.add(i); c.classList.add('done'); Store.set(key, [...done]); } });
     w.append(c);
   });
   return w;
@@ -357,7 +367,13 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) stopA
    at a time in a panel whose height is reserved for the tallest step, and the results table has a fixed number of rows. */
 function Walk(cfg) {
   const root = el('div', 'walk'), top = el('div', 'walk-top'), pv = {};
-  if (cfg.intro) top.append(el('div', 'prose', md(cfg.intro)));
+  if (cfg.intro) {   // one line by default, so that the picture and the steps fit on the first screen
+    const d = el('details', 'why'), lead = cfg.intro.trim().split(/\n\s*\n/)[0].replace(/^\*\*Po co\?\*\*\s*/, '');
+    d.innerHTML = `<summary><b>Po co ten temat?</b><span class="why-lead">${mdi(lead)}</span><i>rozwiń</i></summary><div class="prose">${md(cfg.intro)}</div>`;
+    noTab(d.querySelector('summary')); d.open = !!Store.get('why-open', false);
+    d.addEventListener('toggle', () => Store.set('why-open', d.open));
+    top.append(d);
+  }
   if (cfg.params) {
     const bar = el('div', 'parambar');
     cfg.params.forEach(p => { pv[p.id] = p.value; const ch = Chips(p); ch.onchange = v => { pv[p.id] = v; rebuild(); }; bar.append(ch.el); });
@@ -365,9 +381,8 @@ function Walk(cfg) {
   }
   const grid = el('div', 'walk-grid'), left = el('div', 'walk-left'), right = el('div', 'walk-right');
   const visCard = el('section', 'card'), vis = cfg.visual(visCard);
-  left.append(visCard);
   let logCard = null;
-  if (cfg.logHead) { logCard = el('section', 'card'); left.append(logCard); }
+  if (cfg.logHead) logCard = el('section', 'card');
   const algo = el('section', 'card');
   algo.innerHTML = `<h3 class="card-h">${cfg.algo.title}</h3><ol class="algo">${cfg.algo.lines.map(l => { const ind = l.match(/^ */)[0].length / 4; return `<li class="${ind ? 'in' + ind : ''}"><span>${mdi(l.trim())}</span></li>`; }).join('')}</ol>`;
   const nav = el('div', 'wnav');
@@ -378,7 +393,8 @@ function Walk(cfg) {
   const stage = el('section', 'card stage');
   stage.innerHTML = `<div class="stage-h"><h3 class="grp"></h3><ol class="pills" aria-label="Kroki tego etapu"></ol></div><div class="stage-in"></div><div class="stage-m" aria-hidden="true"></div>`;
   const grp = stage.querySelector('.grp'), pills = stage.querySelector('.pills'), inner = stage.querySelector('.stage-in'), meter = stage.querySelector('.stage-m');
-  right.append(nav, algo, stage);
+  left.append(visCard, algo);          // picture and algorithm stay in view; the step and the table of results scroll beside them
+  right.append(nav, stage); if (logCard) right.append(logCard);
   grid.append(left, right); root.append(top, grid);
 
   let frames = [], pos = 0, logRows = 0, measuredW = 0;
@@ -392,7 +408,7 @@ function Walk(cfg) {
       const variants = f.quiz ? [f.html + QUIZ('m'), f.html + f.quiz.reveal + '<p class="fb ok">Zgadza się.</p>'] : [f.html];
       for (const v of variants) { meter.innerHTML = block(f, 1, v); hmax = Math.max(hmax, meter.offsetHeight); }
     }
-    meter.innerHTML = ''; inner.style.minHeight = Math.ceil(hmax) + 'px';
+    meter.innerHTML = ''; inner.style.minHeight = Math.ceil(hmax) + 1 + 'px';   // offsetHeight is rounded: one spare pixel keeps the cards below still
   }
   new ResizeObserver(() => { if (Math.abs(inner.clientWidth - measuredW) > 1) measure(); }).observe(stage);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => measure());   // text reflows once the web fonts arrive
@@ -437,14 +453,25 @@ function Walk(cfg) {
     bar2.firstChild.style.width = (100 * (pos + 1) / frames.length).toFixed(1) + '%';
     if (inner.offsetHeight > parseFloat(inner.style.minHeight || 0) + 1) inner.style.minHeight = inner.offsetHeight + 'px';   // never shrink back
   }
-  function go(i) { pos = Math.max(0, Math.min(frames.length - 1, i)); show(); }
-  function rebuild() { frames = cfg.build(pv); logRows = Math.min(8, frames.filter(x => x.log).length); pos = 0; measure(); show(); }
+  const pkey = 'w:' + (cfg.id || '?'), defaults = JSON.stringify(pv);
+  function remember() {
+    if (!cfg.id) return;
+    const s = Store.get(pkey, {}), std = JSON.stringify(pv) === defaults;
+    Store.set(pkey, { n: frames.length, max: Math.max(s.max || 0, pos), pos: std ? pos : (s.pos || 0), done: !!s.done || pos === frames.length - 1 });
+  }
+  function go(i) { pos = Math.max(0, Math.min(frames.length - 1, i)); show(); remember(); }
+  function rebuild(first) {
+    frames = cfg.build(pv); logRows = Math.min(8, frames.filter(x => x.log).length); pos = 0;
+    if (first && cfg.id) { const s = Store.get(pkey, null); if (s && s.n === frames.length && s.pos > 0 && s.pos < frames.length - 1) pos = s.pos; }   // resume where the student stopped (a finished walkthrough starts again from the top)
+    measure(); show();
+  }
+  root._live = () => (cfg.live ? cfg.live(pv, frames[pos]) : null);
   root.tabIndex = -1;
   root.addEventListener('keydown', e => {
     if (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (e.key === 'ArrowRight') { go(pos + 1); e.preventDefault(); } else if (e.key === 'ArrowLeft') { go(pos - 1); e.preventDefault(); }
   });
-  rebuild();
+  rebuild(true);
   return { el: root };
 }
 

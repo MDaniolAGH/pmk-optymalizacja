@@ -42,8 +42,17 @@ function TrajLab(cfg) {
   plots.append(fCard, plotCard('Historia kosztu <small>skala logarytmiczna</small>', pC, '<p class="note">Linia przerywana: próg 10⁻⁶. Wartości poniżej 10⁻¹⁴ są rysowane na dolnej krawędzi wykresu.</p>'));
   if (cfg.extra) plots.append(plotCard(cfg.extra.title, cfg.extra.plot, cfg.extra.legend || ''));
   main.append(info, status, plots, table);
-  if (cfg.missions) main.append(el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions(cfg.missions(api)));
+  if (cfg.missions) main.append(el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), Missions(cfg.mid, cfg.missions(api)));
   root.append(side, main);
+  root._live = () => {   // current values, shown when a symbol is explained
+    const fn = api.fn, last = r => r.pts[r.pts.length - 1], per = f => runs.map(r => (runs.length > 1 ? r.m.name + ': ' : '') + f(r)).join('; ');
+    const o = { kiter: `$k=${S.k}$`, x: per(r => `$${tv(last(r), 4)}$`), f: per(r => `$f=${tn(fn.f(last(r)), 5)}$`), fstar: `$f^{*}=${tn(fn.fmin, 5)}$`,
+      grad: per(r => `$${tv(fn.g(last(r)), 4)}$`), norm: per(r => R`$\lVert\nabla f\rVert=${tn(M.norm(fn.g(last(r))), 4)}$`),
+      hit: per(r => (r.hit === null ? 'próg nie został jeszcze osiągnięty' : `$k=${r.hit}$`)) };
+    o.xcomp = o.x; o.gvec = o.grad;
+    if (fn.eig) { o.mcurv = `$m=${fn.eig[0]}$`; o.Lip = `$L=${fn.eig[1]}$`; o.kappa = R`$\kappa=L/m=${tn(fn.eig[1] / fn.eig[0])}$`; }
+    return Object.assign(o, cfg.live ? cfg.live(api) : {});
+  };
 
   function build() {
     const fn = api.fn;
@@ -101,7 +110,7 @@ function TrajLab(cfg) {
 }
 
 /* =====================================================================
-   Topic 2 — gradient descent and the step-size condition (Zadanie 1, part 2)
+   Topic 2 — gradient descent and the step-size condition
    ===================================================================== */
 TOPICS.push({
   id: 'spadek', n: 2, title: 'Metoda spadku gradientu (gradient descent)', short: 'Spadek gradientu', task: 'Metoda pierwszego rzędu',
@@ -111,6 +120,7 @@ TOPICS.push({
   walk() {
     const fn = M.F.bowl, x0 = [-3, 4];
     return Walk({
+      id: 'spadek', live: pv => ({ alpha: R`$\alpha=${tn(pv.a)}$`, Lip: '$L=5$', mcurv: '$m=1$', kappa: R`$\kappa=L/m=5$` }),
       intro: R`**Po co?** Metoda spadku gradientu (gradient descent), w polskiej literaturze nazywana też metodą gradientu prostego, to najprostszy algorytm minimalizacji i punkt wyjścia dla wszystkich pozostałych. Jest to pętla powtarzająca jedną operację: krok w kierunku przeciwnym do gradientu. Prześledź tę operację na liczbach, zanim zapiszesz ją w kodzie.
 
 Numer iteracji zapisujemy w indeksie górnym, w nawiasie: $\mathbf{x}^{(k)}$ oznacza punkt po $k$ krokach. Dzięki temu nie myli się on z numerem współrzędnej ($x_0$, $x_1$). W literaturze ten sam wzór zapisuje się często jako $x_{k+1}=x_k-\alpha\,\nabla f(x_k)$. Liczba $\alpha$ to współczynnik uczenia (learning rate), nazywany też tempem uczenia; w teorii optymalizacji mówi się o długości kroku (step size).`,
@@ -228,7 +238,8 @@ Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz
     let aS;
     const RANGE = { bowl: [0.005, 0.6, 0.005, 0.05], valley: [0.0002, 0.03, 0.0002, 0.0198], cosh: [0.01, 1, 0.01, 0.1], twin: [0.005, 0.3, 0.005, 0.05] };
     const lab = TrajLab({
-      fn: 'bowl', fns: ['bowl', 'valley', 'cosh', 'twin'], speed: 10,
+      fn: 'bowl', fns: ['bowl', 'valley', 'cosh', 'twin'], speed: 10, mid: 'spadek',
+      live: api => Object.assign({ alpha: R`$\alpha=${tn(aS.value, 4)}$` }, api.fn.eig ? { alphaopt: R`$\alpha^{*}=${tn(2 / (api.fn.eig[0] + api.fn.eig[1]), 3)}$` } : {}),
       controls(api) {
         aS = Slider({ label: R`Współczynnik uczenia $\alpha$`, aria: 'współczynnik uczenia alfa', min: 0.005, max: 0.6, step: 0.005, value: 0.05 });
         aS.oninput = () => api.reset();
