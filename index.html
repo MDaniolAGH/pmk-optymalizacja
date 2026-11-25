@@ -1032,12 +1032,21 @@ const G_LET = { f: 'f', J: 'jac', H: 'hess', L: 'Lip', m: 'mcurv', h: 'hstep', k
   s: 'subs', v: 'vrate', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
 const G_ITER = /\^\{(\((?:[^(){}]|\{[^{}]*\})*\))\}/y, G_CWRE = /\\([a-zA-Z]+|[\s\S])/y;
 
-/* A symbol together with its indices is one unit: x^{(k)}, \alpha_k, p^{\top}, H^{-1}. Powers are not indices. */
+/* Compound notation is one clickable unit:
+   - a symbol with its indices: x^{(k)}, \alpha_k, p^{\top}, H^{-1} (powers are not indices),
+   - a function with its argument: f(x^{(k)}), \nabla f(x), g'(x_k), \cosh(x_0-1), e^{-k_e t},
+   - a partial derivative written as a fraction, a sum with its limits, a square root, |...| and ||...||.
+   The explanation shows the clicked form and lists the symbols inside it. */
 const G_SUF = [/\^\{\((?:[^(){}]|\{[^{}]*\})*\)\}/y, /\^\{\*\}/y, /\^\{\\top\}/y, /\^\{-1\}/y, /\^\{[+-]\}/y, /_\{[^{}]*\}/y, /_[0-9a-zA-Z]/y];
 const G_RAW = [], G_RAWID = new Map();   // TeX of each clicked unit, shown as the heading of its explanation
-const G_INNER = [];                      // for |...| and ||...||: the symbols inside, offered in the explanation
+const G_INNER = [];                      // for compound units: the symbols inside, offered in the explanation
 function rawId(tex) { let id = G_RAWID.get(tex); if (id == null) { id = G_RAW.push(tex) - 1; G_RAWID.set(tex, id); } return id; }
-const G_OWN = new Set(['fstar', 'alphaopt', 'betaopt', 'xstar', 'unitvec', 'JtJ', 'Jtr', 'thalf', 'Vmax', 'Km', 'ka', 'ke', 'c1', 'tmax', 'Cmax', 'xnew', 'xpm', 'fpm', 'cost', 'VF', 'nsteps', 'gprime', 'fprime']);   // indices are part of the name
+const G_OWN = new Set(['fstar', 'alphaopt', 'betaopt', 'xstar', 'unitvec', 'JtJ', 'Jtr', 'thalf', 'Vmax', 'Km', 'ka', 'ke', 'c1', 'tmax', 'Cmax', 'xnew', 'xpm', 'fpm', 'cost', 'VF', 'nsteps', 'gprime', 'fprime', 'cond']);   // indices are part of the name
+const G_FUN = new Set(['f', 'gfun', 'gprime', 'fprime', 'grad', 'hess', 'phi', 'conc', 'vrate', 'kappa', 'cosh', 'ln']);   // may be followed by an argument in parentheses
+const G_DFRAC = /\\frac\{\\partial\s*((?:[^{}]|\{[^{}]*\})*)\}\{\\partial\s*((?:[^{}]|\{[^{}]*\})*)\}/y;
+const G_DSLASH = /\\partial\s*(r_i|f)\/\\partial\s*(x_(?:\{[^{}]*\}|[0-9a-z])|V_\{\\max\}|K_m|\\theta_(?:\{[^{}]*\}|[0-9a-z]))/y;
+const G_SUM = /\\sum(?:_(?:\{[^{}]*\}|[0-9a-zA-Z]))?(?:\^(?:\{[^{}]*\}|[0-9a-zA-Z]))?/y, G_MIN = /\\min_(?:\{(?:[^{}]|\{[^{}]*\})*\}|[0-9a-zA-Z])/y;
+const G_SQRT = /\\sqrt\s*(\{(?:[^{}]|\{[^{}]*\})*\}|\\[a-zA-Z]+|[0-9a-zA-Z])/y;
 function unitMods(key, tex) {
   if (G_OWN.has(key)) return '';
   const m = [];
@@ -1050,41 +1059,58 @@ function unitMods(key, tex) {
   return m.join('.');
 }
 const G_NOTE = {
+  arg: R`Nawias po symbolu funkcji zawiera jej **argument**: punkt lub liczbę, dla której obliczamy wartość funkcji.`,
   iter: R`Indeks górny w nawiasie to **numer iteracji**: wartość tej wielkości po tylu krokach algorytmu. Zapis z literą $k$ oznacza dowolny krok, a z liczbą konkretny. To nie jest potęga.`,
   subk: R`Indeks dolny to **numer iteracji**: wartość tej wielkości w kroku o tym numerze. Numer $0$ oznacza wartość początkową.`,
   subi: R`Indeks dolny to **numer elementu**: współrzędnej wektora, wiersza lub kolumny macierzy albo pomiaru.`,
   star: R`Gwiazdka oznacza wartość **optymalną** albo dokładne rozwiązanie, do którego metoda ma dążyć.`,
   top: R`Znak $\top$ oznacza **transpozycję**: wektor kolumnowy staje się wierszowy, dzięki czemu można go pomnożyć przez inny wektor lub macierz.`,
   inv: R`Wykładnik $-1$ oznacza **macierz odwrotną**. W obliczeniach nie wyznacza się jej jawnie: zamiast tego rozwiązuje się układ równań.`,
+  expo: R`Litera $e$ z wykładnikiem to **funkcja wykładnicza**: liczba Eulera podniesiona do potęgi zapisanej u góry.`,
 };
 
 function annot(src) {
   let out = '', i = 0, brace = false; const n = src.length;
   const withIdx = j => { for (let any = true; any;) { any = false; for (const re of G_SUF) { re.lastIndex = j; if (re.exec(src)) { j = re.lastIndex; any = true; break; } } } return j; };
   const emit = (attr, tex) => { const w = `\\htmlData{${attr}}{${tex}}`; out += brace ? `{${w}}` : w; brace = false; };
-  const unit = (key, from, to) => {   // src[from:to] is the base symbol; the indices that follow belong to it
-    const end = withIdx(to), tex = src.slice(from, end), mods = unitMods(key, tex);
-    let attr = `g=${key}` + (mods ? `,m=${mods}` : '');
-    if (end > to || (to - from > 1 && !G_CW[tex])) attr += `,r=${rawId(key === 'xcomp' || key === 'ri' ? tex.replace(/\^[0-9]$/, '') : tex)}`;   // x_0^4 is explained as x_0
-    emit(attr, tex); return end;
-  };
-  const whole = (key, from, to, inside) => {   // |...| or ||...||: one unit; remember which symbols it contains
+  const whole = (key, from, to, inside, mods) => {   // a compound unit; remember which symbols it contains
     const tex = src.slice(from, to), id = rawId(tex);
     G_INNER[id] = [...new Set([...annot(inside).matchAll(/\\htmlData\{g=([A-Za-z0-9_]+)/g)].map(m => m[1]))];
-    emit(`g=${key},r=${id}`, tex);
+    emit(`g=${key}` + (mods ? `,m=${mods}` : '') + `,r=${id}`, tex);
   };
+  const match = (j, open, close) => { let d = 0; for (; j < n; j++) { const c = src[j]; if (c === '\\') { j++; continue; } if (c === open) d++; else if (c === close && --d === 0) return j; } return -1; };
   const bar = j => { let d = 0; for (j++; j < n; j++) { const c = src[j]; if (c === '\\') { j++; continue; } if (c === '{') d++; else if (c === '}') { if (d === 0) return -1; d--; } else if (c === '|' && d === 0) return j; } return -1; };
-  const closing = j => { let d = 0; for (; j < n; j++) { if (src[j] === '\\') { j++; continue; } if (src[j] === '{') d++; else if (src[j] === '}' && --d === 0) return j; } return n - 1; };
+  const unit = (key, from, to) => {   // src[from:to] is the base symbol; indices and an argument in parentheses belong to it
+    const end = withIdx(to), base = src.slice(from, end), mods = unitMods(key, base);
+    if (G_FUN.has(key) && src[end] === '(') {
+      const c = match(end, '(', ')');
+      if (c > 0) {
+        const inside = src.slice(end + 1, c), e2 = withIdx(c + 1), isCond = key === 'kappa' && inside.includes('J^{\\top}J');
+        whole(isCond ? 'cond' : key, from, e2, inside,
+          isCond ? '' : [mods, 'arg', unitMods('', src.slice(c + 1, e2))].filter(Boolean).join('.'));
+        return e2;
+      }
+    }
+    let attr = `g=${key}` + (mods ? `,m=${mods}` : '');
+    if (end > to || (to - from > 1 && !G_CW[base])) attr += `,r=${rawId(key === 'xcomp' || key === 'ri' ? base.replace(/\^[0-9]$/, '') : base)}`;   // x_0^4 is explained as x_0
+    emit(attr, base); return end;
+  };
+  const first = (re, key, inside) => { re.lastIndex = i; const m = re.exec(src); if (!m) return false; const end = re.lastIndex; whole(key, i, end, inside(m)); i = end; return true; };   // keep `end`: the nested call reuses the same regex objects
   scan: while (i < n) {
     const ch = src[i];
     if (ch === '^') { G_ITER.lastIndex = i; const m = G_ITER.exec(src); if (m) { out += `^{\\htmlData{g=iter}{${m[1]}}}`; i = G_ITER.lastIndex; brace = false; continue; } }
-    if (src.startsWith('\\lVert', i)) { const j = src.indexOf('\\rVert', i + 6); if (j > 0) { whole('norm', i, j + 6, src.slice(i + 6, j)); i = j + 6; continue; } }
+    if (ch === '\\') {
+      if (src.startsWith('\\lVert', i)) { const j = src.indexOf('\\rVert', i + 6); if (j > 0) { whole('norm', i, j + 6, src.slice(i + 6, j)); i = j + 6; continue; } }
+      if (first(G_DFRAC, 'partial', m => m[1] + ' ' + m[2]) || first(G_DSLASH, 'partial', m => m[1] + ' ' + m[2])) continue;
+      if (first(G_SUM, 'sum', () => '') || first(G_MIN, 'minop', () => '') || first(G_SQRT, 'sqrt', m => m[1])) continue;
+    }
     if (ch === '|') { const j = bar(i); if (j > 0) { whole('abs', i, j + 1, src.slice(i + 1, j)); i = j + 1; continue; } }
+    if (ch === 'e' && src[i + 1] === '^' && src[i + 2] === '{') { const c = match(i + 2, '{', '}'); if (c > 0) { whole('euler', i, c + 1, src.slice(i + 3, c), 'expo'); i = c + 1; continue; } }
     for (const [re, key] of G_ATOM) { re.lastIndex = i; if (re.exec(src)) { i = unit(key, i, re.lastIndex); continue scan; } }
     if (ch === '\\') {
       G_CWRE.lastIndex = i; const cw = G_CWRE.exec(src)[0], at = i; i = G_CWRE.lastIndex;
       if (cw === '\\\\') { out += cw; if (src[i] === '[') { const j = src.indexOf(']', i); out += src.slice(i, j + 1); i = j + 1; } brace = false; continue; }
-      if (G_SKIP.has(cw)) { out += cw; while (src[i] === ' ') out += src[i++]; if (src[i] === '{') { const j = closing(i); out += src.slice(i, j + 1); i = j + 1; } brace = false; continue; }
+      if (G_SKIP.has(cw)) { out += cw; while (src[i] === ' ') out += src[i++]; if (src[i] === '{') { const j = match(i, '{', '}'); const e = j > 0 ? j : n - 1; out += src.slice(i, e + 1); i = e + 1; } brace = false; continue; }
       if (G_CW[cw]) { i = unit(G_CW[cw], at, i); continue; }
       out += cw; brace = /^\\[a-zA-Z]/.test(cw); continue;
     }
@@ -1137,6 +1163,18 @@ const GLOSS = {
     what: R`Odległość liczby od zera na osi liczbowej, czyli jej wielkość bez znaku. Moduł jest zawsze nieujemny.`,
     how: [R`Oblicz wartość wyrażenia między pionowymi kreskami.`, R`Jeśli wynik jest ujemny, zmień jego znak. Jeśli jest dodatni albo równy zeru, pozostaw go bez zmian.`],
     why: R`Pozwala mówić o wielkości bez względu na kierunek. Moduł różnicy między przybliżeniem a dokładnym rozwiązaniem to błąd przybliżenia. Moduł mnożnika błędu decyduje o stabilności metody: błąd maleje tylko wtedy, gdy moduł jest mniejszy od $1$, niezależnie od tego, czy mnożnik jest dodatni, czy ujemny. Dla wektorów tę samą rolę pełni norma.` },
+  sum: { s: R`\sum_{i}`, t: 'Suma',
+    what: R`Znak sumowania: dodajemy do siebie wyrażenia stojące za nim dla kolejnych wartości indeksu. Pod znakiem podana jest pierwsza wartość indeksu, a nad nim ostatnia.`,
+    how: [R`Podstaw do wyrażenia pierwszą wartość indeksu i oblicz wynik.`, R`Powtórz dla każdej kolejnej wartości indeksu, aż do ostatniej.`, R`Dodaj wszystkie wyniki.`],
+    why: R`Pozwala krótko zapisać działanie wykonywane dla wszystkich pomiarów albo wszystkich współrzędnych. Funkcja kosztu w zadaniu najmniejszych kwadratów to właśnie suma kwadratów reszt po wszystkich pomiarach.` },
+  sqrt: { s: R`\sqrt{a}`, t: 'Pierwiastek kwadratowy',
+    what: R`Nieujemna liczba, która podniesiona do kwadratu daje wyrażenie pod pierwiastkiem.`,
+    how: [R`Oblicz wartość wyrażenia pod znakiem pierwiastka.`, R`Wyznacz liczbę nieujemną, której kwadrat jest równy tej wartości. W Pythonie: <code>math.sqrt</code> albo <code>torch.sqrt</code>.`],
+    why: R`Pojawia się wszędzie tam, gdzie wracamy od kwadratów do pierwotnej skali: w normie wektora, w typowej wielkości reszty oraz w oszacowaniach szybkości metody z momentem, w których zamiast $\kappa$ występuje $\sqrt{\kappa}$.` },
+  minop: { s: R`\min_{\mathbf{p}}`, t: 'Minimum względem zmiennej',
+    what: R`Zapis oznaczający najmniejszą wartość wyrażenia stojącego za nim, gdy zmienna podana pod spodem przyjmuje wszystkie możliwe wartości.`,
+    how: [R`Potraktuj zmienną spod znaku jako niewiadomą.`, R`Znajdź taką jej wartość, dla której wyrażenie jest najmniejsze. Dla liniowego zadania najmniejszych kwadratów prowadzi to do układu równań normalnych.`],
+    why: R`Tak zapisuje się każde zadanie optymalizacji. W metodzie Gaussa–Newtona każdy krok jest rozwiązaniem takiego mniejszego, liniowego zadania.` },
   x: { s: R`\mathbf{x}`, t: 'Punkt, czyli wektor zmiennych',
     what: R`Aktualne położenie w przestrzeni zmiennych. Na tej stronie jest to para liczb $(x_0,\ x_1)$, czyli punkt na płaszczyźnie.`,
     how: [R`Punkt startowy wybierasz samodzielnie, na przykład kliknięciem na wykresie poziomic.`, R`Każdy kolejny punkt wyznacza algorytm na podstawie poprzedniego.`],
@@ -1461,7 +1499,7 @@ const Gloss = (() => {
       const inside = [...new Set((entry.inner || []).map(resolve))].filter(k => GLOSS[k] && k !== key);
       body.innerHTML = `<div class="gl-sym">${K(entry.raw || g.s, true)}</div><h2 id="gloss-title">${g.t}</h2>
         <section><h3>Co to jest?</h3>${md(g.what)}</section>
-        ${mods.length ? `<section><h3>Indeksy w tym zapisie</h3>${mods.map(m => md(G_NOTE[m])).join('')}</section>` : ''}
+        ${mods.length ? `<section><h3>Jak czytać ten zapis</h3>${mods.map(m => md(G_NOTE[m])).join('')}</section>` : ''}
         ${inside.length ? `<section><h3>Symbole w tym zapisie</h3><div class="gl-list">${inside.map(k => `<button type="button" class="gl-item" data-key="${k}"><span>${K(GLOSS[k].s)}</span>${GLOSS[k].t}</button>`).join('')}</div></section>` : ''}
         <section><h3>Jak się to oblicza?</h3><ol>${g.how.map(h => `<li>${mdi(h)}</li>`).join('')}</ol></section>
         <section><h3>Dlaczego to ważne?</h3>${md(g.why)}</section>
