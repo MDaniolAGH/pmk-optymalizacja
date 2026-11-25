@@ -400,9 +400,11 @@ const Gloss = (() => {
   function show(key, push) {
     if (push) stack.push(key);
     back.hidden = stack.length < 2;
-    if (key === '__index') {
-      const items = Object.entries(GLOSS).sort((a, b) => a[1].t.localeCompare(b[1].t, 'pl'));
-      body.innerHTML = `<h2 id="gloss-title">Słownik symboli i pojęć</h2><p class="note">Wybierz hasło. Na każdej stronie możesz też kliknąć dowolny symbol we wzorze, w tabeli lub na wykresie.</p><div class="gl-list">${items.map(([k, g]) => `<button type="button" class="gl-item" data-key="${k}"><span>${K(g.s)}</span>${g.t}</button>`).join('')}</div>`;
+    if (key === '__index' || key.startsWith('__pick:')) {
+      const all = key === '__index';
+      const items = all ? Object.entries(GLOSS).sort((a, b) => a[1].t.localeCompare(b[1].t, 'pl')) : key.slice(7).split(',').map(k => [k, GLOSS[k]]);
+      body.innerHTML = (all ? `<h2 id="gloss-title">Słownik symboli i pojęć</h2><p class="note">Wybierz hasło. Na każdej stronie możesz też kliknąć dowolny symbol we wzorze, w tabeli lub na wykresie.</p>`
+        : `<h2 id="gloss-title">Symbole w tym wzorze</h2><p class="note">Wybierz symbol, który chcesz objaśnić.</p>`) + `<div class="gl-list">${items.map(([k, g]) => `<button type="button" class="gl-item" data-key="${k}"><span>${K(g.s)}</span>${g.t}</button>`).join('')}</div>`;
       body.querySelectorAll('.gl-item').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); show(b.dataset.key, true); }));
     } else {
       const g = GLOSS[key];
@@ -414,18 +416,36 @@ const Gloss = (() => {
     }
     body.scrollTop = 0;
   }
+  function context(from) { ctx = []; for (let n = from; n; n = n.parentElement && n.parentElement.closest('[data-ctx]')) { if (n.dataset && n.dataset.ctx) ctx.push(n.dataset.ctx); if (!n.parentElement) break; } }
   function open(key, from) {
     if (!dlg) build();
-    if (!dlg.open) { stack = []; ctx = []; for (let n = from; n; n = n.parentElement && n.parentElement.closest('[data-ctx]')) { if (n.dataset && n.dataset.ctx) ctx.push(n.dataset.ctx); if (!n.parentElement) break; } }
+    if (!dlg.open) { stack = []; context(from); }
     key = key === '__index' ? key : resolve(key);
     if (key !== '__index' && !GLOSS[key]) return;
     show(key, true);
+    if (!dlg.open) dlg.showModal();
+  }
+  function pick(keys, from) {   // several symbols to choose from
+    if (!dlg) build();
+    if (!dlg.open) { stack = []; context(from); }
+    const ks = [...new Set(keys.map(resolve))].filter(k => GLOSS[k]); if (!ks.length) return;
+    if (ks.length === 1) { open(ks[0], from); return; }
+    show('__pick:' + ks.join(','), true);
     if (!dlg.open) dlg.showModal();
   }
   document.addEventListener('click', e => {
     const t = e.target; if (!(t instanceof Element)) return;
     if (t.closest('button, a, input, select, summary')) return;
     let n = t.closest('[data-g]');
+    if (!n) {   // a near miss inside a formula: take the closest symbol, or offer the list of symbols of this formula
+      const fm = t.closest('.katex, .dm');
+      if (fm) {
+        const tagged = [...fm.querySelectorAll('[data-g]')]; let best = null, bd = 1e9;
+        for (const s of tagged) { const r = s.getBoundingClientRect(), dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right), dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom), d = Math.hypot(dx, dy); if (d < bd) { bd = d; best = s; } }
+        if (best && bd <= 18) n = best;
+        else if (tagged.length) { e.preventDefault(); pick([...new Set(tagged.map(s => s.dataset.g))], fm); return; }
+      }
+    }
     if (!n) { const host = t.closest('dt, th, .stats > div, .ctl > label, .ctl-l, .plot-t, .ax, .legend > span'); if (host) n = host.matches('[data-g]') ? host : host.querySelector('[data-g]'); }
     if (!n || !n.dataset.g) return;
     e.preventDefault(); open(n.dataset.g, n);

@@ -70,7 +70,7 @@ const M = (() => {
       f: x => 0.5 * ((x[0] - 2) ** 2 + 5 * (x[1] + 1) ** 2),
       g: x => [x[0] - 2, 5 * (x[1] + 1)],
       H: () => [[1, 0], [0, 5]],
-      min: [2, -1], fmin: 0, eig: [1, 5], view: [-4, 4, -4, 4], start: [-3, 4],
+      min: [2, -1], fmin: 0, eig: [1, 5], view: [-5, 5, -5, 5], start: [-3, 4],
     },
     valley: {
       id: 'valley', label: 'Funkcja o wąskiej dolinie, κ = 100',

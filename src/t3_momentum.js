@@ -34,7 +34,7 @@ Poniżej ta sama funkcja i ten sam punkt startowy co w poprzednim temacie ($\alp
         card.insertAdjacentHTML('beforeend', legend([['line', C.red, 'z momentem'], ['line', C.green, 'zwykły spadek gradientu'], ['dash', C.black, 'składowa momentu $-\\alpha\\beta\\mathbf{v}$'], ['dash', C.ghost, 'nowy gradient $-\\alpha\\mathbf{g}$']]));
         return {
           draw(s) {
-            const far = s.pts.concat(s.gd).some(q => Math.abs(q[0]) > 4.4 || Math.abs(q[1]) > 4.4);
+            const far = s.pts.concat(s.gd).some(q => Math.abs(q[0]) > 4.9 || Math.abs(q[1]) > 4.9);
             p.setView(...(far ? [-7, 7, -7, 7] : fn.view));
             p.draw = q => {
               drawField(q, fn);
@@ -70,7 +70,8 @@ Współczynnik momentu (momentum coefficient) $\beta\in[0,1)$ określa, jaka cz�
           const zeroG = g.findIndex(c => Math.abs(c) < 1e-9);
           fr.push({
             group, title: 'Gradient w bieżącym punkcie', line: 2, state: { pts: cur, gd: gcur, gs: M.scale(g, -a) },
-            html: md(R`$$\mathbf{g}=\nabla f(\mathbf{x}^{(${k})})=\big(${tn(x[0])}-2,\ \ 5\cdot(${tn(x[1])}+1)\big)=${tv(g)}$$
+            html: md(R`Wzór na gradient tej funkcji to $\nabla f(\mathbf{x})=\big(x_0-2,\ 5\,(x_1+1)\big)$ (wyprowadzenie znajdziesz w temacie o metodzie spadku gradientu). Podstawiamy współrzędne bieżącego punktu $\mathbf{x}^{(${k})}=${tv(x)}$:
+$$${al(R`\mathbf{g}=\nabla f(\mathbf{x}^{(${k})})`, R`\big(x_0-2,\ \ 5\,(x_1+1)\big)`, R`\big(${tp(x[0])}-2,\ \ 5\cdot(${tn(x[1])}+1)\big)`, tv(g))}$$
 ${k === 0 ? 'Ten krok jest taki sam jak w zwykłym spadku gradientu.' : zeroG >= 0 ? R`Zwróć uwagę: składowa gradientu w kierunku $x_${zeroG}$ jest **zerowa**. Zwykła metoda spadku gradientu nie wykonałaby w tym kierunku żadnego ruchu.` : R`Szara strzałka pokazuje krok, jaki z tego punktu wykonałaby zwykła metoda spadku gradientu.`}`),
           });
           const vL = R`\mathbf{v}^{(${k})}`, v1 = R`\beta\,${vprev}+\mathbf{g}`, v2 = R`${tn(b)}\cdot${tv(v)}+${tv(g)}`;
@@ -133,7 +134,9 @@ Dobrym przykładem testowym jest funkcja o wąskiej dolinie $f(\mathbf{x})=\tfra
         const fn = api.fn;
         if (!fn.eig) return `<div>${K(fn.tex)}</div><div class="note">Funkcja niekwadratowa: wzory na optymalne ${K(R`\alpha`)} i ${K(R`\beta`)} nie mają tu zastosowania.</div>`;
         const [m, L] = fn.eig, k = L / m, bo = ((Math.sqrt(k) - 1) / (Math.sqrt(k) + 1)) ** 2, ao = 4 / (Math.sqrt(L) + Math.sqrt(m)) ** 2;
-        return `<div>${K(fn.tex)}</div><div class="note">Granice stabilności: metoda spadku gradientu ${K(R`\alpha<\tfrac{2}{L}=${tn(2 / L, 3)}`)}, metoda z momentem ${K(R`\alpha<\tfrac{2(1+\beta)}{L}`)} = <span class="numf">${(2 * (1 + bS.value) / L).toFixed(4)}</span>.<br>Wartości optymalne dla funkcji kwadratowej: ${K(R`\beta^{*}=\big(\tfrac{\sqrt\kappa-1}{\sqrt\kappa+1}\big)^{2}=${tn(bo, 3)}`)}, ${K(R`\alpha^{*}=\tfrac{4}{(\sqrt L+\sqrt m)^{2}}=${tn(ao, 3)}`)}.</div>`;
+        return `<div>${K(fn.tex)}</div>
+        <div class="note kvs"><span>Granice stabilności:</span><span class="kv">spadek gradientu ${K(R`\alpha<\tfrac{2}{L}`)} = <b>${(2 / L).toFixed(4)}</b></span><span class="kv">z momentem ${K(R`\alpha<\tfrac{2(1+\beta)}{L}`)} = <b>${(2 * (1 + bS.value) / L).toFixed(4)}</b></span></div>
+        <div class="note kvs"><span>Wartości optymalne dla funkcji kwadratowej:</span><span>${K(R`\beta^{*}=\big(\tfrac{\sqrt\kappa-1}{\sqrt\kappa+1}\big)^{2}=${tn(bo, 3)}`)}</span><span>${K(R`\alpha^{*}=\tfrac{4}{(\sqrt L+\sqrt m)^{2}}=${tn(ao, 3)}`)}</span></div>`;
       },
       missions(api) {
         const set = (fn, a, b, x0) => { api.setFn(fn, x0); aS.set(a, false); bS.set(b, false); api.run(); };

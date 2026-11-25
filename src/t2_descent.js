@@ -136,7 +136,7 @@ Numer iteracji zapisujemy w indeksie górnym, w nawiasie: $\mathbf{x}^{(k)}$ ozn
         card.insertAdjacentHTML('beforeend', legend([['line', C.green, 'trajektoria'], ['line', C.ghost, 'kierunek gradientu $\\nabla f$'], ['dash', C.red, 'planowany krok $-\\alpha\\nabla f$']]));
         return {
           draw(s) {
-            const far = s.pts.some(q => Math.abs(q[0]) > 4.4 || Math.abs(q[1]) > 4.4);
+            const far = s.pts.some(q => Math.abs(q[0]) > 4.9 || Math.abs(q[1]) > 4.9);
             p.setView(...(far ? [-7, 7, -7, 7] : fn.view));
             p.draw = q => {
               drawField(q, fn);
@@ -155,18 +155,31 @@ Numer iteracji zapisujemy w indeksie górnym, w nawiasie: $\mathbf{x}^{(k)}$ ozn
         fr.push({
           group: 'Punkt wyjścia', title: 'Funkcja, punkt startowy i współczynnik uczenia', line: 0, state: { pts: [[...x]] }, log: [0, num(x[0]), num(x[1]), num(fn.f(x))],
           html: md(R`Minimalizujemy funkcję kwadratową („miskę”):
-$$f(\mathbf{x})=\tfrac12\big[(x_0-2)^2+5\,(x_1+1)^2\big],\qquad \nabla f(\mathbf{x})=\big(x_0-2,\ \ 5\,(x_1+1)\big)$$
+$$f(\mathbf{x})=\tfrac12\big[(x_0-2)^2+5\,(x_1+1)^2\big]$$
 Punkt startowy: $\mathbf{x}^{(0)}=(-3,\ 4)$, wartość funkcji kosztu $f(\mathbf{x}^{(0)})=${tn(fn.f(x))}$, współczynnik uczenia $\alpha=${tn(a)}$.
 
 Minimum znajduje się w punkcie $(2,\,-1)$, ale algorytm tego nie wie. W każdym kroku zna wyłącznie wartość funkcji i gradient **w bieżącym punkcie**.`),
+        });
+        fr.push({
+          group: 'Punkt wyjścia', title: 'Wzór na gradient: pochodne cząstkowe', line: 2, state: { pts: [[...x]] },
+          html: md(R`Gradient to wektor pochodnych cząstkowych, po jednej dla każdej zmiennej:
+$$\nabla f(\mathbf{x})=\Big(\frac{\partial f}{\partial x_0},\ \frac{\partial f}{\partial x_1}\Big)$$
+**Pochodna względem $x_0$.** Zmienną $x_1$ traktujemy jak stałą, więc składnik $5\,(x_1+1)^2$ ma pochodną równą zeru. Pozostaje $\tfrac12(x_0-2)^2$, a pochodną kwadratu jest podwojona podstawa:
+$$\frac{\partial f}{\partial x_0}=\tfrac12\cdot 2\,(x_0-2)=x_0-2$$
+**Pochodna względem $x_1$.** Teraz stałą jest $x_0$, więc znika pierwszy składnik:
+$$\frac{\partial f}{\partial x_1}=\tfrac12\cdot 5\cdot 2\,(x_1+1)=5\,(x_1+1)$$
+Otrzymujemy wzór, z którego korzystamy w każdej iteracji:
+$$\nabla f(\mathbf{x})=\big(x_0-2,\ \ 5\,(x_1+1)\big)$$`),
         });
         for (let k = 0; k < NIT; k++) {
           const g = fn.g(x), d = M.scale(g, -a), xn = M.add(x, d), f0 = fn.f(x), f1 = fn.f(xn);
           const group = R`Iteracja ${k + 1}: z $\mathbf{x}^{(${k})}$ do $\mathbf{x}^{(${k + 1})}$`, cur = pts.map(q => [...q]);
           fr.push({
             group, title: 'Gradient w bieżącym punkcie', line: 2, state: { pts: cur, g },
-            html: md(R`Bieżący punkt: $\mathbf{x}^{(${k})}=${tv(x)}$. Podstawiamy jego współrzędne do wzoru na gradient:
-$$\nabla f(\mathbf{x}^{(${k})})=\big(${tn(x[0])}-2,\ \ 5\cdot(${tn(x[1])}+1)\big)=${tv(g)}$$
+            html: md(R`Bieżący punkt: $\mathbf{x}^{(${k})}=${tv(x)}$, czyli $x_0=${tn(x[0])}$ oraz $x_1=${tn(x[1])}$. Podstawiamy te wartości do wzorów na pochodne cząstkowe:
+$$\begin{aligned}\frac{\partial f}{\partial x_0}&=x_0-2&&=${tp(x[0])}-2&&=${tn(g[0])}\\[3pt] \frac{\partial f}{\partial x_1}&=5\,(x_1+1)&&=5\cdot(${tn(x[1])}+1)&&=${tn(g[1])}\end{aligned}$$
+Obie pochodne tworzą gradient w bieżącym punkcie:
+$$\nabla f(\mathbf{x}^{(${k})})=\Big(\frac{\partial f}{\partial x_0},\ \frac{\partial f}{\partial x_1}\Big)=${tv(g)}$$
 ${k === 0 ? R`Gradient wskazuje kierunek **najszybszego wzrostu** funkcji (szara strzałka, prostopadła do poziomicy). W programie tę operację wykonuje zwykle mechanizm automatycznego różniczkowania (autograd).` : R`Norma gradientu: $\lVert\nabla f\rVert=${tn(M.norm(g), 4)}$. ${M.norm(g) < M.norm(fn.g(pts[pts.length - 2] || x)) ? 'Jest mniejsza niż w poprzednim kroku: zbocze staje się łagodniejsze.' : 'Jest większa niż w poprzednim kroku: oddalamy się od minimum.'}`}`),
           });
           fr.push({
@@ -228,9 +241,9 @@ Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz
         const fn = api.fn, a = aS.value;
         if (!fn.eig) return `<div>${K(fn.tex)}</div><div class="note">Ta funkcja nie jest kwadratowa: krzywizna zależy od punktu, więc nie istnieje jedna granica ${K(R`2/L`)} wspólna dla całej płaszczyzny.</div>`;
         const [m, L] = fn.eig, top = 2.6 / L, pct = v => (100 * Math.min(v, top) / top).toFixed(2) + '%';
-        const m0 = 1 - a * m, m1 = 1 - a * L, fx = v => (v < 0 ? '−' : ' ') + Math.abs(v).toFixed(3);
+        const m0 = 1 - a * m, m1 = 1 - a * L, fx = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(3);
         return `<div>${K(fn.tex)}</div>
-        <div class="note">Mnożniki błędu w jednym kroku: ${K(R`1-\alpha m`)} = <span class="numf">${fx(m0)}</span>, ${K(R`1-\alpha L`)} = <span class="numf">${fx(m1)}</span>. Optymalny współczynnik: ${K(R`\alpha^{*}=\tfrac{2}{m+L}=${tn(2 / (m + L), 3)}`)}.</div>
+        <div class="note kvs"><span>Mnożniki błędu w jednym kroku:</span><span class="kv">${K(R`1-\alpha m`)} = <b>${fx(m0)}</b></span><span class="kv">${K(R`1-\alpha L`)} = <b>${fx(m1)}</b></span><span>Optymalny współczynnik: ${K(R`\alpha^{*}=\tfrac{2}{m+L}=${tn(2 / (m + L), 3)}`)}</span></div>
         <div class="gauge" aria-label="Położenie alfa względem granicy stabilności">
           <div class="gauge-bar"><span style="width:${pct(1 / L)};background:${C.greenT2}">monotonicznie</span><span style="width:${pct(1 / L)};background:${C.greyT}">oscylacje</span><span style="flex:1;background:${C.redT2}">rozbieżność</span><i style="left:${pct(a)}"></i></div>
           <div class="gauge-l"><span style="left:${pct(1 / L)}">${K(R`1/L=${tn(1 / L, 3)}`)}</span><span style="left:${pct(2 / L)}">${K(R`2/L=${tn(2 / L, 3)}`)}</span></div>

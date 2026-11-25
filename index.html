@@ -146,19 +146,25 @@ input[type=number], input[type=text], select { width: 100%; padding: 7px 9px; bo
 .algo .cm { color: var(--ink3); }
 .algo b { font-weight: 600; }
 .grp { font: 600 20px/1.3 var(--serif); }
-.now { min-height: 76px; align-content: start; position: sticky; top: 56px; z-index: 4; background: var(--green-t); border: 1px solid var(--green-t2); border-radius: 7px; padding: 7px 12px; font: 14.5px/1.4 var(--sans); display: grid; gap: 2px; }
-.now b { font: 600 11.5px var(--sans); letter-spacing: .08em; text-transform: uppercase; color: var(--green-d); }
-.now .ln { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; } .now .ln > i { font-style: normal; color: var(--ink3); font-size: 12.5px; text-align: right; padding-top: 2px; }
-.now .cm { color: var(--ink3); } .now .katex { font-size: 1.05em; }
-.steps { display: grid; gap: 10px; }
-.step { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 13px 16px 14px; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 4px 12px; }
-.step-n { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line2); color: var(--ink3); font: 600 14px/25px var(--sans); text-align: center; grid-row: 1 / span 2; }
-.step h4 { font: 600 17.5px/1.3 var(--serif); align-self: center; padding: 3px 0; }
-.step-b { grid-column: 2; min-width: 0; }
-.step.cur { border-color: var(--green); box-shadow: 0 0 0 1px var(--green), 0 8px 22px rgba(0, 79, 45, .10); }
-.step.cur .step-n { background: var(--green); border-color: var(--green); color: #fff; }
-.step:not(.cur) { background: #FBFCFB; } .step:not(.cur) .step-b { color: var(--ink2); }
-.wnav { position: sticky; bottom: 0; z-index: 5; background: var(--ground); padding: 10px 0 12px; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; border-top: 1px solid var(--line); }
+.wnav { position: sticky; top: 55px; z-index: 6; background: var(--ground); padding: 8px 0 10px; display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
+.wnav .wbar { flex-basis: 100%; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.wnav .wbar i { display: block; height: 100%; width: 0; background: var(--green); transition: width .15s; }
+.stage { position: relative; display: grid; gap: 10px; align-content: start; }
+.stage-h { display: grid; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.stage-h .grp { min-height: 40px; display: block; overflow: hidden; }
+.pills { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; min-height: 30px; }
+.pill { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--line2); background: var(--paper); color: var(--ink3); font: 600 14px/1 var(--sans); cursor: pointer; padding: 0; }
+.pill:hover { border-color: var(--green); color: var(--green-d); }
+.pill.done { border-color: var(--green); color: var(--green-d); background: var(--green-t); }
+.pill.on { background: var(--green); border-color: var(--green); color: #fff; }
+.stage-in, .stage-m { display: grid; gap: 6px; align-content: start; }
+.stage-m { position: absolute; left: 18px; right: 18px; top: 0; visibility: hidden; pointer-events: none; }
+.stage-t { font: 600 18.5px/1.3 var(--serif); display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 12px; align-items: start; }
+.stage-t .step-n { width: 28px; height: 28px; border-radius: 50%; background: var(--green); color: #fff; font: 600 14px/28px var(--sans); text-align: center; }
+.stage-t > span:last-child { padding-top: 2px; }
+.stage .step-b { padding-left: 42px; min-width: 0; }
+.stage .dm .katex { font-size: 1.04em; }
+.tbl tr.blank td { color: transparent; }
 .wnav .prog { font: 14px var(--sans); color: var(--ink3); margin-left: auto; font-variant-numeric: tabular-nums; }
 .quiz { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; background: var(--grey-t); border: 1px dashed var(--line2); border-radius: 7px; padding: 10px 12px; margin-top: 8px; font: 15px var(--sans); }
 .quiz input { width: 130px; }
@@ -213,7 +219,10 @@ table.tbl { border-collapse: collapse; width: 100%; font: 14.5px/1.3 var(--sans)
 @media (min-width: 1560px) { .plots.three { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .fbox { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-content: start; }
 .fbox .note { margin: 0; }
-.numf { display: inline-block; min-width: 3.9em; text-align: right; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; white-space: pre; }
+.kvs { display: flex; flex-wrap: wrap; gap: 4px 0; align-items: baseline; margin: 0; }
+.kvs > span { margin-right: 14px; }
+.kv { display: inline-block; min-width: 9.6em; white-space: nowrap; }
+.kv b { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
 .fix2 { min-height: 2.8em; } small.fix3 { display: block; min-height: 4.2em; }
 .tbl.fixedt { table-layout: fixed; }
 .tbl.fixedt th { white-space: normal; vertical-align: bottom; line-height: 1.25; }
@@ -253,15 +262,16 @@ footer { max-width: 1400px; margin: auto; padding: 0 22px 30px; font: 13.5px var
 }
 @media (max-width: 560px) {
   body { font-size: 16px; } main { padding: 18px 14px 50px; } .bar-in { padding: 8px 14px; }
-  .step { grid-template-columns: minmax(0, 1fr); } .step-n { grid-row: auto; } .step-b { grid-column: 1; }
+  .stage .step-b { padding-left: 0; }
 }
-.step { scroll-margin: 150px 0 80px; }
 .topic svg path, .topic svg ellipse { fill: none; stroke: var(--line2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .topic svg .a { stroke: var(--green); stroke-width: 2.4; }
 .topic svg .p { fill: var(--red); stroke: none; }
 
 /* ---------- clickable symbols + glossary dialog ---------- */
-.katex [data-g], .gl { cursor: help; border-radius: 3px; transition: background-color .12s; }
+.katex [data-g], .gl { cursor: help; border-radius: 4px; transition: background-color .12s; }
+.katex [data-g] { padding: .3em .17em; margin: 0 -.17em; }   /* larger target, no change of layout */
+.katex, .dm { cursor: help; }
 .katex [data-g]:hover, .gl:hover { background: var(--green-t2); }
 .gl { border-bottom: 1px dotted var(--ink3); }
 dt, th, .ctl > label, .ctl-l, .plot-t { cursor: default; }
@@ -367,7 +377,7 @@ const M = (() => {
       f: x => 0.5 * ((x[0] - 2) ** 2 + 5 * (x[1] + 1) ** 2),
       g: x => [x[0] - 2, 5 * (x[1] + 1)],
       H: () => [[1, 0], [0, 5]],
-      min: [2, -1], fmin: 0, eig: [1, 5], view: [-4, 4, -4, 4], start: [-3, 4],
+      min: [2, -1], fmin: 0, eig: [1, 5], view: [-5, 5, -5, 5], start: [-3, 4],
     },
     valley: {
       id: 'valley', label: 'Funkcja o wąskiej dolinie, κ = 100',
@@ -889,7 +899,9 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) stopA
 /* ---------- the step-by-step player ----------
    cfg: { intro, params:[{id,label,options,value}], algo:{title,lines[]}, logHead:[...],
           visual(card) -> { draw(state, frame) }, build(params) -> frames[] }
-   frame: { group, title, html, line, state, log:[cells], quiz:{prompt, answer, tol, reveal} }            */
+   frame: { group, title, html, line, state, log:[cells], quiz:{prompt, answer, tol, reveal} }
+   Layout is kept still on purpose: the buttons sit at a fixed place above the content, one step is shown
+   at a time in a panel whose height is reserved for the tallest step, and the results table has a fixed number of rows. */
 function Walk(cfg) {
   const root = el('div', 'walk'), top = el('div', 'walk-top'), pv = {};
   if (cfg.intro) top.append(el('div', 'prose', md(cfg.intro)));
@@ -905,53 +917,75 @@ function Walk(cfg) {
   if (cfg.logHead) { logCard = el('section', 'card'); left.append(logCard); }
   const algo = el('section', 'card');
   algo.innerHTML = `<h3 class="card-h">${cfg.algo.title}</h3><ol class="algo">${cfg.algo.lines.map(l => { const ind = l.match(/^ */)[0].length / 4; return `<li class="${ind ? 'in' + ind : ''}"><span>${mdi(l.trim())}</span></li>`; }).join('')}</ol>`;
-  const grp = el('h3', 'grp'), now = el('div', 'now'), list = el('div', 'steps'), nav = el('div', 'wnav');
+  const nav = el('div', 'wnav');
   const bPrev = Btn('← Wstecz', '', () => go(pos - 1)), bNext = Btn('Dalej →', 'pri', () => go(pos + 1));
   const bEnd = Btn('Do końca etapu', '', () => { let i = pos; while (i + 1 < frames.length && frames[i + 1].group === frames[pos].group) i++; go(i === pos ? pos + 1 : i); });
-  const bReset = Btn('Od początku', 'link', () => go(0)), prog = el('span', 'prog');
-  nav.append(bPrev, bNext, bEnd, bReset, prog);
-  right.append(algo, grp, now, list, nav);
+  const bReset = Btn('Od początku', 'link', () => go(0)), prog = el('span', 'prog'), bar2 = el('div', 'wbar', '<i></i>');
+  nav.append(bPrev, bNext, bEnd, bReset, prog, bar2);
+  const stage = el('section', 'card stage');
+  stage.innerHTML = `<div class="stage-h"><h3 class="grp"></h3><ol class="pills" aria-label="Kroki tego etapu"></ol></div><div class="stage-in"></div><div class="stage-m" aria-hidden="true"></div>`;
+  const grp = stage.querySelector('.grp'), pills = stage.querySelector('.pills'), inner = stage.querySelector('.stage-in'), meter = stage.querySelector('.stage-m');
+  right.append(nav, algo, stage);
   grid.append(left, right); root.append(top, grid);
 
-  let frames = [], pos = 0;
-  function card(f, n, cur) {
-    const c = el('article', 'step' + (cur ? ' cur' : ''));
-    c.innerHTML = `<span class="step-n">${n}</span><h4>${mdi(f.title)}</h4><div class="step-b">${f.html}${f.quiz && f._done ? f.quiz.reveal : ''}</div>`;
+  let frames = [], pos = 0, logRows = 0, measuredW = 0;
+  const QUIZ = id => `<form class="quiz"><label for="${id}">…</label><input id="${id}" type="text"><button class="btn sm pri" type="button">Sprawdź</button><span class="fb">&nbsp;</span></form>`;
+  const block = (f, n, body) => `<h4 class="stage-t"><span class="step-n">${n}</span><span>${mdi(f.title)}</span></h4><div class="step-b">${body}</div>`;
+  /* reserve room for the tallest step, so that nothing below or around the panel moves while stepping */
+  function measure() {
+    const w = inner.clientWidth; if (w < 50) return;
+    measuredW = w; let hmax = 0;
+    for (const f of frames) {
+      const variants = f.quiz ? [f.html + QUIZ('m'), f.html + f.quiz.reveal + '<p class="fb ok">Zgadza się.</p>'] : [f.html];
+      for (const v of variants) { meter.innerHTML = block(f, 1, v); hmax = Math.max(hmax, meter.offsetHeight); }
+    }
+    meter.innerHTML = ''; inner.style.minHeight = Math.ceil(hmax) + 'px';
+  }
+  new ResizeObserver(() => { if (Math.abs(inner.clientWidth - measuredW) > 1) measure(); }).observe(stage);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => measure());   // text reflows once the web fonts arrive
+
+  function show() {
+    const f = frames[pos]; let g0 = pos, g1 = pos;
+    while (g0 > 0 && frames[g0 - 1].group === f.group) g0--;
+    while (g1 + 1 < frames.length && frames[g1 + 1].group === f.group) g1++;
+    grp.innerHTML = mdi(f.group);
+    pills.innerHTML = '';
+    for (let i = g0; i <= g1; i++) {
+      const b = el('button', 'pill' + (i === pos ? ' on' : i < pos ? ' done' : ''), String(i - g0 + 1)); b.type = 'button';
+      b.title = frames[i].title.replace(/[$\\{}]/g, ''); if (i === pos) b.setAttribute('aria-current', 'step');
+      b.addEventListener('click', () => go(i)); const li = el('li'); li.append(b); pills.append(li);
+    }
+    inner.innerHTML = block(f, pos - g0 + 1, f.html + (f.quiz && f._done ? f.quiz.reveal : ''));
+    const body = inner.querySelector('.step-b');
     if (f.quiz && !f._done) {
       const q = el('form', 'quiz'), id = 'f' + (++UID);
-      q.innerHTML = `<label for="${id}">${mdi(f.quiz.prompt)}</label><input id="${id}" type="text" inputmode="decimal" autocomplete="off" spellcheck="false"><button class="btn sm pri" type="submit">Sprawdź</button><button class="btn sm link" type="button">Pokaż wynik</button><span class="fb" role="status"></span>`;
+      q.innerHTML = `<label for="${id}">${mdi(f.quiz.prompt)}</label><input id="${id}" type="text" inputmode="decimal" autocomplete="off" spellcheck="false"><button class="btn sm pri" type="submit">Sprawdź</button><button class="btn sm link" type="button">Pokaż wynik</button><span class="fb" role="status">&nbsp;</span>`;
       const inp = q.querySelector('input'), fb = q.querySelector('.fb');
       q.addEventListener('submit', e => {
         e.preventDefault(); const v = parseFloat(String(inp.value).replace(',', '.'));
         if (!Number.isFinite(v)) { fb.textContent = 'Wpisz liczbę.'; fb.className = 'fb no'; return; }
-        if (Math.abs(v - f.quiz.answer) <= (f.quiz.tol || 5e-3) * Math.max(1, Math.abs(f.quiz.answer))) { f._done = true; f._ok = true; show(false); }
+        if (Math.abs(v - f.quiz.answer) <= (f.quiz.tol || 5e-3) * Math.max(1, Math.abs(f.quiz.answer))) { f._done = true; f._ok = true; show(); }
         else { fb.textContent = f.quiz.hint || 'To jeszcze nie ten wynik. Sprawdź znaki i kolejność działań.'; fb.className = 'fb no'; }
       });
-      q.querySelector('button[type=button]').addEventListener('click', () => { f._done = true; show(false); });
-      c.querySelector('.step-b').append(q);
-    } else if (f.quiz && f._ok) c.querySelector('.step-b').insertAdjacentHTML('beforeend', '<p class="fb ok">Zgadza się.</p>');
-    return c;
-  }
-  function show(scroll = true) {
-    const f = frames[pos]; let g0 = pos; while (g0 > 0 && frames[g0 - 1].group === f.group) g0--;
-    grp.innerHTML = mdi(f.group); list.innerHTML = '';
-    for (let i = g0; i <= pos; i++) list.append(card(frames[i], i - g0 + 1, i === pos));
+      q.querySelector('button[type=button]').addEventListener('click', () => { f._done = true; show(); });
+      body.append(q);
+    } else if (f.quiz && f._ok) body.insertAdjacentHTML('beforeend', '<p class="fb ok">Zgadza się.</p>');
     const lines = [].concat(f.line ?? []);
-    const lis = [...algo.querySelectorAll('li')]; lis.forEach((li, i) => li.classList.toggle('on', lines.includes(i)));
-    now.innerHTML = `<b>Bieżący wiersz algorytmu</b>` + lines.map(i => `<div class="ln"><i>${i + 1}</i><div>${lis[i].firstChild.innerHTML}</div></div>`).join('');
+    algo.querySelectorAll('li').forEach((li, i) => li.classList.toggle('on', lines.includes(i)));
     vis.draw(f.state, f);
     if (logCard) {
-      const rows = frames.slice(0, pos + 1).filter(x => x.log).map(x => x.log), shown = rows.slice(-8);
-      logCard.innerHTML = `<h3 class="card-h">${cfg.logTitle || 'Zapisane wyniki'}</h3>` + (rows.length
-        ? `<div class="tblw"><table class="tbl"><thead><tr>${cfg.logHead.map(h => `<th>${mdi(h)}</th>`).join('')}</tr></thead><tbody>${shown.map((r, i) => `<tr class="${i === shown.length - 1 ? 'hl' : ''}">${r.map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
-        : `<p class="note">${cfg.logEmpty || 'Tabela wypełni się po wykonaniu pierwszego pełnego kroku.'}</p>`);
+      const rows = frames.slice(0, pos + 1).filter(x => x.log).map(x => x.log), shown = rows.slice(-logRows), nc = cfg.logHead.length;
+      const blank = `<tr class="blank">${'<td>&nbsp;</td>'.repeat(nc)}</tr>`;
+      logCard.innerHTML = `<h3 class="card-h">${cfg.logTitle || 'Zapisane wyniki'}</h3><div class="tblw"><table class="tbl"><thead><tr>${cfg.logHead.map(h => `<th>${mdi(h)}</th>`).join('')}</tr></thead><tbody>` +
+        shown.map((r, i) => `<tr class="${i === shown.length - 1 ? 'hl' : ''}">${r.map(v => `<td>${v}</td>`).join('')}</tr>`).join('') + blank.repeat(logRows - shown.length) + '</tbody></table></div>';
     }
     bPrev.disabled = pos === 0; bNext.disabled = pos === frames.length - 1; bEnd.disabled = pos === frames.length - 1;
     prog.textContent = `krok ${pos + 1} z ${frames.length}`;
-    if (scroll && list.lastChild && root.isConnected) list.lastChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    bar2.firstChild.style.width = (100 * (pos + 1) / frames.length).toFixed(1) + '%';
+    if (inner.offsetHeight > parseFloat(inner.style.minHeight || 0) + 1) inner.style.minHeight = inner.offsetHeight + 'px';   // never shrink back
   }
   function go(i) { pos = Math.max(0, Math.min(frames.length - 1, i)); show(); }
-  function rebuild() { frames = cfg.build(pv); pos = 0; show(false); }
+  function rebuild() { frames = cfg.build(pv); logRows = Math.min(8, frames.filter(x => x.log).length); pos = 0; measure(); show(); }
   root.tabIndex = -1;
   root.addEventListener('keydown', e => {
     if (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
@@ -1367,9 +1401,11 @@ const Gloss = (() => {
   function show(key, push) {
     if (push) stack.push(key);
     back.hidden = stack.length < 2;
-    if (key === '__index') {
-      const items = Object.entries(GLOSS).sort((a, b) => a[1].t.localeCompare(b[1].t, 'pl'));
-      body.innerHTML = `<h2 id="gloss-title">Słownik symboli i pojęć</h2><p class="note">Wybierz hasło. Na każdej stronie możesz też kliknąć dowolny symbol we wzorze, w tabeli lub na wykresie.</p><div class="gl-list">${items.map(([k, g]) => `<button type="button" class="gl-item" data-key="${k}"><span>${K(g.s)}</span>${g.t}</button>`).join('')}</div>`;
+    if (key === '__index' || key.startsWith('__pick:')) {
+      const all = key === '__index';
+      const items = all ? Object.entries(GLOSS).sort((a, b) => a[1].t.localeCompare(b[1].t, 'pl')) : key.slice(7).split(',').map(k => [k, GLOSS[k]]);
+      body.innerHTML = (all ? `<h2 id="gloss-title">Słownik symboli i pojęć</h2><p class="note">Wybierz hasło. Na każdej stronie możesz też kliknąć dowolny symbol we wzorze, w tabeli lub na wykresie.</p>`
+        : `<h2 id="gloss-title">Symbole w tym wzorze</h2><p class="note">Wybierz symbol, który chcesz objaśnić.</p>`) + `<div class="gl-list">${items.map(([k, g]) => `<button type="button" class="gl-item" data-key="${k}"><span>${K(g.s)}</span>${g.t}</button>`).join('')}</div>`;
       body.querySelectorAll('.gl-item').forEach(b => b.addEventListener('click', ev => { ev.stopPropagation(); show(b.dataset.key, true); }));
     } else {
       const g = GLOSS[key];
@@ -1381,18 +1417,36 @@ const Gloss = (() => {
     }
     body.scrollTop = 0;
   }
+  function context(from) { ctx = []; for (let n = from; n; n = n.parentElement && n.parentElement.closest('[data-ctx]')) { if (n.dataset && n.dataset.ctx) ctx.push(n.dataset.ctx); if (!n.parentElement) break; } }
   function open(key, from) {
     if (!dlg) build();
-    if (!dlg.open) { stack = []; ctx = []; for (let n = from; n; n = n.parentElement && n.parentElement.closest('[data-ctx]')) { if (n.dataset && n.dataset.ctx) ctx.push(n.dataset.ctx); if (!n.parentElement) break; } }
+    if (!dlg.open) { stack = []; context(from); }
     key = key === '__index' ? key : resolve(key);
     if (key !== '__index' && !GLOSS[key]) return;
     show(key, true);
+    if (!dlg.open) dlg.showModal();
+  }
+  function pick(keys, from) {   // several symbols to choose from
+    if (!dlg) build();
+    if (!dlg.open) { stack = []; context(from); }
+    const ks = [...new Set(keys.map(resolve))].filter(k => GLOSS[k]); if (!ks.length) return;
+    if (ks.length === 1) { open(ks[0], from); return; }
+    show('__pick:' + ks.join(','), true);
     if (!dlg.open) dlg.showModal();
   }
   document.addEventListener('click', e => {
     const t = e.target; if (!(t instanceof Element)) return;
     if (t.closest('button, a, input, select, summary')) return;
     let n = t.closest('[data-g]');
+    if (!n) {   // a near miss inside a formula: take the closest symbol, or offer the list of symbols of this formula
+      const fm = t.closest('.katex, .dm');
+      if (fm) {
+        const tagged = [...fm.querySelectorAll('[data-g]')]; let best = null, bd = 1e9;
+        for (const s of tagged) { const r = s.getBoundingClientRect(), dx = Math.max(r.left - e.clientX, 0, e.clientX - r.right), dy = Math.max(r.top - e.clientY, 0, e.clientY - r.bottom), d = Math.hypot(dx, dy); if (d < bd) { bd = d; best = s; } }
+        if (best && bd <= 18) n = best;
+        else if (tagged.length) { e.preventDefault(); pick([...new Set(tagged.map(s => s.dataset.g))], fm); return; }
+      }
+    }
     if (!n) { const host = t.closest('dt, th, .stats > div, .ctl > label, .ctl-l, .plot-t, .ax, .legend > span'); if (host) n = host.matches('[data-g]') ? host : host.querySelector('[data-g]'); }
     if (!n || !n.dataset.g) return;
     e.preventDefault(); open(n.dataset.g, n);
@@ -1745,7 +1799,7 @@ Numer iteracji zapisujemy w indeksie górnym, w nawiasie: $\mathbf{x}^{(k)}$ ozn
         card.insertAdjacentHTML('beforeend', legend([['line', C.green, 'trajektoria'], ['line', C.ghost, 'kierunek gradientu $\\nabla f$'], ['dash', C.red, 'planowany krok $-\\alpha\\nabla f$']]));
         return {
           draw(s) {
-            const far = s.pts.some(q => Math.abs(q[0]) > 4.4 || Math.abs(q[1]) > 4.4);
+            const far = s.pts.some(q => Math.abs(q[0]) > 4.9 || Math.abs(q[1]) > 4.9);
             p.setView(...(far ? [-7, 7, -7, 7] : fn.view));
             p.draw = q => {
               drawField(q, fn);
@@ -1764,18 +1818,31 @@ Numer iteracji zapisujemy w indeksie górnym, w nawiasie: $\mathbf{x}^{(k)}$ ozn
         fr.push({
           group: 'Punkt wyjścia', title: 'Funkcja, punkt startowy i współczynnik uczenia', line: 0, state: { pts: [[...x]] }, log: [0, num(x[0]), num(x[1]), num(fn.f(x))],
           html: md(R`Minimalizujemy funkcję kwadratową („miskę”):
-$$f(\mathbf{x})=\tfrac12\big[(x_0-2)^2+5\,(x_1+1)^2\big],\qquad \nabla f(\mathbf{x})=\big(x_0-2,\ \ 5\,(x_1+1)\big)$$
+$$f(\mathbf{x})=\tfrac12\big[(x_0-2)^2+5\,(x_1+1)^2\big]$$
 Punkt startowy: $\mathbf{x}^{(0)}=(-3,\ 4)$, wartość funkcji kosztu $f(\mathbf{x}^{(0)})=${tn(fn.f(x))}$, współczynnik uczenia $\alpha=${tn(a)}$.
 
 Minimum znajduje się w punkcie $(2,\,-1)$, ale algorytm tego nie wie. W każdym kroku zna wyłącznie wartość funkcji i gradient **w bieżącym punkcie**.`),
+        });
+        fr.push({
+          group: 'Punkt wyjścia', title: 'Wzór na gradient: pochodne cząstkowe', line: 2, state: { pts: [[...x]] },
+          html: md(R`Gradient to wektor pochodnych cząstkowych, po jednej dla każdej zmiennej:
+$$\nabla f(\mathbf{x})=\Big(\frac{\partial f}{\partial x_0},\ \frac{\partial f}{\partial x_1}\Big)$$
+**Pochodna względem $x_0$.** Zmienną $x_1$ traktujemy jak stałą, więc składnik $5\,(x_1+1)^2$ ma pochodną równą zeru. Pozostaje $\tfrac12(x_0-2)^2$, a pochodną kwadratu jest podwojona podstawa:
+$$\frac{\partial f}{\partial x_0}=\tfrac12\cdot 2\,(x_0-2)=x_0-2$$
+**Pochodna względem $x_1$.** Teraz stałą jest $x_0$, więc znika pierwszy składnik:
+$$\frac{\partial f}{\partial x_1}=\tfrac12\cdot 5\cdot 2\,(x_1+1)=5\,(x_1+1)$$
+Otrzymujemy wzór, z którego korzystamy w każdej iteracji:
+$$\nabla f(\mathbf{x})=\big(x_0-2,\ \ 5\,(x_1+1)\big)$$`),
         });
         for (let k = 0; k < NIT; k++) {
           const g = fn.g(x), d = M.scale(g, -a), xn = M.add(x, d), f0 = fn.f(x), f1 = fn.f(xn);
           const group = R`Iteracja ${k + 1}: z $\mathbf{x}^{(${k})}$ do $\mathbf{x}^{(${k + 1})}$`, cur = pts.map(q => [...q]);
           fr.push({
             group, title: 'Gradient w bieżącym punkcie', line: 2, state: { pts: cur, g },
-            html: md(R`Bieżący punkt: $\mathbf{x}^{(${k})}=${tv(x)}$. Podstawiamy jego współrzędne do wzoru na gradient:
-$$\nabla f(\mathbf{x}^{(${k})})=\big(${tn(x[0])}-2,\ \ 5\cdot(${tn(x[1])}+1)\big)=${tv(g)}$$
+            html: md(R`Bieżący punkt: $\mathbf{x}^{(${k})}=${tv(x)}$, czyli $x_0=${tn(x[0])}$ oraz $x_1=${tn(x[1])}$. Podstawiamy te wartości do wzorów na pochodne cząstkowe:
+$$\begin{aligned}\frac{\partial f}{\partial x_0}&=x_0-2&&=${tp(x[0])}-2&&=${tn(g[0])}\\[3pt] \frac{\partial f}{\partial x_1}&=5\,(x_1+1)&&=5\cdot(${tn(x[1])}+1)&&=${tn(g[1])}\end{aligned}$$
+Obie pochodne tworzą gradient w bieżącym punkcie:
+$$\nabla f(\mathbf{x}^{(${k})})=\Big(\frac{\partial f}{\partial x_0},\ \frac{\partial f}{\partial x_1}\Big)=${tv(g)}$$
 ${k === 0 ? R`Gradient wskazuje kierunek **najszybszego wzrostu** funkcji (szara strzałka, prostopadła do poziomicy). W programie tę operację wykonuje zwykle mechanizm automatycznego różniczkowania (autograd).` : R`Norma gradientu: $\lVert\nabla f\rVert=${tn(M.norm(g), 4)}$. ${M.norm(g) < M.norm(fn.g(pts[pts.length - 2] || x)) ? 'Jest mniejsza niż w poprzednim kroku: zbocze staje się łagodniejsze.' : 'Jest większa niż w poprzednim kroku: oddalamy się od minimum.'}`}`),
           });
           fr.push({
@@ -1837,9 +1904,9 @@ Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz
         const fn = api.fn, a = aS.value;
         if (!fn.eig) return `<div>${K(fn.tex)}</div><div class="note">Ta funkcja nie jest kwadratowa: krzywizna zależy od punktu, więc nie istnieje jedna granica ${K(R`2/L`)} wspólna dla całej płaszczyzny.</div>`;
         const [m, L] = fn.eig, top = 2.6 / L, pct = v => (100 * Math.min(v, top) / top).toFixed(2) + '%';
-        const m0 = 1 - a * m, m1 = 1 - a * L, fx = v => (v < 0 ? '−' : ' ') + Math.abs(v).toFixed(3);
+        const m0 = 1 - a * m, m1 = 1 - a * L, fx = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(3);
         return `<div>${K(fn.tex)}</div>
-        <div class="note">Mnożniki błędu w jednym kroku: ${K(R`1-\alpha m`)} = <span class="numf">${fx(m0)}</span>, ${K(R`1-\alpha L`)} = <span class="numf">${fx(m1)}</span>. Optymalny współczynnik: ${K(R`\alpha^{*}=\tfrac{2}{m+L}=${tn(2 / (m + L), 3)}`)}.</div>
+        <div class="note kvs"><span>Mnożniki błędu w jednym kroku:</span><span class="kv">${K(R`1-\alpha m`)} = <b>${fx(m0)}</b></span><span class="kv">${K(R`1-\alpha L`)} = <b>${fx(m1)}</b></span><span>Optymalny współczynnik: ${K(R`\alpha^{*}=\tfrac{2}{m+L}=${tn(2 / (m + L), 3)}`)}</span></div>
         <div class="gauge" aria-label="Położenie alfa względem granicy stabilności">
           <div class="gauge-bar"><span style="width:${pct(1 / L)};background:${C.greenT2}">monotonicznie</span><span style="width:${pct(1 / L)};background:${C.greyT}">oscylacje</span><span style="flex:1;background:${C.redT2}">rozbieżność</span><i style="left:${pct(a)}"></i></div>
           <div class="gauge-l"><span style="left:${pct(1 / L)}">${K(R`1/L=${tn(1 / L, 3)}`)}</span><span style="left:${pct(2 / L)}">${K(R`2/L=${tn(2 / L, 3)}`)}</span></div>
@@ -1907,7 +1974,7 @@ Poniżej ta sama funkcja i ten sam punkt startowy co w poprzednim temacie ($\alp
         card.insertAdjacentHTML('beforeend', legend([['line', C.red, 'z momentem'], ['line', C.green, 'zwykły spadek gradientu'], ['dash', C.black, 'składowa momentu $-\\alpha\\beta\\mathbf{v}$'], ['dash', C.ghost, 'nowy gradient $-\\alpha\\mathbf{g}$']]));
         return {
           draw(s) {
-            const far = s.pts.concat(s.gd).some(q => Math.abs(q[0]) > 4.4 || Math.abs(q[1]) > 4.4);
+            const far = s.pts.concat(s.gd).some(q => Math.abs(q[0]) > 4.9 || Math.abs(q[1]) > 4.9);
             p.setView(...(far ? [-7, 7, -7, 7] : fn.view));
             p.draw = q => {
               drawField(q, fn);
@@ -1943,7 +2010,8 @@ Współczynnik momentu (momentum coefficient) $\beta\in[0,1)$ określa, jaka cz�
           const zeroG = g.findIndex(c => Math.abs(c) < 1e-9);
           fr.push({
             group, title: 'Gradient w bieżącym punkcie', line: 2, state: { pts: cur, gd: gcur, gs: M.scale(g, -a) },
-            html: md(R`$$\mathbf{g}=\nabla f(\mathbf{x}^{(${k})})=\big(${tn(x[0])}-2,\ \ 5\cdot(${tn(x[1])}+1)\big)=${tv(g)}$$
+            html: md(R`Wzór na gradient tej funkcji to $\nabla f(\mathbf{x})=\big(x_0-2,\ 5\,(x_1+1)\big)$ (wyprowadzenie znajdziesz w temacie o metodzie spadku gradientu). Podstawiamy współrzędne bieżącego punktu $\mathbf{x}^{(${k})}=${tv(x)}$:
+$$${al(R`\mathbf{g}=\nabla f(\mathbf{x}^{(${k})})`, R`\big(x_0-2,\ \ 5\,(x_1+1)\big)`, R`\big(${tp(x[0])}-2,\ \ 5\cdot(${tn(x[1])}+1)\big)`, tv(g))}$$
 ${k === 0 ? 'Ten krok jest taki sam jak w zwykłym spadku gradientu.' : zeroG >= 0 ? R`Zwróć uwagę: składowa gradientu w kierunku $x_${zeroG}$ jest **zerowa**. Zwykła metoda spadku gradientu nie wykonałaby w tym kierunku żadnego ruchu.` : R`Szara strzałka pokazuje krok, jaki z tego punktu wykonałaby zwykła metoda spadku gradientu.`}`),
           });
           const vL = R`\mathbf{v}^{(${k})}`, v1 = R`\beta\,${vprev}+\mathbf{g}`, v2 = R`${tn(b)}\cdot${tv(v)}+${tv(g)}`;
@@ -2006,7 +2074,9 @@ Dobrym przykładem testowym jest funkcja o wąskiej dolinie $f(\mathbf{x})=\tfra
         const fn = api.fn;
         if (!fn.eig) return `<div>${K(fn.tex)}</div><div class="note">Funkcja niekwadratowa: wzory na optymalne ${K(R`\alpha`)} i ${K(R`\beta`)} nie mają tu zastosowania.</div>`;
         const [m, L] = fn.eig, k = L / m, bo = ((Math.sqrt(k) - 1) / (Math.sqrt(k) + 1)) ** 2, ao = 4 / (Math.sqrt(L) + Math.sqrt(m)) ** 2;
-        return `<div>${K(fn.tex)}</div><div class="note">Granice stabilności: metoda spadku gradientu ${K(R`\alpha<\tfrac{2}{L}=${tn(2 / L, 3)}`)}, metoda z momentem ${K(R`\alpha<\tfrac{2(1+\beta)}{L}`)} = <span class="numf">${(2 * (1 + bS.value) / L).toFixed(4)}</span>.<br>Wartości optymalne dla funkcji kwadratowej: ${K(R`\beta^{*}=\big(\tfrac{\sqrt\kappa-1}{\sqrt\kappa+1}\big)^{2}=${tn(bo, 3)}`)}, ${K(R`\alpha^{*}=\tfrac{4}{(\sqrt L+\sqrt m)^{2}}=${tn(ao, 3)}`)}.</div>`;
+        return `<div>${K(fn.tex)}</div>
+        <div class="note kvs"><span>Granice stabilności:</span><span class="kv">spadek gradientu ${K(R`\alpha<\tfrac{2}{L}`)} = <b>${(2 / L).toFixed(4)}</b></span><span class="kv">z momentem ${K(R`\alpha<\tfrac{2(1+\beta)}{L}`)} = <b>${(2 * (1 + bS.value) / L).toFixed(4)}</b></span></div>
+        <div class="note kvs"><span>Wartości optymalne dla funkcji kwadratowej:</span><span>${K(R`\beta^{*}=\big(\tfrac{\sqrt\kappa-1}{\sqrt\kappa+1}\big)^{2}=${tn(bo, 3)}`)}</span><span>${K(R`\alpha^{*}=\tfrac{4}{(\sqrt L+\sqrt m)^{2}}=${tn(ao, 3)}`)}</span></div>`;
       },
       missions(api) {
         const set = (fn, a, b, x0) => { api.setFn(fn, x0); aS.set(a, false); bS.set(b, false); api.run(); };
@@ -2372,12 +2442,13 @@ i wybieramy takie $\mathbf{p}$, które minimalizuje prawą stronę.`),
             const group = R`Iteracja ${k + 1}: z $\mathbf{x}^{(${k})}$ do $\mathbf{x}^{(${k + 1})}$`;
             fr.push({
               group, title: 'Gradient: nachylenie', line: 2, state: { pts: cur, gd: gcur, g },
-              html: md(R`$$${al(R`\mathbf{g}=\nabla f(\mathbf{x}^{(${k})})`, R`\big(\sinh(x_0-1),\ \sinh(x_1+2)\big)`, R`\big(\sinh ${tn(x[0] - 1, 5)},\ \sinh ${tn(x[1] + 2, 5)}\big)`, tv(g, 5))}$$
+              html: md(R`Pochodną funkcji $\cosh u$ jest $\sinh u$, więc pochodne cząstkowe to $\partial f/\partial x_0=\sinh(x_0-1)$ oraz $\partial f/\partial x_1=\sinh(x_1+2)$. Podstawiamy współrzędne punktu $\mathbf{x}^{(${k})}=${tv(x, 5)}$:
+$$${al(R`\mathbf{g}=\nabla f(\mathbf{x}^{(${k})})`, R`\big(\sinh(x_0-1),\ \sinh(x_1+2)\big)`, R`\big(\sinh ${tn(x[0] - 1, 5)},\ \sinh ${tn(x[1] + 2, 5)}\big)`, tv(g, 5))}$$
 ${k === 0 ? 'Tylko tą informacją dysponuje metoda spadku gradientu. Szara strzałka pokazuje jej kierunek: zauważ, że **nie** wskazuje on minimum.' : ''}`),
             });
             fr.push({
               group, title: 'Hesjan: krzywizna', line: 3, state: { pts: cur, gd: gcur, model },
-              html: md(R`Hesjan (Hessian), czyli macierz Hessego, to macierz drugich pochodnych cząstkowych. Dla tej funkcji jest diagonalny:
+              html: md(R`Hesjan (Hessian), czyli macierz Hessego, to macierz drugich pochodnych cząstkowych. Różniczkujemy gradient jeszcze raz: pochodną $\sinh u$ jest $\cosh u$, a pochodne mieszane są równe zeru, bo każdy składnik funkcji zależy tylko od jednej zmiennej. Hesjan jest więc diagonalny:
 $$H(\mathbf{x}^{(${k})})=\begin{bmatrix}\cosh(x_0-1)&0\\0&\cosh(x_1+2)\end{bmatrix}=${tm(H, 5)}$$
 ${k === 0 ? R`Krzywizna w kierunku $x_1$ jest około $${tn(H[1][1] / H[0][0], 2)}$ razy większa niż w kierunku $x_0$. Elipsa narysowana linią przerywaną to poziomica modelu kwadratowego zbudowanego z $\mathbf{g}$ i $H$, a okrąg oznacza jego minimum.` : 'Im bliżej minimum, tym lepiej model kwadratowy przybliża funkcję.'}`),
             });

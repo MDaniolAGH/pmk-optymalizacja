@@ -185,12 +185,13 @@ i wybieramy takie $\mathbf{p}$, które minimalizuje prawą stronę.`),
             const group = R`Iteracja ${k + 1}: z $\mathbf{x}^{(${k})}$ do $\mathbf{x}^{(${k + 1})}$`;
             fr.push({
               group, title: 'Gradient: nachylenie', line: 2, state: { pts: cur, gd: gcur, g },
-              html: md(R`$$${al(R`\mathbf{g}=\nabla f(\mathbf{x}^{(${k})})`, R`\big(\sinh(x_0-1),\ \sinh(x_1+2)\big)`, R`\big(\sinh ${tn(x[0] - 1, 5)},\ \sinh ${tn(x[1] + 2, 5)}\big)`, tv(g, 5))}$$
+              html: md(R`Pochodną funkcji $\cosh u$ jest $\sinh u$, więc pochodne cząstkowe to $\partial f/\partial x_0=\sinh(x_0-1)$ oraz $\partial f/\partial x_1=\sinh(x_1+2)$. Podstawiamy współrzędne punktu $\mathbf{x}^{(${k})}=${tv(x, 5)}$:
+$$${al(R`\mathbf{g}=\nabla f(\mathbf{x}^{(${k})})`, R`\big(\sinh(x_0-1),\ \sinh(x_1+2)\big)`, R`\big(\sinh ${tn(x[0] - 1, 5)},\ \sinh ${tn(x[1] + 2, 5)}\big)`, tv(g, 5))}$$
 ${k === 0 ? 'Tylko tą informacją dysponuje metoda spadku gradientu. Szara strzałka pokazuje jej kierunek: zauważ, że **nie** wskazuje on minimum.' : ''}`),
             });
             fr.push({
               group, title: 'Hesjan: krzywizna', line: 3, state: { pts: cur, gd: gcur, model },
-              html: md(R`Hesjan (Hessian), czyli macierz Hessego, to macierz drugich pochodnych cząstkowych. Dla tej funkcji jest diagonalny:
+              html: md(R`Hesjan (Hessian), czyli macierz Hessego, to macierz drugich pochodnych cząstkowych. Różniczkujemy gradient jeszcze raz: pochodną $\sinh u$ jest $\cosh u$, a pochodne mieszane są równe zeru, bo każdy składnik funkcji zależy tylko od jednej zmiennej. Hesjan jest więc diagonalny:
 $$H(\mathbf{x}^{(${k})})=\begin{bmatrix}\cosh(x_0-1)&0\\0&\cosh(x_1+2)\end{bmatrix}=${tm(H, 5)}$$
 ${k === 0 ? R`Krzywizna w kierunku $x_1$ jest około $${tn(H[1][1] / H[0][0], 2)}$ razy większa niż w kierunku $x_0$. Elipsa narysowana linią przerywaną to poziomica modelu kwadratowego zbudowanego z $\mathbf{g}$ i $H$, a okrąg oznacza jego minimum.` : 'Im bliżej minimum, tym lepiej model kwadratowy przybliża funkcję.'}`),
             });

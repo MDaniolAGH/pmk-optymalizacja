@@ -352,7 +352,9 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) stopA
 /* ---------- the step-by-step player ----------
    cfg: { intro, params:[{id,label,options,value}], algo:{title,lines[]}, logHead:[...],
           visual(card) -> { draw(state, frame) }, build(params) -> frames[] }
-   frame: { group, title, html, line, state, log:[cells], quiz:{prompt, answer, tol, reveal} }            */
+   frame: { group, title, html, line, state, log:[cells], quiz:{prompt, answer, tol, reveal} }
+   Layout is kept still on purpose: the buttons sit at a fixed place above the content, one step is shown
+   at a time in a panel whose height is reserved for the tallest step, and the results table has a fixed number of rows. */
 function Walk(cfg) {
   const root = el('div', 'walk'), top = el('div', 'walk-top'), pv = {};
   if (cfg.intro) top.append(el('div', 'prose', md(cfg.intro)));
@@ -368,53 +370,75 @@ function Walk(cfg) {
   if (cfg.logHead) { logCard = el('section', 'card'); left.append(logCard); }
   const algo = el('section', 'card');
   algo.innerHTML = `<h3 class="card-h">${cfg.algo.title}</h3><ol class="algo">${cfg.algo.lines.map(l => { const ind = l.match(/^ */)[0].length / 4; return `<li class="${ind ? 'in' + ind : ''}"><span>${mdi(l.trim())}</span></li>`; }).join('')}</ol>`;
-  const grp = el('h3', 'grp'), now = el('div', 'now'), list = el('div', 'steps'), nav = el('div', 'wnav');
+  const nav = el('div', 'wnav');
   const bPrev = Btn('← Wstecz', '', () => go(pos - 1)), bNext = Btn('Dalej →', 'pri', () => go(pos + 1));
   const bEnd = Btn('Do końca etapu', '', () => { let i = pos; while (i + 1 < frames.length && frames[i + 1].group === frames[pos].group) i++; go(i === pos ? pos + 1 : i); });
-  const bReset = Btn('Od początku', 'link', () => go(0)), prog = el('span', 'prog');
-  nav.append(bPrev, bNext, bEnd, bReset, prog);
-  right.append(algo, grp, now, list, nav);
+  const bReset = Btn('Od początku', 'link', () => go(0)), prog = el('span', 'prog'), bar2 = el('div', 'wbar', '<i></i>');
+  nav.append(bPrev, bNext, bEnd, bReset, prog, bar2);
+  const stage = el('section', 'card stage');
+  stage.innerHTML = `<div class="stage-h"><h3 class="grp"></h3><ol class="pills" aria-label="Kroki tego etapu"></ol></div><div class="stage-in"></div><div class="stage-m" aria-hidden="true"></div>`;
+  const grp = stage.querySelector('.grp'), pills = stage.querySelector('.pills'), inner = stage.querySelector('.stage-in'), meter = stage.querySelector('.stage-m');
+  right.append(nav, algo, stage);
   grid.append(left, right); root.append(top, grid);
 
-  let frames = [], pos = 0;
-  function card(f, n, cur) {
-    const c = el('article', 'step' + (cur ? ' cur' : ''));
-    c.innerHTML = `<span class="step-n">${n}</span><h4>${mdi(f.title)}</h4><div class="step-b">${f.html}${f.quiz && f._done ? f.quiz.reveal : ''}</div>`;
+  let frames = [], pos = 0, logRows = 0, measuredW = 0;
+  const QUIZ = id => `<form class="quiz"><label for="${id}">…</label><input id="${id}" type="text"><button class="btn sm pri" type="button">Sprawdź</button><span class="fb">&nbsp;</span></form>`;
+  const block = (f, n, body) => `<h4 class="stage-t"><span class="step-n">${n}</span><span>${mdi(f.title)}</span></h4><div class="step-b">${body}</div>`;
+  /* reserve room for the tallest step, so that nothing below or around the panel moves while stepping */
+  function measure() {
+    const w = inner.clientWidth; if (w < 50) return;
+    measuredW = w; let hmax = 0;
+    for (const f of frames) {
+      const variants = f.quiz ? [f.html + QUIZ('m'), f.html + f.quiz.reveal + '<p class="fb ok">Zgadza się.</p>'] : [f.html];
+      for (const v of variants) { meter.innerHTML = block(f, 1, v); hmax = Math.max(hmax, meter.offsetHeight); }
+    }
+    meter.innerHTML = ''; inner.style.minHeight = Math.ceil(hmax) + 'px';
+  }
+  new ResizeObserver(() => { if (Math.abs(inner.clientWidth - measuredW) > 1) measure(); }).observe(stage);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => measure());   // text reflows once the web fonts arrive
+
+  function show() {
+    const f = frames[pos]; let g0 = pos, g1 = pos;
+    while (g0 > 0 && frames[g0 - 1].group === f.group) g0--;
+    while (g1 + 1 < frames.length && frames[g1 + 1].group === f.group) g1++;
+    grp.innerHTML = mdi(f.group);
+    pills.innerHTML = '';
+    for (let i = g0; i <= g1; i++) {
+      const b = el('button', 'pill' + (i === pos ? ' on' : i < pos ? ' done' : ''), String(i - g0 + 1)); b.type = 'button';
+      b.title = frames[i].title.replace(/[$\\{}]/g, ''); if (i === pos) b.setAttribute('aria-current', 'step');
+      b.addEventListener('click', () => go(i)); const li = el('li'); li.append(b); pills.append(li);
+    }
+    inner.innerHTML = block(f, pos - g0 + 1, f.html + (f.quiz && f._done ? f.quiz.reveal : ''));
+    const body = inner.querySelector('.step-b');
     if (f.quiz && !f._done) {
       const q = el('form', 'quiz'), id = 'f' + (++UID);
-      q.innerHTML = `<label for="${id}">${mdi(f.quiz.prompt)}</label><input id="${id}" type="text" inputmode="decimal" autocomplete="off" spellcheck="false"><button class="btn sm pri" type="submit">Sprawdź</button><button class="btn sm link" type="button">Pokaż wynik</button><span class="fb" role="status"></span>`;
+      q.innerHTML = `<label for="${id}">${mdi(f.quiz.prompt)}</label><input id="${id}" type="text" inputmode="decimal" autocomplete="off" spellcheck="false"><button class="btn sm pri" type="submit">Sprawdź</button><button class="btn sm link" type="button">Pokaż wynik</button><span class="fb" role="status">&nbsp;</span>`;
       const inp = q.querySelector('input'), fb = q.querySelector('.fb');
       q.addEventListener('submit', e => {
         e.preventDefault(); const v = parseFloat(String(inp.value).replace(',', '.'));
         if (!Number.isFinite(v)) { fb.textContent = 'Wpisz liczbę.'; fb.className = 'fb no'; return; }
-        if (Math.abs(v - f.quiz.answer) <= (f.quiz.tol || 5e-3) * Math.max(1, Math.abs(f.quiz.answer))) { f._done = true; f._ok = true; show(false); }
+        if (Math.abs(v - f.quiz.answer) <= (f.quiz.tol || 5e-3) * Math.max(1, Math.abs(f.quiz.answer))) { f._done = true; f._ok = true; show(); }
         else { fb.textContent = f.quiz.hint || 'To jeszcze nie ten wynik. Sprawdź znaki i kolejność działań.'; fb.className = 'fb no'; }
       });
-      q.querySelector('button[type=button]').addEventListener('click', () => { f._done = true; show(false); });
-      c.querySelector('.step-b').append(q);
-    } else if (f.quiz && f._ok) c.querySelector('.step-b').insertAdjacentHTML('beforeend', '<p class="fb ok">Zgadza się.</p>');
-    return c;
-  }
-  function show(scroll = true) {
-    const f = frames[pos]; let g0 = pos; while (g0 > 0 && frames[g0 - 1].group === f.group) g0--;
-    grp.innerHTML = mdi(f.group); list.innerHTML = '';
-    for (let i = g0; i <= pos; i++) list.append(card(frames[i], i - g0 + 1, i === pos));
+      q.querySelector('button[type=button]').addEventListener('click', () => { f._done = true; show(); });
+      body.append(q);
+    } else if (f.quiz && f._ok) body.insertAdjacentHTML('beforeend', '<p class="fb ok">Zgadza się.</p>');
     const lines = [].concat(f.line ?? []);
-    const lis = [...algo.querySelectorAll('li')]; lis.forEach((li, i) => li.classList.toggle('on', lines.includes(i)));
-    now.innerHTML = `<b>Bieżący wiersz algorytmu</b>` + lines.map(i => `<div class="ln"><i>${i + 1}</i><div>${lis[i].firstChild.innerHTML}</div></div>`).join('');
+    algo.querySelectorAll('li').forEach((li, i) => li.classList.toggle('on', lines.includes(i)));
     vis.draw(f.state, f);
     if (logCard) {
-      const rows = frames.slice(0, pos + 1).filter(x => x.log).map(x => x.log), shown = rows.slice(-8);
-      logCard.innerHTML = `<h3 class="card-h">${cfg.logTitle || 'Zapisane wyniki'}</h3>` + (rows.length
-        ? `<div class="tblw"><table class="tbl"><thead><tr>${cfg.logHead.map(h => `<th>${mdi(h)}</th>`).join('')}</tr></thead><tbody>${shown.map((r, i) => `<tr class="${i === shown.length - 1 ? 'hl' : ''}">${r.map(v => `<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
-        : `<p class="note">${cfg.logEmpty || 'Tabela wypełni się po wykonaniu pierwszego pełnego kroku.'}</p>`);
+      const rows = frames.slice(0, pos + 1).filter(x => x.log).map(x => x.log), shown = rows.slice(-logRows), nc = cfg.logHead.length;
+      const blank = `<tr class="blank">${'<td>&nbsp;</td>'.repeat(nc)}</tr>`;
+      logCard.innerHTML = `<h3 class="card-h">${cfg.logTitle || 'Zapisane wyniki'}</h3><div class="tblw"><table class="tbl"><thead><tr>${cfg.logHead.map(h => `<th>${mdi(h)}</th>`).join('')}</tr></thead><tbody>` +
+        shown.map((r, i) => `<tr class="${i === shown.length - 1 ? 'hl' : ''}">${r.map(v => `<td>${v}</td>`).join('')}</tr>`).join('') + blank.repeat(logRows - shown.length) + '</tbody></table></div>';
     }
     bPrev.disabled = pos === 0; bNext.disabled = pos === frames.length - 1; bEnd.disabled = pos === frames.length - 1;
     prog.textContent = `krok ${pos + 1} z ${frames.length}`;
-    if (scroll && list.lastChild && root.isConnected) list.lastChild.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    bar2.firstChild.style.width = (100 * (pos + 1) / frames.length).toFixed(1) + '%';
+    if (inner.offsetHeight > parseFloat(inner.style.minHeight || 0) + 1) inner.style.minHeight = inner.offsetHeight + 'px';   // never shrink back
   }
   function go(i) { pos = Math.max(0, Math.min(frames.length - 1, i)); show(); }
-  function rebuild() { frames = cfg.build(pv); pos = 0; show(false); }
+  function rebuild() { frames = cfg.build(pv); logRows = Math.min(8, frames.filter(x => x.log).length); pos = 0; measure(); show(); }
   root.tabIndex = -1;
   root.addEventListener('keydown', e => {
     if (/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)) return;
