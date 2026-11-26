@@ -28,7 +28,7 @@ const G_CW = { '\\alpha': 'alpha', '\\beta': 'beta', '\\kappa': 'kappa', '\\lamb
   '\\cosh': 'cosh', '\\sinh': 'cosh', '\\ln': 'ln' };
 const G_SKIP = new Set(['\\text', '\\mathrm', '\\operatorname', '\\begin', '\\end', '\\textbf', '\\htmlData']);
 const G_LET = { f: 'f', J: 'jac', H: 'hess', L: 'Lip', m: 'mcurv', h: 'hstep', k: 'kiter', i: 'idx', n: 'ndim', x: 'xscal', g: 'gfun',
-  s: 'subs', v: 'vrate', y: 'ymeas', w: 'wgt', b: 'bias', z: 'zfeat', p: 'prob', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
+  s: 'subs', v: 'vrate', y: 'ymeas', w: 'wgt', b: 'bias', z: 'zfeat', p: 'prob', a: 'accel', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
 const G_ITER = /\^\{(\((?:[^(){}]|\{[^{}]*\})*\))\}/y, G_CWRE = /\\([a-zA-Z]+|[\s\S])/y;
 
 /* Compound notation is one clickable unit:
@@ -174,6 +174,10 @@ const GLOSS = {
     what: R`Zapis oznaczający najmniejszą wartość wyrażenia stojącego za nim, gdy zmienna podana pod spodem przyjmuje wszystkie możliwe wartości.`,
     how: [R`Potraktuj zmienną spod znaku jako niewiadomą.`, R`Znajdź taką jej wartość, dla której wyrażenie jest najmniejsze. Dla liniowego zadania najmniejszych kwadratów prowadzi to do układu równań normalnych.`],
     why: R`Tak zapisuje się każde zadanie optymalizacji. W metodzie Gaussa–Newtona każdy krok jest rozwiązaniem takiego mniejszego, liniowego zadania.` },
+  accel: { s: R`\mathbf{a}`, t: 'Przyspieszenie mierzone przez akcelerometr',
+    what: R`Wektor o trzech składowych $a_x$, $a_y$, $a_z$: przyspieszenie zegarka wzdłuż trzech osi czujnika, w jednostkach przyspieszenia ziemskiego (g). Zawiera zarówno ruch ręki, jak i grawitację.`,
+    how: [R`Czujnik podaje trzy liczby w każdej chwili pomiaru, tutaj 20 razy na sekundę.`, R`Długość wektora, $\lVert\mathbf{a}\rVert=\sqrt{a_x^2+a_y^2+a_z^2}$, nie zależy od ułożenia zegarka na nadgarstku.`],
+    why: R`To surowy materiał, z którego powstają cechy dla modelu. Rozrzut długości tego wektora w krótkim oknie mówi, jak energicznie porusza się ręka.` },
   wgt: { s: 'w', t: 'Waga (weight)',
     what: R`Parametr modelu, przez który mnożona jest cecha. W regresji logistycznej decyduje o stromości krzywej prawdopodobieństwa: duża waga oznacza gwałtowne przejście od „marsz” do „bieg” w pobliżu progu.`,
     how: [R`Nie ustawia się jej ręcznie: jest wynikiem uczenia, czyli minimalizacji funkcji kosztu.`, R`W każdym kroku zmienia się o $-\alpha$ razy odpowiednia składowa gradientu.`],

@@ -28,7 +28,7 @@ function MlPage() {
   const story = el('div', 'intro-top');
   story.innerHTML = `<div class="prose">${md(R`**Zadanie.** Zegarek sportowy ma sam rozpoznać, czy jego właściciel idzie, czy biegnie. Nikt nie podaje mu gotowej reguły: ma ją znaleźć w danych. To jest uczenie maszynowe (machine learning).
 
-**Cecha.** Z każdych 5 sekund sygnału akcelerometru obliczamy jedną liczbę: odchylenie standardowe wartości przyspieszenia, czyli miarę intensywności ruchu ręki, wyrażoną w jednostkach przyspieszenia ziemskiego (g). Podczas biegu jest zwykle większa niż podczas marszu, ale zakresy częściowo się pokrywają.
+**Cecha.** Z każdych 5 sekund sygnału akcelerometru obliczamy jedną liczbę, która mierzy intensywność ruchu ręki (w jednostkach przyspieszenia ziemskiego, g). Jak powstaje, pokazuje przykład pod spodem. Podczas biegu jest zwykle większa niż podczas marszu, ale zakresy częściowo się pokrywają.
 
 **Model.** Regresja logistyczna (logistic regression) zamienia cechę na prawdopodobieństwo biegu:
 
@@ -45,6 +45,54 @@ $$f(w,\ b)=-\frac{1}{n}\sum_{i}\Big[y_i\ln p_i+(1-y_i)\ln(1-p_i)\Big]$$
       <dl class="kvs"><div class="kv"><dt>Czujnik</dt><dd>akcelerometr zegarka, 20 Hz</dd></div><div class="kv"><dt>Czynności</dt><dd>marsz i trucht</dd></div><div class="kv"><dt>Okno</dt><dd>5 sekund</dd></div>
         <div class="kv"><dt>Dane uczące</dt><dd>${N} okien, ${WISDM.people[0]} osoby</dd></div><div class="kv"><dt>Dane testowe</dt><dd>${TE.length} okien, ${WISDM.people[1]} innych osób</dd></div></dl>
       <p class="note">Źródło: Weiss, G. (2019). <em>WISDM Smartphone and Smartwatch Activity and Biometrics Dataset</em>. UCI Machine Learning Repository. <a href="https://doi.org/10.24432/C5HK59" rel="noopener">https://doi.org/10.24432/C5HK59</a>. Licencja CC BY 4.0. Z surowych zapisów obliczono cechę i wybrano po 9 okien na osobę i czynność.</p></div>`;
+
+  // ---------- where the points come from: signal -> magnitude -> windows -> one number per window
+  const DEMO = WISDM.demo, mag = r => Math.hypot(r[1], r[2], r[3]);
+  const winStats = seg => [0, 1, 2, 3].map(k => { const m = seg.filter(r => r[0] >= 5 * k && r[0] < 5 * k + 5).map(mag), mu = m.reduce((s, v) => s + v, 0) / m.length; return { mu, sd: Math.sqrt(m.reduce((s, v) => s + (v - mu) ** 2, 0) / m.length) }; });
+  const allRaw = DEMO.flatMap(d => [...d.walk, ...d.jog]), RLO = Math.floor(Math.min(...allRaw.map(r => Math.min(r[1], r[2], r[3])))), RHI = Math.ceil(Math.max(...allRaw.map(r => Math.max(r[1], r[2], r[3])))), MHI = Math.ceil(Math.max(...allRaw.map(mag)) * 2) / 2;
+  const pipe = el('section', 'card pipe');
+  pipe.innerHTML = `<h3 class="pipe-h">Skąd się biorą punkty: od sygnału do jednej liczby</h3><div class="pipe-grid"><div class="prose pipe-steps">${md(R`Model nie dostaje surowego sygnału, tylko liczby, które z niego obliczono. Oto cała droga, na prawdziwym zapisie z tego samego zbioru danych.
+
+**1. Sygnał.** Akcelerometr zegarka mierzy przyspieszenie w trzech osiach, 20 razy na sekundę. Górny wykres pokazuje 20 sekund takiego zapisu.
+
+**2. Moduł.** Z trzech osi obliczamy jedną wartość, długość wektora przyspieszenia: $\lVert\mathbf{a}\rVert=\sqrt{a_x^2+a_y^2+a_z^2}$. Nie zależy ona od tego, jak zegarek jest obrócony na nadgarstku. W bezruchu wynosi $1$ g, bo czujnik mierzy też grawitację.
+
+**3. Okna.** Sygnał dzielimy na okna po 5 sekund, czyli po 100 próbek (pionowe linie na dolnym wykresie).
+
+**4. Cecha.** Z każdego okna zostaje jedna liczba: odchylenie standardowe modułu, czyli miara tego, jak mocno sygnał waha się wokół swojej średniej. Liczby nad oknami to właśnie ta cecha, a pas wokół średniej ma szerokość dwóch odchyleń standardowych.
+
+**5. Etykieta.** Wiadomo, co osoba robiła podczas nagrania, więc każde okno dostaje etykietę $y_i$: $0$ dla marszu, $1$ dla truchtu.
+
+**6. Zbiór danych.** To samo powtarzamy dla wszystkich osób. Każde okno staje się jednym punktem na wykresie „Dane i model” poniżej; cztery okna z tego przykładu są tam zaznaczone kwadratami. Na koniec cechę standaryzujemy, a osoby dzielimy na uczące i testowe.`)}</div><div class="pipe-plots"></div></div>`;
+  const who = Chips({ label: 'Osoba', aria: 'osoba', value: 0, options: DEMO.map((d, i) => ({ v: i, label: d.name })) });
+  const act = Chips({ label: 'Czynność', aria: 'czynność', value: 'walk', options: [{ v: 'walk', label: 'marsz' }, { v: 'jog', label: 'trucht' }] });
+  const pR = new Plot({ ratio: '1 / 0.4', xlabel: R`t\ [\text{s}]`, ylabel: R`\text{przyspieszenie w trzech osiach [g]}`, aria: 'Surowy sygnał akcelerometru w trzech osiach' });
+  const pA = new Plot({ ratio: '1 / 0.4', xlabel: R`t\ [\text{s}]`, ylabel: R`\lVert\mathbf{a}\rVert\ \text{[g]}`, aria: 'Moduł przyspieszenia podzielony na okna z odchyleniem standardowym każdego okna' });
+  const pctl = el('div', 'pipe-ctl'); pctl.append(who.el, act.el);
+  const pp = pipe.querySelector('.pipe-plots');
+  pp.append(pctl, plotCard('Krok 1: surowy sygnał', pR, legend([['line', C.green, 'oś x'], ['line', C.red, 'oś y'], ['line', C.ink3, 'oś z']])),
+    plotCard('Kroki 2–4: moduł, okna i cecha', pA, legend([['line', C.black, 'moduł przyspieszenia'], ['dash', C.green, 'średnia w oknie'], ['sq', C.greenT2, 'średnia ± odchylenie standardowe']])));
+  pp.querySelectorAll('.card').forEach(c => c.classList.add('flat'));
+  const demoSeg = () => DEMO[who.value][act.value], demoPts = () => winStats(demoSeg()).map((w, k) => [w.sd, act.value === 'jog' ? 0.93 : 0.07]);
+  function drawPipe() {
+    const seg = demoSeg(), ws = winStats(seg);
+    pR.setView(0, 20, RLO, RHI);
+    pR.draw = q => { [[1, C.green], [2, C.red], [3, C.ink3]].forEach(([j, col]) => q.path(seg.map(r => [r[0], r[j]]), { color: col, width: 1.3 })); };
+    pR.render();
+    pA.setView(0, 20, 0, MHI);
+    pA.draw = q => {
+      const c = q.c;
+      ws.forEach((w, k) => {
+        c.fillStyle = C.greenT2; c.globalAlpha = 0.75; c.fillRect(q.X(5 * k), q.Y(w.mu + w.sd), q.X(5 * k + 5) - q.X(5 * k), q.Y(w.mu - w.sd) - q.Y(w.mu + w.sd)); c.globalAlpha = 1;
+        q.seg(5 * k, w.mu, 5 * k + 5, w.mu, { color: C.green, dash: [5, 4], width: 1.4 });
+      });
+      q.path(seg.map(r => [r[0], mag(r)]), { color: C.black, width: 1.3 });
+      [5, 10, 15].forEach(t => q.vline(t, { color: C.ink2, width: 1.2 }));
+      ws.forEach((w, k) => q.label(5 * k + 2.5, MHI, [[num(w.sd, 3) + ' g', 'b']], { align: 'center', dy: 12, size: 15 }));
+    };
+    pA.render();
+  }
+  who.onchange = act.onchange = () => { drawPipe(); draw(); };
 
   const lab = el('div', 'lab'), side = el('aside', 'lab-side'), main = el('div', 'lab-main');
   const wS = Slider({ label: R`Waga $w$`, aria: 'waga w', min: VIEW[0], max: VIEW[1], step: 0.05, value: START[0] });
@@ -63,7 +111,7 @@ $$f(w,\ b)=-\frac{1}{n}\sum_{i}\Big[y_i\ln p_i+(1-y_i)\ln(1-p_i)\Big]$$
   const pD = new Plot({ xlabel: R`\text{intensywność ruchu ręki [g]}`, ylabel: 'p', aria: 'Okna pomiarowe marszu i biegu oraz krzywa prawdopodobieństwa biegu' });
   const pM = new Plot({ xlabel: 'w', ylabel: 'b', aria: 'Mapa kosztu w funkcji wagi i wyrazu wolnego' });
   const dCard = plotCard(`Dane i model <small>${N} okien uczących</small>`, pD,
-    legend([['dot', C.ink3, 'marsz (u dołu)'], ['dot', C.red, 'bieg (u góry)'], ['line', C.green, R`model: prawdopodobieństwo biegu $p$`], ['dash', C.ghost, 'próg decyzji'], ['ring', C.black, 'bieżąca porcja']]));
+    legend([['dot', C.ink3, 'marsz (u dołu)'], ['dot', C.red, 'bieg (u góry)'], ['line', C.green, R`model: prawdopodobieństwo biegu $p$`], ['dash', C.ghost, 'próg decyzji'], ['ring', C.black, 'bieżąca porcja'], ['sq', C.black, 'okna z przykładu powyżej']]));
   dCard.append(el('p', 'note', 'Punkty rozsunięto w pionie, aby się nie zasłaniały. Na prawo od progu model rozpoznaje bieg, na lewo marsz.'));
   const mCard = plotCard('', pM);
   const view = ViewSwitch(pM, mCard, {
@@ -108,6 +156,7 @@ $$f(w,\ b)=-\frac{1}{n}\sum_{i}\Big[y_i\ln p_i+(1-y_i)\ln(1-p_i)\Big]$$
       if (Number.isFinite(t) && t > 0 && t < 2.1) q.vline(t, { dash: [5, 4], color: C.ghost, width: 1.4 });
       q.fn(x => sig(p[0] * (x - MU) / SD + p[1]), { color: C.green, width: 2.8, n: 200 });
       if (S.batch && S.batch.length <= 64) q.dots(S.batch.map(i => PW[i]), { fill: null, stroke: C.black, color: C.black, r: 5, lw: 1.6 });
+      q.dots(demoPts(), { shape: 'sq', fill: '#fff', stroke: C.black, color: C.black, r: 4.5, lw: 2 });   // the four windows of the pipeline example
     };
     pD.render();
     pM.setView(...VIEW);
@@ -149,7 +198,7 @@ $$f(w,\ b)=-\frac{1}{n}\sum_{i}\Big[y_i\ln p_i+(1-y_i)\ln(1-p_i)\Big]$$
       a: R`Najlepszy model stawia próg przy intensywności około $${tn(tb, 3)}$ g i poprawnie rozpoznaje ${(acc(BEST, TR) * 100).toFixed(1)}% okien uczących oraz ${(acc(BEST, TE) * 100).toFixed(1)}% okien nowych osób. Okna tej samej osoby są do siebie bardzo podobne, więc test na nich zawyżałby ocenę: model mógłby „rozpoznawać osobę”, a nie czynność. Zegarek ma działać u ludzi, od których nie zebrano danych, dlatego liczy się wynik na nowych osobach. Błędy modelu to głównie energiczny marsz i spokojny trucht: jedna cecha nie wystarcza, by je rozróżnić.` },
   ]);
   const next = el('div', '', box('nb', 'A sieć neuronowa?', R`Schemat jest ten sam: model z parametrami, funkcja kosztu, gradient i kroki w dół. Różni się skala. Sieć neuronowa ma tysiące lub miliony parametrów zamiast dwóch, więc mapy kosztu nie da się narysować, a jej powierzchnia nie jest wypukła. Gradient oblicza automatyczne różniczkowanie, a kroki wykonują odmiany stochastycznego spadku gradientu: z momentem (temat 3) albo z osobnym skalowaniem kroku dla każdego parametru. Zamiast jednej cechy obliczonej ręcznie sieć dostaje zwykle surowy sygnał z czujnika i sama uczy się, co w nim jest istotne.`));
-  root.append(story, lab, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), missions, next);
-  setP(START[0], START[1]);
+  root.append(story, pipe, lab, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), missions, next);
+  setP(START[0], START[1]); drawPipe();
   return { el: root };
 }
