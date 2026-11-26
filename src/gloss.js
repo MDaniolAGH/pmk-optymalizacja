@@ -28,7 +28,7 @@ const G_CW = { '\\alpha': 'alpha', '\\beta': 'beta', '\\kappa': 'kappa', '\\lamb
   '\\cosh': 'cosh', '\\sinh': 'cosh', '\\ln': 'ln' };
 const G_SKIP = new Set(['\\text', '\\mathrm', '\\operatorname', '\\begin', '\\end', '\\textbf', '\\htmlData']);
 const G_LET = { f: 'f', J: 'jac', H: 'hess', L: 'Lip', m: 'mcurv', h: 'hstep', k: 'kiter', i: 'idx', n: 'ndim', x: 'xscal', g: 'gfun',
-  s: 'subs', v: 'vrate', y: 'ymeas', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
+  s: 'subs', v: 'vrate', y: 'ymeas', w: 'wgt', b: 'bias', z: 'zfeat', p: 'prob', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
 const G_ITER = /\^\{(\((?:[^(){}]|\{[^{}]*\})*\))\}/y, G_CWRE = /\\([a-zA-Z]+|[\s\S])/y;
 
 /* Compound notation is one clickable unit:
@@ -174,6 +174,38 @@ const GLOSS = {
     what: R`Zapis oznaczający najmniejszą wartość wyrażenia stojącego za nim, gdy zmienna podana pod spodem przyjmuje wszystkie możliwe wartości.`,
     how: [R`Potraktuj zmienną spod znaku jako niewiadomą.`, R`Znajdź taką jej wartość, dla której wyrażenie jest najmniejsze. Dla liniowego zadania najmniejszych kwadratów prowadzi to do układu równań normalnych.`],
     why: R`Tak zapisuje się każde zadanie optymalizacji. W metodzie Gaussa–Newtona każdy krok jest rozwiązaniem takiego mniejszego, liniowego zadania.` },
+  wgt: { s: 'w', t: 'Waga (weight)',
+    what: R`Parametr modelu, przez który mnożona jest cecha. W regresji logistycznej decyduje o stromości krzywej prawdopodobieństwa: duża waga oznacza gwałtowne przejście od „marsz” do „bieg” w pobliżu progu.`,
+    how: [R`Nie ustawia się jej ręcznie: jest wynikiem uczenia, czyli minimalizacji funkcji kosztu.`, R`W każdym kroku zmienia się o $-\alpha$ razy odpowiednia składowa gradientu.`],
+    why: R`Jest jedną z dwóch osi mapy kosztu. W sieci neuronowej takich wag są tysiące lub miliony, ale każda jest poprawiana w ten sam sposób.` },
+  bias: { s: 'b', t: 'Wyraz wolny (bias)',
+    what: R`Parametr modelu dodawany do iloczynu wagi i cechy. W regresji logistycznej przesuwa próg decyzji w lewo lub w prawo.`,
+    how: [R`Wyznacza się go razem z wagą, przez minimalizację funkcji kosztu.`],
+    why: R`Jest drugą osią mapy kosztu. Bez niego próg decyzji musiałby wypadać dokładnie w średniej wartości cechy.` },
+  zfeat: { s: 'z', t: 'Cecha po standaryzacji',
+    what: R`Wartość cechy przeliczona tak, aby w danych uczących miała średnią $0$ i odchylenie standardowe $1$.`,
+    how: [R`Od wartości cechy odejmij jej średnią z danych uczących.`, R`Wynik podziel przez odchylenie standardowe cechy w danych uczących.`],
+    why: R`Standaryzacja to rutynowy zabieg w uczeniu maszynowym. Dzięki niej dolina na mapie kosztu jest mniej wydłużona, więc spadek gradientu działa szybciej: to ten sam problem uwarunkowania, który pojawia się w tematach 2 i 3.` },
+  prob: { s: 'p', t: 'Prawdopodobieństwo przewidywane przez model',
+    what: R`Liczba z przedziału od $0$ do $1$, którą model przypisuje jednemu oknu pomiarowemu: jak bardzo jest przekonany, że to bieg. Symbol $p_i$ oznacza prawdopodobieństwo dla $i$-tego okna.`,
+    how: [R`Oblicz $u=w\,z+b$ dla cechy $z$ danego okna.`, R`Zastosuj funkcję logistyczną: $p=\sigma(u)$.`, R`Jeśli $p>0.5$, model rozpoznaje bieg, w przeciwnym razie marsz.`],
+    why: R`Model nie odpowiada „tak” albo „nie”, tylko podaje stopień pewności. Dzięki temu funkcja kosztu jest gładka i ma gradient, którego potrzebuje algorytm uczenia.` },
+  sigmoid: { s: R`\sigma(u)`, t: 'Funkcja logistyczna (sigmoid)',
+    what: R`Funkcja $\sigma(u)=\dfrac{1}{1+e^{-u}}$, która dowolną liczbę zamienia na wartość z przedziału od $0$ do $1$. Dla $u=0$ daje $0.5$, dla dużych dodatnich $u$ zbliża się do $1$, a dla dużych ujemnych do $0$.`,
+    how: [R`Oblicz $e^{-u}$.`, R`Dodaj $1$ i weź odwrotność.`],
+    why: R`Pozwala interpretować wynik modelu jako prawdopodobieństwo. Jest gładka, więc funkcja kosztu ma gradient w każdym punkcie.` },
+  ylabel: { s: 'y_i', t: 'Etykieta (label)',
+    what: R`Znana, poprawna odpowiedź dla $i$-tego okna danych uczących: $1$, jeśli osoba biegła, i $0$, jeśli szła.`,
+    how: [R`Etykiety pochodzą z protokołu zbierania danych: osoby wykonywały wskazaną czynność przez ustalony czas.`],
+    why: R`Uczenie polega na dopasowaniu przewidywań modelu do etykiet. Bez etykiet nie da się obliczyć funkcji kosztu.` },
+  nsamp: { s: 'n', t: 'Liczba próbek uczących',
+    what: R`Liczba okien pomiarowych, na których model się uczy.`,
+    how: [R`Policz okna w zbiorze uczącym.`],
+    why: R`Koszt jest średnią po wszystkich próbkach. Gdy próbek jest bardzo dużo, gradient szacuje się z małej, losowej porcji danych zamiast ze wszystkich.` },
+  accur: { s: R`\text{trafność}`, t: 'Trafność klasyfikacji (accuracy)',
+    what: R`Odsetek okien, dla których model podał poprawną odpowiedź.`,
+    how: [R`Dla każdego okna sprawdź, czy przewidywanie (bieg, gdy $p>0.5$) zgadza się z etykietą.`, R`Podziel liczbę zgodnych odpowiedzi przez liczbę okien.`],
+    why: R`Funkcja kosztu służy algorytmowi, a trafność człowiekowi: mówi wprost, jak często model się myli. Liczy się przede wszystkim trafność na danych, których model nie widział podczas uczenia.` },
   tau: { s: R`\tau`, t: 'Stała czasowa',
     what: R`Parametr zaniku wykładniczego $e^{-t/\tau}$, wyrażony w sekundach. Mówi, jak szybko wielkość zbliża się do poziomu końcowego: po czasie $\tau$ odległość do tego poziomu maleje do około $37\%$ wartości początkowej, a po $3\tau$ do około $5\%$.`,
     how: [R`Nie da się jej odczytać z jednego pomiaru ani obliczyć gotowym wzorem, bo stoi w wykładniku.`, R`Wyznacza się ją razem z poziomem końcowym $y_{\infty}$, przez minimalizację funkcji kosztu.`],
@@ -496,7 +528,7 @@ const GLOSS = {
     why: R`Zbyt wysokie stężenie maksymalne może być toksyczne. Dla teofiliny różnica między stężeniem skutecznym a toksycznym jest niewielka, dlatego dokładny model ma znaczenie.` },
 };
 /* the same symbol can mean something else on some pages */
-const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { time: 'tsec', ndim: 'nmeas' } };
+const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { time: 'tsec', ndim: 'nmeas' }, ml: { sigma: 'sigmoid', ymeas: 'ylabel', ndim: 'nsamp' } };
 
 /* ---------- 3. the dialog ---------- */
 const Gloss = (() => {

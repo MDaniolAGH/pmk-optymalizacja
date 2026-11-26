@@ -432,3 +432,7 @@ details.why[open] { flex-basis: 100%; }
 .intro-data .tbl { width: 100%; }
 .intro-data .tbl th { white-space: normal; }
 @media (max-width: 980px) { .intro-top { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- three closing pages on the menu ---------- */
+@media (min-width: 1180px) { .extras { grid-template-columns: repeat(3, minmax(0, 1fr)); } .xcard { flex-direction: column; align-items: flex-start; gap: 10px; } }
+.intro-data a { color: var(--green-d); word-break: break-all; }

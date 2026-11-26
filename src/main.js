@@ -10,6 +10,8 @@
       menu: 'Cztery metody na jednej funkcji i z jednego punktu startowego: liczba kroków, koszt jednego kroku i sytuacje, w których każda z metod zawodzi.' },
     { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
       menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
+    { id: 'ml', title: 'Jak zegarek uczy się odróżniać marsz od biegu?', tag: 'Uczenie maszynowe', make: () => MlPage(),
+      menu: 'Ta sama metoda uczy modele. Prawdziwe dane z akcelerometru zegarka, klasyfikator o dwóch parametrach i gradient szacowany z małych porcji danych.' },
   ];
   const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: jak szybko tętno wraca do normy?', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
     menu: 'Skąd bierze się „mapa kosztu” i po co gradient? Przykład z życia: jak szybko tętno wraca do normy po biegu. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',

@@ -20,8 +20,9 @@ z natychmiastową odpowiedzią).
 6. Metoda Gaussa–Newtona
 7. Farmakokinetyka teofiliny (studium przypadku)
 
-Dwie strony podsumowujące: „Porównaj metody” (cztery metody na jednej funkcji) oraz „Znajdź błąd”
-(rozpoznawanie typowych błędów implementacji po kształcie trajektorii).
+Trzy strony zamykające: „Porównaj metody” (cztery metody na jednej funkcji), „Znajdź błąd”
+(rozpoznawanie typowych błędów implementacji po kształcie trajektorii) oraz „Jak zegarek uczy się
+odróżniać marsz od biegu?” (regresja logistyczna i stochastyczny spadek gradientu na prawdziwych danych).
 
 Każdy symbol na stronie można kliknąć, aby zobaczyć objaśnienie: co oznacza, jak się go oblicza,
 dlaczego jest ważny i jaką ma w danej chwili wartość. Postęp nauki jest zapisywany wyłącznie
@@ -46,12 +47,15 @@ npm run build    # składa index.html
 | `src/gloss.js` | słownik symboli i okno objaśnień |
 | `src/t1_…` – `src/t7_…` | treść i eksperymenty poszczególnych tematów |
 | `src/intro.js` | wstęp „Zanim zaczniesz”: jak szybko tętno wraca do normy po biegu |
+| `src/ml.js`, `src/ml_data.js` | strona o uczeniu maszynowym i jej dane (cechy obliczone ze zbioru WISDM) |
 | `src/extras.js` | pytania „Sprawdź się”, strony „Porównaj metody” i „Znajdź błąd” |
 | `src/main.js` | strona główna i nawigacja |
 | `src/style.css` | wygląd |
 
 ## Dane i biblioteki
 
+- Dane z akcelerometru zegarka (strona o uczeniu maszynowym): Weiss, G. (2019). *WISDM Smartphone and Smartwatch Activity and Biometrics Dataset*. UCI Machine Learning Repository. https://doi.org/10.24432/C5HK59. Licencja CC BY 4.0. W repozytorium znajdują się wyłącznie cechy obliczone z surowych zapisów (odchylenie standardowe modułu przyspieszenia w oknach 5 s, marsz i trucht, po 9 okien na osobę i czynność), bez identyfikatorów osób.
+- Dane we wstępie (powrót tętna po biegu) są syntetyczne.
 - Dane teofiliny: zbiór `Theoph` (Boeckmann, Sheiner, Beal), rozpowszechniany z językiem R, domena publiczna.
 - [KaTeX](https://katex.org) 0.16.11, licencja MIT.
 - Fonty Source Serif 4 i Source Sans 3, licencja SIL Open Font License 1.1.
