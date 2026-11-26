@@ -306,6 +306,10 @@ const GLOSS = {
     what: R`Względna dokładność liczb zmiennoprzecinkowych. Dla liczb podwójnej precyzji wynosi około $2.2\cdot10^{-16}$, co odpowiada mniej więcej szesnastu cyfrom znaczącym.`,
     how: [R`To najmniejsza liczba, dla której komputer odróżnia $1+\varepsilon$ od $1$.`, R`W NumPy: <code>np.finfo(float).eps</code>.`],
     why: R`Wyznacza granicę dokładności wszystkich obliczeń. Gdy odejmujemy dwie prawie równe liczby, a wynik dzielimy przez małe $h$, błąd tej wielkości zostaje wielokrotnie wzmocniony.` },
+  tol: { s: R`\varepsilon`, t: 'Tolerancja kryterium stopu',
+    what: R`Mała dodatnia liczba, poniżej której normę gradientu uznajemy za zerową. W programie jest to parametr <code>tol</code>.`,
+    how: [R`Oblicz normę gradientu w bieżącym punkcie.`, R`Jeżeli jest mniejsza od tolerancji, zakończ obliczenia.`],
+    why: R`W minimum gradient jest zerowy, ale w arytmetyce zmiennoprzecinkowej prawie nigdy nie jest równy zeru dokładnie. Zbyt duża tolerancja kończy obliczenia daleko od minimum, a zbyt mała może nigdy nie zostać osiągnięta.` },
   unitvec: { s: R`\mathbf{e}_i`, t: 'Wersor osi',
     what: R`Wektor jednostkowy wskazujący kierunek jednej osi: ma jedynkę na pozycji $i$ i zera na pozostałych. Na płaszczyźnie $\mathbf{e}_0=(1,\ 0)$, $\mathbf{e}_1=(0,\ 1)$.`,
     how: [R`Utwórz wektor zer o tym samym kształcie co $\mathbf{x}$.`, R`Wpisz jedynkę na pozycji $i$.`],
@@ -532,7 +536,7 @@ const GLOSS = {
     why: R`Zbyt wysokie stężenie maksymalne może być toksyczne. Dla teofiliny różnica między stężeniem skutecznym a toksycznym jest niewielka, dlatego dokładny model ma znaczenie.` },
 };
 /* the same symbol can mean something else on some pages */
-const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { time: 'tsec', ndim: 'nmeas' }, ml: { sigma: 'sigmoid', ymeas: 'ylabel', ndim: 'nsamp' } };
+const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { time: 'tsec', ndim: 'nmeas' }, ml: { sigma: 'sigmoid', ymeas: 'ylabel', ndim: 'nsamp' }, kod: { eps: 'tol' } };
 
 /* ---------- 3. the dialog ---------- */
 const Gloss = (() => {

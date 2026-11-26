@@ -326,12 +326,12 @@ function Stats(rows) {
   for (const [id, label, key] of rows) { const d = el('div'); if (key) d.dataset.g = key; d.innerHTML = `<dt>${mdi(label)}</dt><dd>—</dd>`; map[id] = d.lastChild; dl.append(d); }
   return { el: dl, set(vals) { for (const k in vals) { const v = vals[k], dd = map[k]; if (!dd) continue; if (v && typeof v === 'object') { dd.textContent = v.t; dd.className = v.c || ''; } else { dd.textContent = v; dd.className = ''; } } } };
 }
-function Missions(id, list) {
+function Missions(id, list, label = 'Misja') {
   const w = el('div', 'missions'), key = 'm:' + id, done = new Set(id ? Store.get(key, []) : []);
   if (id) Store.set('mt:' + id, list.length);
   list.forEach((m, i) => {
     const c = el('article', 'mission' + (done.has(i) ? ' done' : ''));
-    c.innerHTML = `<h4><i>Misja ${i + 1}</i><span>${mdi(m.t)}</span><b class="tick" title="Odpowiedź była już otwierana">✓</b></h4><div>${md(m.q)}</div>`;
+    c.innerHTML = `<h4><i>${label} ${i + 1}</i><span>${mdi(m.t)}</span><b class="tick" title="Odpowiedź była już otwierana">✓</b></h4><div>${md(m.q)}</div>`;
     if (m.acts) { const row = el('div', 'btns'); m.acts.forEach(([label, fn]) => row.append(Btn(mdi(label), 'sm', fn))); c.append(row); }
     const d = el('details'); d.innerHTML = `<summary>Pokaż odpowiedź</summary><div>${md(m.a)}</div>`; c.append(d);
     d.addEventListener('toggle', () => { if (d.open && id && !done.has(i)) { done.add(i); c.classList.add('done'); Store.set(key, [...done]); } });
@@ -367,7 +367,7 @@ const stopAll = () => RUNNERS.forEach(r => r.stop());
 document.addEventListener('visibilitychange', () => { if (document.hidden) stopAll(); });
 
 /* ---------- the step-by-step player ----------
-   cfg: { intro, params:[{id,label,options,value}], algo:{title,lines[]}, logHead:[...],
+   cfg: { intro, params:[{id,label,options,value}], algo:{title,lines[]} (optional), logHead:[...],
           visual(card) -> { draw(state, frame) }, build(params) -> frames[] }
    frame: { group, title, html, line, state, log:[cells], quiz:{prompt, answer, tol, reveal} }
    Layout is kept still on purpose: the buttons sit at a fixed place above the content, one step is shown
@@ -390,8 +390,8 @@ function Walk(cfg) {
   const visCard = el('section', 'card'), vis = cfg.visual(visCard);
   let logCard = null;
   if (cfg.logHead) logCard = el('section', 'card');
-  const algo = el('section', 'card');
-  algo.innerHTML = `<h3 class="card-h">${cfg.algo.title}</h3><ol class="algo">${cfg.algo.lines.map(l => { const ind = l.match(/^ */)[0].length / 4; return `<li class="${ind ? 'in' + ind : ''}"><span>${mdi(l.trim())}</span></li>`; }).join('')}</ol>`;
+  const algo = cfg.algo ? el('section', 'card') : null;   // a page may show its own listing in the picture card instead
+  if (algo) algo.innerHTML = `<h3 class="card-h">${cfg.algo.title}</h3><ol class="algo">${cfg.algo.lines.map(l => { const ind = l.match(/^ */)[0].length / 4; return `<li class="${ind ? 'in' + ind : ''}"><span>${mdi(l.trim())}</span></li>`; }).join('')}</ol>`;
   const nav = el('div', 'wnav');
   const bPrev = Btn('← Wstecz', '', () => go(pos - 1)), bNext = Btn('Dalej →', 'pri', () => go(pos + 1));
   const bEnd = Btn('Do końca etapu', '', () => { let i = pos; while (i + 1 < frames.length && frames[i + 1].group === frames[pos].group) i++; go(i === pos ? pos + 1 : i); });
@@ -400,7 +400,7 @@ function Walk(cfg) {
   const stage = el('section', 'card stage');
   stage.innerHTML = `<div class="stage-h"><h3 class="grp"></h3><ol class="pills" aria-label="Kroki tego etapu"></ol></div><div class="stage-in"></div><div class="stage-m" aria-hidden="true"></div>`;
   const grp = stage.querySelector('.grp'), pills = stage.querySelector('.pills'), inner = stage.querySelector('.stage-in'), meter = stage.querySelector('.stage-m');
-  left.append(visCard, algo);          // picture and algorithm stay in view; the step and the table of results scroll beside them
+  left.append(visCard); if (algo) left.append(algo);          // picture and algorithm stay in view; the step and the table of results scroll beside them
   right.append(nav, stage); if (logCard) right.append(logCard);
   grid.append(left, right); root.append(top, grid);
 
@@ -447,7 +447,7 @@ function Walk(cfg) {
       body.append(q);
     } else if (f.quiz && f._ok) body.insertAdjacentHTML('beforeend', '<p class="fb ok">Zgadza się.</p>');
     const lines = [].concat(f.line ?? []);
-    algo.querySelectorAll('li').forEach((li, i) => li.classList.toggle('on', lines.includes(i)));
+    if (algo) algo.querySelectorAll('li').forEach((li, i) => li.classList.toggle('on', lines.includes(i)));
     vis.draw(f.state, f);
     if (logCard) {
       const rows = frames.slice(0, pos + 1).filter(x => x.log).map(x => x.log), shown = rows.slice(-logRows), nc = cfg.logHead.length;

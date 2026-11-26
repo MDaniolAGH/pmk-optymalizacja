@@ -128,7 +128,7 @@ input[type=number], input[type=text], select { width: 100%; padding: 7px 9px; bo
 .algo { list-style: none; margin: 0; padding: 0; counter-reset: ln; font: 15.5px/1.45 var(--sans); }
 .algo li { counter-increment: ln; display: grid; grid-template-columns: 22px 1fr; gap: 8px; padding: 4px 8px; border-radius: 5px; border: 1px solid transparent; }
 .algo li::before { content: counter(ln); color: var(--ink3); font-size: 12.5px; text-align: right; padding-top: 2px; font-variant-numeric: tabular-nums; }
-.algo li.in1 > span { padding-left: 1.5em; } .algo li.in2 > span { padding-left: 3em; }
+.algo li.in1 > span, .algo li.in1 > button { padding-left: 1.5em; } .algo li.in2 > span { padding-left: 3em; }
 .algo li.on { background: var(--green-t2); border-color: var(--green); }
 .algo .cm { color: var(--ink3); }
 .algo b { font-weight: 600; }
@@ -433,8 +433,8 @@ details.why[open] { flex-basis: 100%; }
 .intro-data .tbl th { white-space: normal; }
 @media (max-width: 980px) { .intro-top { grid-template-columns: minmax(0, 1fr); } }
 
-/* ---------- three closing pages on the menu ---------- */
-@media (min-width: 1180px) { .extras { grid-template-columns: repeat(3, minmax(0, 1fr)); } .xcard { flex-direction: column; align-items: flex-start; gap: 10px; } }
+/* ---------- closing pages on the menu ---------- */
+@media (min-width: 1180px) { .extras { grid-template-columns: repeat(4, minmax(0, 1fr)); } .xcard { flex-direction: column; align-items: flex-start; gap: 10px; } }
 .intro-data a { color: var(--green-d); word-break: break-all; }
 
 /* ---------- from the signal to one number (machine-learning page) ---------- */
@@ -455,3 +455,33 @@ details.why[open] { flex-basis: 100%; }
 .fab-h { display: flex; justify-content: space-between; align-items: center; font: 600 14.5px var(--sans); margin-bottom: 2px; }
 .fab-n { margin-top: 4px; font-size: 13px; min-height: 2.7em; }
 @media (max-width: 560px) { .fab { left: 12px; bottom: 12px; } }
+
+/* ---------- program listings and the page "how to write an algorithm in Python" ---------- */
+.code { font: 13.5px/1.62 var(--mono); background: var(--paper); border: 1px solid var(--line); border-radius: 7px; padding: 7px 0; overflow-x: auto; min-width: 0; color: var(--ink); }
+.code .cl { display: block; white-space: pre; width: max-content; min-width: 100%; min-height: 1.62em; padding-right: 14px; border-left: 3px solid transparent; }
+.code .cl::before { content: attr(data-l); display: inline-block; width: 2.3em; margin-right: 12px; text-align: right; color: var(--ink3); font-size: 12px; }
+.code.nonum .cl::before { content: ''; width: 0; margin-right: 11px; }
+.code .cl.sub { background: var(--green-t); }
+.code .cl.on { background: var(--green-t2); border-left-color: var(--green); }
+.code.pick .cl:not(.void) { cursor: pointer; } .code.pick .cl:not(.void):not(.on):hover { background: var(--green-t); }
+.code .kw { color: var(--green-d); font-weight: 600; } .code .cm { color: var(--ink3); font-style: italic; } .code .st { color: var(--ink2); }
+.code.out { background: var(--grey-t); border-style: dashed; border-color: var(--line2); }
+.mission .code { margin: 2px 0; } .mission p + .code, .mission .code + p { margin-top: 8px; }
+.card-h code { text-transform: none; letter-spacing: 0; font-size: 1em; }
+.kod-top { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.kod-top .prose ol { margin: 0 0 .65em 1.3em; } .kod-top .prose li { margin-bottom: .15em; }
+.kod-sym td, .kod-sym th { text-align: left; padding-left: 7px; padding-right: 7px; } .kod-sym td:last-child { white-space: normal; }
+.kod-map { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr); gap: 14px 20px; align-items: start; }
+.algo.pick li { padding: 0; } .algo.pick li::before { padding: 6px 0 0 8px; }
+.algo.pick button { font: inherit; color: inherit; text-align: left; background: none; border: 0; padding: 4px 8px 4px 0; cursor: pointer; border-radius: 5px; width: 100%; }
+.algo.pick li:not(.on):hover { background: var(--green-t); }
+.kod-why { grid-column: 1 / -1; display: grid; border-top: 1px solid var(--line); padding-top: 12px; }
+.kod-why > div { grid-area: 1 / 1; visibility: hidden; max-width: 62em; } .kod-why > div.on { visibility: visible; }
+.kod-why h4 { font: 600 18px/1.3 var(--serif); margin-bottom: 4px; }
+.kod-walk .walk-grid { grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); }
+.kod-vars { margin-top: 12px; } .kod-vars td:last-child, .kod-vars th:last-child { text-align: left; font-family: var(--mono); font-size: 13.5px; } .kod-vars th:last-child { font-family: var(--sans); font-size: inherit; }
+.kod-test { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.kod-test .prose { max-width: none; }
+@media (max-width: 980px) { .kod-top, .kod-map, .kod-test, .kod-walk .walk-grid { grid-template-columns: minmax(0, 1fr); } }
+.mission { grid-template-columns: minmax(0, 1fr); } .mission > *, .mission details > div { min-width: 0; }
+.code.out .cl { white-space: pre-wrap; width: auto; overflow-wrap: anywhere; padding: 0 12px 0 11px; } .code.out .cl::before { display: none; }

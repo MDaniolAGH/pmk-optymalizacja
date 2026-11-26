@@ -232,7 +232,9 @@ $$|1-\alpha L|<1\quad\Longleftrightarrow\quad 0<\alpha<\frac{2}{L}=0.4$$`),
           group: 'Wniosek', title: 'Wskazówki do samodzielnej implementacji', line: [2, 3, 4, 5], state: { pts: pts.map(q => [...q]) },
           html: box('nb', 'Implementacja', R`Wypróbuj swoją implementację dla $\alpha=0.05$ (zbieżność monotoniczna), $0.38$ (oscylacje) i $0.45$ (rozbieżność). Zmień $\alpha$ u góry strony i sprawdź, czy potrafisz wyjaśnić każde z tych trzech zachowań.
 
-Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz odpowiadające im wartości kosztu: z takich danych łatwo narysować trajektorię i historię kosztu.`) +
+Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz odpowiadające im wartości kosztu: z takich danych łatwo narysować trajektorię i historię kosztu.
+
+Jak przejść od opisu algorytmu do programu, pokazuje strona <a href="#kod">Jak zapisać algorytm w Pythonie?</a>. Gradient jest tam zapisany ze wzoru, bez automatycznego różniczkowania.`) +
             box('warn', 'Pułapka automatycznego różniczkowania', R`Jeśli nie odtworzysz $\mathbf{x}$ jako nowego liścia grafu obliczeń, gradienty z kolejnych kroków będą się **kumulować** w <code>x.grad</code>, a trajektoria odbiegnie od oczekiwanej. To najczęstsza przyczyna błędu w implementacji tej metody.`),
         });
         return fr;

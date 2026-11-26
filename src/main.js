@@ -1,5 +1,5 @@
 /* =====================================================================
-   Menu, routing (#topic, #topic-lab, #topic-test, #porownanie, #bledy) and page chrome
+   Menu, routing (#topic, #topic-lab, #topic-test, #porownanie, #kod, #bledy, #ml) and page chrome
    ===================================================================== */
 (function () {
   const app = document.getElementById('app');
@@ -8,6 +8,8 @@
   const EXTRA = [
     { id: 'porownanie', title: 'Porównaj metody', tag: 'Podsumowanie', make: () => ComparePage(),
       menu: 'Cztery metody na jednej funkcji i z jednego punktu startowego: liczba kroków, koszt jednego kroku i sytuacje, w których każda z metod zawodzi.' },
+    { id: 'kod', title: 'Jak zapisać algorytm w Pythonie?', tag: 'Implementacja', make: () => CodePage(),
+      menu: 'Metoda spadku gradientu przeniesiona z opisu do programu: symbole i zmienne, opis i kod obok siebie, wykonanie wiersz po wierszu, test oraz typowe pomyłki.' },
     { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
       menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
     { id: 'ml', title: 'Jak zegarek uczy się odróżniać marsz od biegu?', tag: 'Uczenie maszynowe', make: () => MlPage(),

@@ -20,7 +20,8 @@ z natychmiastową odpowiedzią).
 6. Metoda Gaussa–Newtona
 7. Farmakokinetyka teofiliny (studium przypadku)
 
-Trzy strony zamykające: „Porównaj metody” (cztery metody na jednej funkcji), „Znajdź błąd”
+Cztery strony zamykające: „Porównaj metody” (cztery metody na jednej funkcji), „Jak zapisać algorytm
+w Pythonie?” (spadek gradientu od opisu do programu, wykonanie wiersz po wierszu), „Znajdź błąd”
 (rozpoznawanie typowych błędów implementacji po kształcie trajektorii) oraz „Jak zegarek uczy się
 odróżniać marsz od biegu?” (regresja logistyczna i stochastyczny spadek gradientu na prawdziwych danych).
 
@@ -46,6 +47,7 @@ npm run build    # składa index.html
 | `src/plot3d.js` | widok 3D powierzchni funkcji (własny rzut na canvasie, bez bibliotek) |
 | `src/gloss.js` | słownik symboli i okno objaśnień |
 | `src/t1_…` – `src/t7_…` | treść i eksperymenty poszczególnych tematów |
+| `src/code.js` | strona „Jak zapisać algorytm w Pythonie?”: spadek gradientu od opisu do programu |
 | `src/intro.js` | wstęp „Zanim zaczniesz”: jak szybko tętno wraca do normy po biegu |
 | `src/ml.js`, `src/ml_data.js` | strona o uczeniu maszynowym i jej dane (cechy obliczone ze zbioru WISDM) |
 | `src/extras.js` | pytania „Sprawdź się”, strony „Porównaj metody” i „Znajdź błąd” |
