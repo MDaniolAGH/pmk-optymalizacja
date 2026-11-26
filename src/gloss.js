@@ -190,6 +190,14 @@ const GLOSS = {
     what: R`Wartość, którą model zwraca dla danych parametrów. Daszek nad symbolem odróżnia przewidywanie od pomiaru $y_i$.`,
     how: [R`Podstaw do wzoru modelu aktualne wartości parametrów.`, R`Podstaw wartość zmiennej niezależnej, na przykład prędkość $v_i$ z $i$-tego pomiaru.`],
     why: R`Porównanie przewidywań z pomiarami jest podstawą funkcji kosztu. Po dopasowaniu model służy do przewidywania wartości, których nie zmierzono.` },
+  nmeas: { s: 'n', t: 'Liczba pomiarów',
+    what: R`Liczba punktów danych, do których dopasowujemy model. W przykładzie biegaczki jest to liczba jednominutowych odcinków ze wszystkich biegów.`,
+    how: [R`Policz pary (prędkość, tętno) użyte do dopasowania.`],
+    why: R`Dzielimy przez nią sumę kwadratów reszt, aby koszt był średnią i nie rósł tylko dlatego, że zebrano więcej danych. Im więcej pomiarów, tym mniej pojedynczy zaszumiony punkt wpływa na dopasowaną prostą.` },
+  rmse: { s: R`\sqrt{2f}`, t: 'Typowy błąd modelu (root-mean-square error, RMSE)',
+    what: R`Pierwiastek ze średniego kwadratu reszt: jedna liczba, która mówi, o ile przeciętnie przewidywanie modelu różni się od pomiaru. Ma tę samą jednostkę co wielkość mierzona.`,
+    how: [R`Oblicz reszty $r_i$ dla wszystkich pomiarów i podnieś je do kwadratu.`, R`Oblicz średnią tych kwadratów. Jest ona równa $2f$, bo funkcja kosztu to połowa średniego kwadratu reszt.`, R`Wyciągnij pierwiastek.`],
+    why: R`Koszt $f$ służy algorytmowi, ale trudno go zinterpretować. Typowy błąd w uderzeniach na minutę mówi wprost, jak dokładne są przewidywania modelu.` },
   speed: { s: 'v', t: 'Prędkość biegu',
     what: R`Zmienna niezależna w przykładzie biegaczki: średnia prędkość na odcinku, w km/h. Symbol $v_i$ oznacza prędkość na $i$-tym odcinku.`,
     how: [R`Zegarek z odbiornikiem GPS wyznacza ją z przebytej drogi i czasu.`],
@@ -484,7 +492,7 @@ const GLOSS = {
     why: R`Zbyt wysokie stężenie maksymalne może być toksyczne. Dla teofiliny różnica między stężeniem skutecznym a toksycznym jest niewielka, dlatego dokładny model ma znaczenie.` },
 };
 /* the same symbol can mean something else on some pages */
-const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { vrate: 'speed' } };
+const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { vrate: 'speed', ndim: 'nmeas' } };
 
 /* ---------- 3. the dialog ---------- */
 const Gloss = (() => {
