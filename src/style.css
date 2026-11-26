@@ -445,3 +445,13 @@ details.why[open] { flex-basis: 100%; }
 .pipe-ctl { display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: flex-end; }
 .card.flat { border: 0; padding: 0; }
 @media (max-width: 980px) { .pipe-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- floating copy of the data plot (machine-learning page) ---------- */
+.fab { position: fixed; left: 18px; bottom: 18px; z-index: 15; }   /* on the left: it covers the text, not the signal plots being compared */
+.fab.away { display: none; }
+.fab-btn { box-shadow: 0 6px 20px rgba(0, 0, 0, .22); }
+.fab-btn[hidden], .fab-panel[hidden] { display: none; }
+.fab-panel { width: min(360px, calc(100vw - 24px)); background: var(--paper); border: 1px solid var(--line2); border-radius: 10px; padding: 8px 12px 10px; box-shadow: 0 12px 36px rgba(0, 0, 0, .24); }
+.fab-h { display: flex; justify-content: space-between; align-items: center; font: 600 14.5px var(--sans); margin-bottom: 2px; }
+.fab-n { margin-top: 4px; font-size: 13px; min-height: 2.7em; }
+@media (max-width: 560px) { .fab { left: 12px; bottom: 12px; } }

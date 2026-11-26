@@ -54,7 +54,7 @@ npm run build    # składa index.html
 
 ## Dane i biblioteki
 
-- Dane z akcelerometru zegarka (strona o uczeniu maszynowym): Weiss, G. (2019). *WISDM Smartphone and Smartwatch Activity and Biometrics Dataset*. UCI Machine Learning Repository. https://doi.org/10.24432/C5HK59. Licencja CC BY 4.0. W repozytorium znajdują się wyłącznie cechy obliczone z surowych zapisów (odchylenie standardowe modułu przyspieszenia w oknach 5 s, marsz i trucht, po 9 okien na osobę i czynność), bez identyfikatorów osób.
+- Dane z akcelerometru zegarka (strona o uczeniu maszynowym): Weiss, G. (2019). *WISDM Smartphone and Smartwatch Activity and Biometrics Dataset*. UCI Machine Learning Repository. https://doi.org/10.24432/C5HK59. Licencja CC BY 4.0. W repozytorium znajdują się cechy obliczone z surowych zapisów (odchylenie standardowe, rozstęp, częstotliwość dominująca i średnia modułu przyspieszenia w oknach 5 s; marsz i trucht, po 9 okien na osobę i czynność) oraz cztery 20-sekundowe fragmenty surowego sygnału dwóch osób, bez identyfikatorów osób.
 - Dane we wstępie (powrót tętna po biegu) są syntetyczne.
 - Dane teofiliny: zbiór `Theoph` (Boeckmann, Sheiner, Beal), rozpowszechniany z językiem R, domena publiczna.
 - [KaTeX](https://katex.org) 0.16.11, licencja MIT.
