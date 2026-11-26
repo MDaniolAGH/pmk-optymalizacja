@@ -418,6 +418,26 @@ details.why[open] { flex-basis: 100%; }
 }
 @media (max-width: 760px) { .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; } }
 
+/* ---------- contour plot / 3-D surface switch ---------- */
+.viewsw { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-bottom: 6px; min-height: 32px; }
+.seg { display: inline-flex; border: 1px solid var(--line2); border-radius: 7px; overflow: hidden; }
+.seg button { font: 600 13.5px/1 var(--sans); padding: 7px 11px; border: 0; background: var(--paper); color: var(--ink2); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line2); }
+.seg button.on { background: var(--green); color: #fff; }
+.seg button:not(.on):hover { background: var(--grey-t); }
+.rot { display: inline-flex; gap: 4px; visibility: hidden; }
+.rot.show { visibility: visible; }
+.rot button { font: 600 14px/1 var(--sans); min-width: 30px; height: 30px; padding: 0 7px; border: 1px solid var(--line2); border-radius: 6px; background: var(--paper); color: var(--ink2); cursor: pointer; }
+.rot button.txt { font-size: 13px; }
+.rot button:hover { border-color: var(--ink2); background: var(--grey-t); }
+.plot.three .ax { display: none; }
+.plot.three canvas { cursor: grab; touch-action: auto; }
+.plot.three canvas:active { cursor: grabbing; }
+.vnote, .plot-t.two { display: grid; }
+.vnote > *, .plot-t.two > * { grid-area: 1 / 1; }
+.vnote > .off, .plot-t.two > .off { visibility: hidden; }
+.plot-t.two small { margin-left: 8px; }
+
 </style>
 </head>
 <body>
@@ -782,13 +802,19 @@ class Plot {
     this.view = [0, 1, 0, 1]; this.draw = null; this.onpick = null; this._cc = new Map();
     new ResizeObserver(() => this.render()).observe(this.el);
     const pick = e => { if (!this.b) return; const r = this.cv.getBoundingClientRect(); this.onpick(this.ix(e.clientX - r.left), this.iy(e.clientY - r.top)); };
-    this.cv.addEventListener('pointerdown', e => { if (!this.onpick) return; this._drag = true; try { this.cv.setPointerCapture(e.pointerId); } catch (_) { } pick(e); });
-    this.cv.addEventListener('pointermove', e => { if (this._drag && this.onpick) pick(e); });
-    const end = () => { this._drag = false; };
+    this.cv.addEventListener('pointerdown', e => {
+      if (this.three) { if (e.pointerType !== 'touch') { this._rot = [e.clientX, e.clientY]; try { this.cv.setPointerCapture(e.pointerId); } catch (_) { } } return; }   // 3-D view: drag rotates (touch keeps scrolling the page)
+      if (!this.onpick) return; this._drag = true; try { this.cv.setPointerCapture(e.pointerId); } catch (_) { } pick(e); });
+    this.cv.addEventListener('pointermove', e => {
+      if (this._rot && this.three) { const dx = e.clientX - this._rot[0], dy = e.clientY - this._rot[1]; this._rot = [e.clientX, e.clientY]; this.rotate(dx * 0.01, dy * 0.008); return; }
+      if (this._drag && this.onpick) pick(e);
+    });
+    const end = () => { this._drag = false; this._rot = null; };
     this.cv.addEventListener('pointerup', end); this.cv.addEventListener('pointercancel', end);
     PLOTS.add(this);
   }
   pickable(fn) { this.onpick = fn; this.el.classList.add('pick'); return this; }
+  rotate(daz, del) { const t = this.three; if (!t) return; t.az += daz; t.el = Math.max(0.32, Math.min(1.35, t.el + del)); this.render(); }
   setView(x0, x1, y0, y1) { this.view = [x0, x1, y0, y1]; return this; }
   _tx(x) { return this.o.xlog ? Math.log10(Math.max(x, this.o.floor)) : x; }
   _ty(y) { return this.o.ylog ? Math.log10(Math.max(y, this.o.floor)) : y; }
@@ -803,6 +829,7 @@ class Plot {
     if (this.cv.width !== W || this.cv.height !== H) { this.cv.width = W; this.cv.height = H; }
     const c = this.c = this.cv.getContext('2d'), o = this.o;
     c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+    if (this.three && this.scene) { this.b = null; render3(this, w, h); return; }   // surface view, see plot3d.js
     const b = this.b = { l: o.ml, t: o.mt, w: w - o.ml - o.mr, h: h - o.mt - o.mb };
     let [x0, x1, y0, y1] = this.view;
     if (o.equal) {
@@ -1143,6 +1170,129 @@ function Walk(cfg) {
 
 /* topic registry, filled by the t*.js files */
 const TOPICS = [];
+
+
+/* =====================================================================
+   3-D view of a function of two variables with trajectories on its surface.
+   Plain canvas, no library: orthographic projection, cells painted back to front,
+   lines and markers painted together with the cells they lie on, so the surface hides what is behind it.
+   plot.three = { az, el }   camera angles (radians);   plot.scene = { fn, runs: [{pts, color, shape, ghost}], x0 }
+   The height is f - f* on a flattened (logarithmic) scale: w = ln(1 + t/s) / ln(1 + T/s).
+   ===================================================================== */
+const P3 = { N: 46, HS: 0.78, AZ: 0.62, EL: 0.74, LOW: [196, 224, 208], HIGH: [247, 248, 247] };
+
+function mesh3(plot, fn) {
+  if (plot._m3 && plot._m3.id === fn.id) return plot._m3;
+  const N = P3.N, [x0, x1, y0, y1] = fn.view, dx = (x1 - x0) / (N - 1), dy = (y1 - y0) / (N - 1), vals = new Float64Array(N * N);
+  let top = -Infinity;
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const v = fn.f([x0 + i * dx, y0 + j * dy]); vals[j * N + i] = v; if (v > top) top = v; }
+  const T = top - fn.fmin, s = T / 60, den = Math.log(1 + T / s);
+  const w = f => { const t = Math.max(0, f - fn.fmin); return Math.min(1.06, Math.log(1 + t / s) / den) * P3.HS; };
+  const W = new Float64Array(N * N); for (let k = 0; k < N * N; k++) W[k] = w(vals[k]);
+  const levels = fn.levels.map(L => ({ w: w(L), segs: marching(vals, N, N, x0, dx, y0, dy, L) }));
+  return (plot._m3 = { id: fn.id, N, x0, x1, y0, y1, dx, dy, W, w, levels });
+}
+
+function render3(plot, cw, ch) {
+  const c = plot.c, sc = plot.scene, fn = sc.fn, m = mesh3(plot, fn), N = m.N, { az, el } = plot.three;
+  const ca = Math.cos(az), sa = Math.sin(az), ce = Math.cos(el), se = Math.sin(el);
+  const R2 = Math.SQRT2, padX = 26, padT = 18, padB = 44, HT = P3.HS * 1.06;   // HT: the highest point the surface can reach
+  const S = Math.min((cw - 2 * padX) / (2 * R2), (ch - padT - padB) / (2 * R2 * se + HT * ce));
+  const cx = cw / 2, cy = padT + (ch - padT - padB) / 2 + S * (HT * ce) / 2;
+  const U = x => (x - m.x0) / (m.x1 - m.x0) * 2 - 1, V = y => (y - m.y0) / (m.y1 - m.y0) * 2 - 1;
+  const depth = (u, v) => u * sa + v * ca;                       // larger = farther from the viewer
+  const PX = (u, v) => cx + S * (u * ca - v * sa), PY = (u, v, w) => cy - S * ((u * sa + v * ca) * se + w * ce);
+  c.fillStyle = C.paper; c.fillRect(0, 0, cw, ch);
+  c.lineJoin = 'round'; c.lineCap = 'round';
+
+  // projected grid nodes
+  const gx = new Float64Array(N * N), gy = new Float64Array(N * N);
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const u = i / (N - 1) * 2 - 1, v = j / (N - 1) * 2 - 1, k = j * N + i; gx[k] = PX(u, v); gy[k] = PY(u, v, m.W[k]); }
+
+  // things lying on the surface: contour pieces, trajectory pieces, markers; each knows its depth
+  const dec = [], inside = p => p[0] >= m.x0 && p[0] <= m.x1 && p[1] >= m.y0 && p[1] <= m.y1 && Number.isFinite(p[0]) && Number.isFinite(p[1]);
+  for (const L of m.levels) for (let i = 0; i < L.segs.length; i += 2) {
+    const a = L.segs[i], b = L.segs[i + 1], ua = U(a[0]), va = V(a[1]), ub = U(b[0]), vb = V(b[1]);
+    dec.push({ d: depth((ua + ub) / 2, (va + vb) / 2), k: 0, x0: PX(ua, va), y0: PY(ua, va, L.w), x1: PX(ub, vb), y1: PY(ub, vb, L.w) });
+  }
+  const lift = 0.006, at = p => { const u = U(p[0]), v = V(p[1]); return [PX(u, v), PY(u, v, m.w(fn.f(p)) + lift), depth(u, v)]; };
+  const xray = [];                                               // the same lines again, faint, so hidden parts stay traceable
+  for (const r of sc.runs) {
+    const pts = r.pts, line = [];
+    for (let k = 0; k + 1 < pts.length; k++) {
+      const a = pts[k], b = pts[k + 1]; if (!Number.isFinite(a[0] + a[1] + b[0] + b[1])) continue;
+      const n = Math.max(1, Math.min(60, Math.ceil(Math.max(Math.abs(U(b[0]) - U(a[0])), Math.abs(V(b[1]) - V(a[1]))) * (N - 1) / 2)));
+      let prev = null;
+      for (let q = 0; q <= n; q++) {
+        const p = [a[0] + (b[0] - a[0]) * q / n, a[1] + (b[1] - a[1]) * q / n], cur = inside(p) ? at(p) : null;
+        if (prev && cur) { dec.push({ d: (prev[2] + cur[2]) / 2, k: 1, x0: prev[0], y0: prev[1], x1: cur[0], y1: cur[1], col: r.color, lw: r.ghost ? 1.8 : 2.4 }); line.push(prev[0], prev[1], cur[0], cur[1]); }
+        prev = cur;
+      }
+    }
+    xray.push({ col: r.color, line });
+    if (!r.ghost && pts.length <= 140) for (const p of pts) if (inside(p)) { const q = at(p); dec.push({ d: q[2], k: 2, x: q[0], y: q[1], r: 2.3, fill: r.color }); }
+    if (!r.ghost) { const p = pts[pts.length - 1]; if (inside(p)) { const q = at(p); dec.push({ d: q[2] - 0.02, k: 2, x: q[0], y: q[1], r: 5.5, fill: r.color, stroke: '#fff', sq: r.shape === 'sq' }); } }
+  }
+  const stat = fn.stat ? fn.stat.map(s => ({ x: s.x, col: s.kind.includes('siod') ? C.ghost : C.black, r: s.kind.includes('glob') ? 7 : 5.5 })) : [{ x: fn.min, col: C.black, r: 7 }];
+  for (const s of stat) if (inside(s.x)) { const q = at(s.x); dec.push({ d: q[2] - 0.02, k: 3, x: q[0], y: q[1], r: s.r, fill: s.col }); }
+  if (inside(sc.x0)) { const q = at(sc.x0); dec.push({ d: q[2] - 0.03, k: 2, x: q[0], y: q[1], r: 4.5, fill: '#fff', stroke: C.black }); }
+  dec.sort((a, b) => b.d - a.d);
+
+  const star = (x, y, r, col) => { c.fillStyle = col; c.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * .45 : r; c.lineTo(x + rr * Math.cos(a), y + rr * Math.sin(a)); } c.closePath(); c.fill(); c.strokeStyle = '#fff'; c.lineWidth = 1; c.stroke(); };
+  const paint = d => {
+    if (d.k === 0) { c.strokeStyle = 'rgba(71,81,75,.42)'; c.lineWidth = 1; c.beginPath(); c.moveTo(d.x0, d.y0); c.lineTo(d.x1, d.y1); c.stroke(); }
+    else if (d.k === 1) { c.strokeStyle = d.col; c.lineWidth = d.lw; c.beginPath(); c.moveTo(d.x0, d.y0); c.lineTo(d.x1, d.y1); c.stroke(); }
+    else if (d.k === 2) { c.fillStyle = d.fill; c.beginPath(); if (d.sq) c.rect(d.x - d.r, d.y - d.r, 2 * d.r, 2 * d.r); else c.arc(d.x, d.y, d.r, 0, 2 * Math.PI); c.fill(); if (d.stroke) { c.strokeStyle = d.stroke; c.lineWidth = 1.5; c.stroke(); } }
+    else star(d.x, d.y, d.r, d.fill);
+  };
+
+  // cells, far to near; a decal is painted a little after its own cell so that neighbouring cells do not cut it
+  const cells = []; for (let j = 0; j < N - 1; j++) for (let i = 0; i < N - 1; i++) cells.push(j * N + i);
+  const cd = k => { const i = k % N, j = (k - i) / N; return depth((i + .5) / (N - 1) * 2 - 1, (j + .5) / (N - 1) * 2 - 1); };
+  const cdepth = new Float64Array(N * N); for (const k of cells) cdepth[k] = cd(k);
+  cells.sort((a, b) => cdepth[b] - cdepth[a]);
+  const lag = 3.2 / (N - 1), h = 2 / (N - 1), lx = -0.45, ly = -0.5, lz = 0.74;
+  let di = 0;
+  for (const k of cells) {
+    while (di < dec.length && dec[di].d > cdepth[k] + lag) paint(dec[di++]);
+    const a = k, b = k + 1, d2 = k + N, e = k + N + 1;
+    const wm = (m.W[a] + m.W[b] + m.W[d2] + m.W[e]) / 4 / P3.HS, nx = -(m.W[b] - m.W[a] + m.W[e] - m.W[d2]) / (2 * h), ny = -(m.W[d2] - m.W[a] + m.W[e] - m.W[b]) / (2 * h);
+    const sh = 0.74 + 0.26 * Math.max(0, (nx * lx + ny * ly + lz) / Math.hypot(nx, ny, 1)), t = Math.min(1, wm);
+    const col = `rgb(${P3.LOW.map((lo, q) => Math.round((lo + (P3.HIGH[q] - lo) * t) * sh)).join(',')})`;
+    c.fillStyle = col; c.strokeStyle = col; c.lineWidth = 0.7;
+    c.beginPath(); c.moveTo(gx[a], gy[a]); c.lineTo(gx[b], gy[b]); c.lineTo(gx[e], gy[e]); c.lineTo(gx[d2], gy[d2]); c.closePath(); c.fill(); c.stroke();
+  }
+  while (di < dec.length) paint(dec[di++]);
+
+  // faint copy of every trajectory on top: the part hidden behind a wall can still be followed
+  c.globalAlpha = 0.22; c.lineWidth = 1.3;
+  for (const r of xray) { c.strokeStyle = r.col; c.beginPath(); for (let i = 0; i < r.line.length; i += 4) { c.moveTo(r.line[i], r.line[i + 1]); c.lineTo(r.line[i + 2], r.line[i + 3]); } c.stroke(); }
+  c.globalAlpha = 1;
+
+  // the two walls facing the viewer, with the axes along their lower edges
+  const near = [];                                                // [fixed coordinate, value, runs along]
+  near.push(ca > 0 ? ['v', -1] : ['v', 1]); near.push(sa > 0 ? ['u', -1] : ['u', 1]);
+  near.sort((p, q) => depth(q[0] === 'u' ? q[1] : 0, q[0] === 'v' ? q[1] : 0) - depth(p[0] === 'u' ? p[1] : 0, p[0] === 'v' ? p[1] : 0));
+  c.font = `500 12px ${FONT_UI}`; c.textBaseline = 'top';
+  for (const [fix, val] of near) {
+    const node = q => (fix === 'v' ? (val < 0 ? 0 : N - 1) * N + q : q * N + (val < 0 ? 0 : N - 1)), uv = q => { const t = q / (N - 1) * 2 - 1; return fix === 'v' ? [t, val] : [val, t]; };
+    c.beginPath();
+    for (let q = 0; q < N; q++) { const k = node(q); if (q) c.lineTo(gx[k], gy[k]); else c.moveTo(gx[k], gy[k]); }
+    for (let q = N - 1; q >= 0; q--) { const [u, v] = uv(q); c.lineTo(PX(u, v), PY(u, v, 0)); }
+    c.closePath(); c.fillStyle = '#E3E8E5'; c.fill(); c.strokeStyle = C.line2; c.lineWidth = 1; c.stroke();
+    const lo = fix === 'v' ? m.x0 : m.y0, hi = fix === 'v' ? m.x1 : m.y1, ticks = linTicks(lo, hi, 5);
+    c.fillStyle = C.ink3; c.strokeStyle = C.line2; c.textAlign = 'center';
+    for (const t of ticks) {
+      const tt = (t.v - lo) / (hi - lo) * 2 - 1, [u, v] = fix === 'v' ? [tt, val] : [val, tt], px = PX(u, v), py = PY(u, v, 0);
+      c.beginPath(); c.moveTo(px, py); c.lineTo(px, py + 4); c.stroke(); c.fillText(t.label, px, py + 6);
+    }
+    // axis name at the end of the edge that is away from the nearest corner
+    const ends = [uv(0), uv(N - 1)].sort((p, q) => depth(q[0], q[1]) - depth(p[0], p[1])), far = ends[0];
+    const nx2 = PX(far[0], far[1]), ny2 = PY(far[0], far[1], 0) + 22, name = fix === 'v' ? '0' : '1';
+    c.fillStyle = C.ink2; c.font = `italic 15px KaTeX_Math, "Source Serif 4", serif`; c.fillText('x', nx2 - 3, ny2);
+    c.font = `10.5px KaTeX_Main, serif`; c.fillText(name, nx2 + 5, ny2 + 7); c.font = `500 12px ${FONT_UI}`;
+  }
+}
 
 
 /* =====================================================================
@@ -1935,6 +2085,7 @@ function TrajLab(cfg) {
     reset(keepGhosts = true) { runner.stop(); if (!keepGhosts) ghosts = []; S.k = 0; build(); status.className = 'status'; status.textContent = 'Nowy przebieg. Zastanów się, czego się spodziewasz, a następnie wykonaj krok lub uruchom animację.'; drawAll(); },
     setFn(id, x0) { const nx = [...(x0 || M.F[id].start)]; if (id !== S.fn || nx.some((v, i) => v !== S.x0[i])) ghosts = []; S.fn = id; sel.set(id, false); S.x0 = nx; if (cfg.onFn) cfg.onFn(M.F[id], api); api.reset(); },
     setStart(x) { S.x0 = [...x]; ghosts = []; api.reset(); },
+    setThree(on) { setThree(on); },
     run() { api.reset(); runner.start(); },
   };
   const ctl = el('section', 'card'); ctl.innerHTML = '<h3 class="card-h">Ustawienia</h3>'; ctl.append(sel.el);
@@ -1959,7 +2110,24 @@ function TrajLab(cfg) {
   const pF = new Plot({ equal: true, xlabel: 'x_0', ylabel: 'x_1', aria: 'Poziomice funkcji kosztu z trajektoriami metod' });
   const pC = new Plot({ ylog: true, xlabel: 'k', ylabel: R`f(\mathbf{x}^{(k)})-f^{*}`, aria: 'Historia kosztu w skali logarytmicznej' });
   const lg = el('div'), table = el('div', 'card tblw'), plots = el('div', 'plots' + (cfg.extra ? ' three' : ''));
-  const fCard = plotCard('Trajektoria na tle poziomic <small>kliknij, aby wybrać punkt startowy</small>', pF); fCard.append(lg);
+  const T2D = 'Trajektoria na tle poziomic <small>kliknij, aby wybrać punkt startowy</small>', T3D = 'Trajektoria na powierzchni funkcji <small>obróć myszą lub strzałkami</small>';
+  const N2D = 'Poziomice to linie stałej wartości funkcji. Ich poziomy dobrano gęściej w pobliżu minimum.', N3D = 'Wysokość to wartość funkcji w skali spłaszczonej (logarytmicznej), aby dno doliny pozostało czytelne. Punkt startowy wybiera się w widoku poziomic.';
+  const fCard = plotCard('', pF), vsw = el('div', 'viewsw'), vnote = el('div', 'vnote', `<p class="note">${N2D}</p><p class="note off">${N3D}</p>`), ptitle = fCard.querySelector('.plot-t');
+  ptitle.classList.add('two'); ptitle.innerHTML = `<span>${T2D}</span><span class="off">${T3D}</span>`;   // both texts occupy the same place, so switching the view never changes the height of the card
+  vsw.innerHTML = `<div class="seg" role="group" aria-label="Rodzaj wykresu"><button type="button" class="on" aria-pressed="true">Poziomice</button><button type="button" aria-pressed="false">Powierzchnia 3D</button></div>
+    <div class="rot" role="group" aria-label="Obrót widoku 3D"><button type="button" data-r="l" title="Obróć w lewo" aria-label="Obróć w lewo">◀</button><button type="button" data-r="r" title="Obróć w prawo" aria-label="Obróć w prawo">▶</button><button type="button" data-r="u" title="Widok bardziej z góry" aria-label="Widok bardziej z góry">▲</button><button type="button" data-r="d" title="Widok bardziej z boku" aria-label="Widok bardziej z boku">▼</button><button type="button" data-r="0" class="txt">Widok domyślny</button></div>`;
+  fCard.insertBefore(vsw, pF.el); fCard.append(lg, vnote);
+  const segB = vsw.querySelectorAll('.seg button'), rot = vsw.querySelector('.rot');
+  function setThree(on) {   // contour plot or surface; the card keeps its size
+    S.three = !!on; pF.three = on ? (pF._cam || (pF._cam = { az: P3.AZ, el: P3.EL })) : null;
+    pF.el.classList.toggle('three', S.three); rot.classList.toggle('show', S.three);
+    segB.forEach((b, i) => { const act = (i === 1) === S.three; b.classList.toggle('on', act); b.setAttribute('aria-pressed', act); });
+    [ptitle, vnote].forEach(h => { h.children[0].classList.toggle('off', S.three); h.children[1].classList.toggle('off', !S.three); });
+    drawAll();
+  }
+  segB[0].addEventListener('click', () => setThree(false)); segB[1].addEventListener('click', () => setThree(true));
+  rot.addEventListener('click', e => { const r = e.target.dataset && e.target.dataset.r; if (!r || !pF.three) return;
+    if (r === '0') { pF.three.az = P3.AZ; pF.three.el = P3.EL; pF.render(); } else pF.rotate(r === 'l' ? -0.3 : r === 'r' ? 0.3 : 0, r === 'u' ? 0.15 : r === 'd' ? -0.15 : 0); });
   plots.append(fCard, plotCard('Historia kosztu <small>skala logarytmiczna</small>', pC, '<p class="note">Linia przerywana: próg 10⁻⁶. Wartości poniżej 10⁻¹⁴ są rysowane na dolnej krawędzi wykresu.</p>'));
   if (cfg.extra) plots.append(plotCard(cfg.extra.title, cfg.extra.plot, cfg.extra.legend || ''));
   main.append(info, status, plots, table);
@@ -2012,6 +2180,7 @@ function TrajLab(cfg) {
       runs.forEach(r => drawRun(q, r.pts, { color: r.m.color, dash: r.m.dash, shape: r.m.shape }));
       q.dots([S.x0], { fill: '#fff', stroke: C.black, color: C.black, r: 4.5 });
     };
+    pF.scene = { fn, x0: S.x0, runs: [...ghosts.map(g => ({ pts: g.pts, color: C.ghost, ghost: true })), ...runs.map(r => ({ pts: r.pts, color: r.m.color, shape: r.m.shape }))] };   // used by the 3-D view
     pF.render();
     drawCost(pC, [...ghosts.map(g => ({ ys: g.fs, color: C.ghost, width: 1.8 })), ...runs.map(r => ({ ys: r.fs, color: r.m.color, dash: r.m.dash }))], { level: TOL });
     if (cfg.extra) cfg.extra.draw(runs, api);
@@ -2199,6 +2368,9 @@ Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz
           { t: 'Dwie doliny', q: R`Funkcja niewypukła (non-convex), $\alpha=0.05$. Uruchom metodę z kilku punktów startowych po lewej i po prawej stronie. **Zastanów się:** czy metoda zawsze znajdzie głębszą dolinę?`,
             acts: [['Start z prawej strony', () => set('twin', 0.05, [0.35, 1.9])], ['Start z lewej strony', () => set('twin', 0.05, [-0.4, 1.9])]],
             a: R`Nie. Metoda spadku gradientu schodzi do tej doliny, w której rozpoczęła obliczenia. Startując z prawej strony, kończy w minimum **lokalnym**, a wykres kosztu stabilizuje się na stałym poziomie, zamiast maleć do zera. Dla funkcji niewypukłych wynik zależy od punktu startowego.` },
+          { t: 'Poziomice a kształt powierzchni', q: R`Wybierz funkcję niewypukłą, uruchom metodę i przełącz wykres trajektorii na widok „Powierzchnia 3D”. Obróć go. **Zastanów się:** jak na wykresie poziomic rozpoznać dolinę, a jak przełęcz (punkt siodłowy) między dolinami? Pod jakim kątem krok metody spadku gradientu przecina poziomicę?`,
+            acts: [['Poziomice', () => { api.setFn('twin', [0.35, 1.9]); aS.set(0.05, false); api.setThree(false); api.run(); }], ['Powierzchnia 3D', () => { api.setFn('twin', [0.35, 1.9]); aS.set(0.05, false); api.setThree(true); api.run(); }]],
+            a: R`Poziomice to przekroje powierzchni poziomymi płaszczyznami: każda łączy punkty o tej samej wartości funkcji. Dolinę otaczają poziomice zamknięte wokół minimum. W punkcie siodłowym poziomica przecina samą siebie (kształt ósemki): w jednym kierunku funkcja tam rośnie, a w drugim maleje. Gradient jest w każdym punkcie prostopadły do poziomicy, więc krok metody spadku gradientu przecina ją pod kątem prostym, a trajektoria schodzi po powierzchni w kierunku największego lokalnego spadku. Uwaga: wysokość w widoku 3D jest pokazana w skali spłaszczonej, więc stromość ścian jest tam wizualnie zaniżona.` },
         ];
       },
     });

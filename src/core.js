@@ -116,13 +116,19 @@ class Plot {
     this.view = [0, 1, 0, 1]; this.draw = null; this.onpick = null; this._cc = new Map();
     new ResizeObserver(() => this.render()).observe(this.el);
     const pick = e => { if (!this.b) return; const r = this.cv.getBoundingClientRect(); this.onpick(this.ix(e.clientX - r.left), this.iy(e.clientY - r.top)); };
-    this.cv.addEventListener('pointerdown', e => { if (!this.onpick) return; this._drag = true; try { this.cv.setPointerCapture(e.pointerId); } catch (_) { } pick(e); });
-    this.cv.addEventListener('pointermove', e => { if (this._drag && this.onpick) pick(e); });
-    const end = () => { this._drag = false; };
+    this.cv.addEventListener('pointerdown', e => {
+      if (this.three) { if (e.pointerType !== 'touch') { this._rot = [e.clientX, e.clientY]; try { this.cv.setPointerCapture(e.pointerId); } catch (_) { } } return; }   // 3-D view: drag rotates (touch keeps scrolling the page)
+      if (!this.onpick) return; this._drag = true; try { this.cv.setPointerCapture(e.pointerId); } catch (_) { } pick(e); });
+    this.cv.addEventListener('pointermove', e => {
+      if (this._rot && this.three) { const dx = e.clientX - this._rot[0], dy = e.clientY - this._rot[1]; this._rot = [e.clientX, e.clientY]; this.rotate(dx * 0.01, dy * 0.008); return; }
+      if (this._drag && this.onpick) pick(e);
+    });
+    const end = () => { this._drag = false; this._rot = null; };
     this.cv.addEventListener('pointerup', end); this.cv.addEventListener('pointercancel', end);
     PLOTS.add(this);
   }
   pickable(fn) { this.onpick = fn; this.el.classList.add('pick'); return this; }
+  rotate(daz, del) { const t = this.three; if (!t) return; t.az += daz; t.el = Math.max(0.32, Math.min(1.35, t.el + del)); this.render(); }
   setView(x0, x1, y0, y1) { this.view = [x0, x1, y0, y1]; return this; }
   _tx(x) { return this.o.xlog ? Math.log10(Math.max(x, this.o.floor)) : x; }
   _ty(y) { return this.o.ylog ? Math.log10(Math.max(y, this.o.floor)) : y; }
@@ -137,6 +143,7 @@ class Plot {
     if (this.cv.width !== W || this.cv.height !== H) { this.cv.width = W; this.cv.height = H; }
     const c = this.c = this.cv.getContext('2d'), o = this.o;
     c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, w, h);
+    if (this.three && this.scene) { this.b = null; render3(this, w, h); return; }   // surface view, see plot3d.js
     const b = this.b = { l: o.ml, t: o.mt, w: w - o.ml - o.mr, h: h - o.mt - o.mb };
     let [x0, x1, y0, y1] = this.view;
     if (o.equal) {

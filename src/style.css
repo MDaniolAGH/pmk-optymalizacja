@@ -404,3 +404,23 @@ details.why[open] { flex-basis: 100%; }
   .thead h1 { flex-basis: 100%; }
 }
 @media (max-width: 760px) { .katex-display { overflow-x: auto; overflow-y: hidden; padding: 2px 0; } }
+
+/* ---------- contour plot / 3-D surface switch ---------- */
+.viewsw { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin-bottom: 6px; min-height: 32px; }
+.seg { display: inline-flex; border: 1px solid var(--line2); border-radius: 7px; overflow: hidden; }
+.seg button { font: 600 13.5px/1 var(--sans); padding: 7px 11px; border: 0; background: var(--paper); color: var(--ink2); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line2); }
+.seg button.on { background: var(--green); color: #fff; }
+.seg button:not(.on):hover { background: var(--grey-t); }
+.rot { display: inline-flex; gap: 4px; visibility: hidden; }
+.rot.show { visibility: visible; }
+.rot button { font: 600 14px/1 var(--sans); min-width: 30px; height: 30px; padding: 0 7px; border: 1px solid var(--line2); border-radius: 6px; background: var(--paper); color: var(--ink2); cursor: pointer; }
+.rot button.txt { font-size: 13px; }
+.rot button:hover { border-color: var(--ink2); background: var(--grey-t); }
+.plot.three .ax { display: none; }
+.plot.three canvas { cursor: grab; touch-action: auto; }
+.plot.three canvas:active { cursor: grabbing; }
+.vnote, .plot-t.two { display: grid; }
+.vnote > *, .plot-t.two > * { grid-area: 1 / 1; }
+.vnote > .off, .plot-t.two > .off { visibility: hidden; }
+.plot-t.two small { margin-left: 8px; }

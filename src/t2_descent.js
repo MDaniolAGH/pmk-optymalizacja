@@ -14,6 +14,7 @@ function TrajLab(cfg) {
     reset(keepGhosts = true) { runner.stop(); if (!keepGhosts) ghosts = []; S.k = 0; build(); status.className = 'status'; status.textContent = 'Nowy przebieg. Zastanów się, czego się spodziewasz, a następnie wykonaj krok lub uruchom animację.'; drawAll(); },
     setFn(id, x0) { const nx = [...(x0 || M.F[id].start)]; if (id !== S.fn || nx.some((v, i) => v !== S.x0[i])) ghosts = []; S.fn = id; sel.set(id, false); S.x0 = nx; if (cfg.onFn) cfg.onFn(M.F[id], api); api.reset(); },
     setStart(x) { S.x0 = [...x]; ghosts = []; api.reset(); },
+    setThree(on) { setThree(on); },
     run() { api.reset(); runner.start(); },
   };
   const ctl = el('section', 'card'); ctl.innerHTML = '<h3 class="card-h">Ustawienia</h3>'; ctl.append(sel.el);
@@ -38,7 +39,24 @@ function TrajLab(cfg) {
   const pF = new Plot({ equal: true, xlabel: 'x_0', ylabel: 'x_1', aria: 'Poziomice funkcji kosztu z trajektoriami metod' });
   const pC = new Plot({ ylog: true, xlabel: 'k', ylabel: R`f(\mathbf{x}^{(k)})-f^{*}`, aria: 'Historia kosztu w skali logarytmicznej' });
   const lg = el('div'), table = el('div', 'card tblw'), plots = el('div', 'plots' + (cfg.extra ? ' three' : ''));
-  const fCard = plotCard('Trajektoria na tle poziomic <small>kliknij, aby wybrać punkt startowy</small>', pF); fCard.append(lg);
+  const T2D = 'Trajektoria na tle poziomic <small>kliknij, aby wybrać punkt startowy</small>', T3D = 'Trajektoria na powierzchni funkcji <small>obróć myszą lub strzałkami</small>';
+  const N2D = 'Poziomice to linie stałej wartości funkcji. Ich poziomy dobrano gęściej w pobliżu minimum.', N3D = 'Wysokość to wartość funkcji w skali spłaszczonej (logarytmicznej), aby dno doliny pozostało czytelne. Punkt startowy wybiera się w widoku poziomic.';
+  const fCard = plotCard('', pF), vsw = el('div', 'viewsw'), vnote = el('div', 'vnote', `<p class="note">${N2D}</p><p class="note off">${N3D}</p>`), ptitle = fCard.querySelector('.plot-t');
+  ptitle.classList.add('two'); ptitle.innerHTML = `<span>${T2D}</span><span class="off">${T3D}</span>`;   // both texts occupy the same place, so switching the view never changes the height of the card
+  vsw.innerHTML = `<div class="seg" role="group" aria-label="Rodzaj wykresu"><button type="button" class="on" aria-pressed="true">Poziomice</button><button type="button" aria-pressed="false">Powierzchnia 3D</button></div>
+    <div class="rot" role="group" aria-label="Obrót widoku 3D"><button type="button" data-r="l" title="Obróć w lewo" aria-label="Obróć w lewo">◀</button><button type="button" data-r="r" title="Obróć w prawo" aria-label="Obróć w prawo">▶</button><button type="button" data-r="u" title="Widok bardziej z góry" aria-label="Widok bardziej z góry">▲</button><button type="button" data-r="d" title="Widok bardziej z boku" aria-label="Widok bardziej z boku">▼</button><button type="button" data-r="0" class="txt">Widok domyślny</button></div>`;
+  fCard.insertBefore(vsw, pF.el); fCard.append(lg, vnote);
+  const segB = vsw.querySelectorAll('.seg button'), rot = vsw.querySelector('.rot');
+  function setThree(on) {   // contour plot or surface; the card keeps its size
+    S.three = !!on; pF.three = on ? (pF._cam || (pF._cam = { az: P3.AZ, el: P3.EL })) : null;
+    pF.el.classList.toggle('three', S.three); rot.classList.toggle('show', S.three);
+    segB.forEach((b, i) => { const act = (i === 1) === S.three; b.classList.toggle('on', act); b.setAttribute('aria-pressed', act); });
+    [ptitle, vnote].forEach(h => { h.children[0].classList.toggle('off', S.three); h.children[1].classList.toggle('off', !S.three); });
+    drawAll();
+  }
+  segB[0].addEventListener('click', () => setThree(false)); segB[1].addEventListener('click', () => setThree(true));
+  rot.addEventListener('click', e => { const r = e.target.dataset && e.target.dataset.r; if (!r || !pF.three) return;
+    if (r === '0') { pF.three.az = P3.AZ; pF.three.el = P3.EL; pF.render(); } else pF.rotate(r === 'l' ? -0.3 : r === 'r' ? 0.3 : 0, r === 'u' ? 0.15 : r === 'd' ? -0.15 : 0); });
   plots.append(fCard, plotCard('Historia kosztu <small>skala logarytmiczna</small>', pC, '<p class="note">Linia przerywana: próg 10⁻⁶. Wartości poniżej 10⁻¹⁴ są rysowane na dolnej krawędzi wykresu.</p>'));
   if (cfg.extra) plots.append(plotCard(cfg.extra.title, cfg.extra.plot, cfg.extra.legend || ''));
   main.append(info, status, plots, table);
@@ -91,6 +109,7 @@ function TrajLab(cfg) {
       runs.forEach(r => drawRun(q, r.pts, { color: r.m.color, dash: r.m.dash, shape: r.m.shape }));
       q.dots([S.x0], { fill: '#fff', stroke: C.black, color: C.black, r: 4.5 });
     };
+    pF.scene = { fn, x0: S.x0, runs: [...ghosts.map(g => ({ pts: g.pts, color: C.ghost, ghost: true })), ...runs.map(r => ({ pts: r.pts, color: r.m.color, shape: r.m.shape }))] };   // used by the 3-D view
     pF.render();
     drawCost(pC, [...ghosts.map(g => ({ ys: g.fs, color: C.ghost, width: 1.8 })), ...runs.map(r => ({ ys: r.fs, color: r.m.color, dash: r.m.dash }))], { level: TOL });
     if (cfg.extra) cfg.extra.draw(runs, api);
@@ -278,6 +297,9 @@ Wygodnie jest zwracać **wszystkie** punkty, łącznie z punktem startowym, oraz
           { t: 'Dwie doliny', q: R`Funkcja niewypukła (non-convex), $\alpha=0.05$. Uruchom metodę z kilku punktów startowych po lewej i po prawej stronie. **Zastanów się:** czy metoda zawsze znajdzie głębszą dolinę?`,
             acts: [['Start z prawej strony', () => set('twin', 0.05, [0.35, 1.9])], ['Start z lewej strony', () => set('twin', 0.05, [-0.4, 1.9])]],
             a: R`Nie. Metoda spadku gradientu schodzi do tej doliny, w której rozpoczęła obliczenia. Startując z prawej strony, kończy w minimum **lokalnym**, a wykres kosztu stabilizuje się na stałym poziomie, zamiast maleć do zera. Dla funkcji niewypukłych wynik zależy od punktu startowego.` },
+          { t: 'Poziomice a kształt powierzchni', q: R`Wybierz funkcję niewypukłą, uruchom metodę i przełącz wykres trajektorii na widok „Powierzchnia 3D”. Obróć go. **Zastanów się:** jak na wykresie poziomic rozpoznać dolinę, a jak przełęcz (punkt siodłowy) między dolinami? Pod jakim kątem krok metody spadku gradientu przecina poziomicę?`,
+            acts: [['Poziomice', () => { api.setFn('twin', [0.35, 1.9]); aS.set(0.05, false); api.setThree(false); api.run(); }], ['Powierzchnia 3D', () => { api.setFn('twin', [0.35, 1.9]); aS.set(0.05, false); api.setThree(true); api.run(); }]],
+            a: R`Poziomice to przekroje powierzchni poziomymi płaszczyznami: każda łączy punkty o tej samej wartości funkcji. Dolinę otaczają poziomice zamknięte wokół minimum. W punkcie siodłowym poziomica przecina samą siebie (kształt ósemki): w jednym kierunku funkcja tam rośnie, a w drugim maleje. Gradient jest w każdym punkcie prostopadły do poziomicy, więc krok metody spadku gradientu przecina ją pod kątem prostym, a trajektoria schodzi po powierzchni w kierunku największego lokalnego spadku. Uwaga: wysokość w widoku 3D jest pokazana w skali spłaszczonej, więc stromość ścian jest tam wizualnie zaniżona.` },
         ];
       },
     });

@@ -41,6 +41,7 @@ npm run build    # składa index.html
 |---|---|
 | `src/math.js` | obliczenia numeryczne (bez interfejsu) |
 | `src/core.js` | wykresy, kontrolki, odtwarzacz „krok po kroku” |
+| `src/plot3d.js` | widok 3D powierzchni funkcji (własny rzut na canvasie, bez bibliotek) |
 | `src/gloss.js` | słownik symboli i okno objaśnień |
 | `src/t1_…` – `src/t7_…` | treść i eksperymenty poszczególnych tematów |
 | `src/extras.js` | pytania „Sprawdź się”, strony „Porównaj metody” i „Znajdź błąd” |
