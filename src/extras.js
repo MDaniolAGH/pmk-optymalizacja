@@ -136,7 +136,7 @@ function QuizPage(id) {
   const head = el('div', 'card qhead'), list = el('div', 'qlist');
   const score = () => {
     const first = st.s.filter(a => a.ok && a.t === 1).length, done = st.s.filter(a => a.ok || a.shown).length;
-    head.querySelector('.qscore').innerHTML = `Poprawnie za pierwszym razem: <b>${first} z ${qs.length}</b> &nbsp;·&nbsp; rozwiązane: <b>${done} z ${qs.length}</b>`;
+    head.querySelector('.qscore').innerHTML = `Poprawnie za pierwszym razem: <b>${first} z ${qs.length}</b> &nbsp;|&nbsp; rozwiązane: <b>${done} z ${qs.length}</b>`;
   };
   const save = () => { Store.set(key, { s: st.s, n: qs.length }); score(); };
   const render = () => { list.replaceChildren(...qs.map((q, i) => Question(q, i + 1, st.s[i], save))); score(); };

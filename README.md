@@ -1,4 +1,4 @@
-# PMK · Optymalizacja
+# PMK | Optymalizacja
 
 Interaktywne środowisko do samodzielnej nauki metod minimalizacji funkcji kosztu.
 Materiały do przedmiotu **Podstawy Metod Komputerowych w Obliczeniach Inżynierskich** (AGH).

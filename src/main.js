@@ -33,7 +33,7 @@
 
   function bar(cur) {
     const b = el('header', 'bar');
-    b.innerHTML = `<div class="bar-in"><a class="brand" href="#menu" title="Podstawy Metod Komputerowych w Obliczeniach Inżynierskich"><b>PMK</b> · Optymalizacja</a>
+    b.innerHTML = `<div class="bar-in"><a class="brand" href="#menu" title="Podstawy Metod Komputerowych w Obliczeniach Inżynierskich"><b>PMK</b> | Optymalizacja</a>
       <nav class="nav" aria-label="Tematy">${TOPICS.map(t => `<a href="#${t.id}" class="${cur === t.id ? 'on' : ''}" title="${t.title}"><i>${t.n}</i><span>${t.short}</span></a>`).join('')}</nav><button type="button" class="btn sm gl-open">Słownik symboli</button></div>`;
     b.querySelector('.gl-open').addEventListener('click', () => Gloss.open('__index', document.body));
     return b;
@@ -44,7 +44,7 @@
     m.innerHTML = `
       <section class="hero">
         <div>
-          <div class="eyebrow">Podstawy Metod Komputerowych w Obliczeniach Inżynierskich · Optymalizacja</div>
+          <div class="eyebrow">Podstawy Metod Komputerowych w Obliczeniach Inżynierskich | Optymalizacja</div>
           <h1>Jak znaleźć minimum funkcji kosztu?</h1>
           <p class="lead">Interaktywne środowisko do samodzielnej nauki metod minimalizacji funkcji kosztu (cost function). Najpierw prześledź każdy algorytm na konkretnych liczbach, a potem sprawdź w eksperymentach, kiedy działa, a kiedy zawodzi.</p>
         </div>
@@ -118,7 +118,7 @@
     const page = t ? topic(t, suf || 'walk') : x ? extra(x) : menu();
     const foot = el('footer', '', 'Materiały do przedmiotu Podstawy Metod Komputerowych w Obliczeniach Inżynierskich, AGH. Strona działa bez połączenia z internetem. Obliczenia są wykonywane w przeglądarce w arytmetyce podwójnej precyzji; zaokrąglane są wyłącznie wyświetlane liczby.');
     app.replaceChildren(bar(t ? t.id : ''), page, foot);
-    document.title = (t ? `${t.n}. ${t.title} · ` : x ? `${x.title} · ` : '') + 'PMK · Optymalizacja';
+    document.title = (t ? `${t.n}. ${t.title} | ` : x ? `${x.title} | ` : '') + 'PMK | Optymalizacja';
     window.scrollTo(0, 0);
   }
 

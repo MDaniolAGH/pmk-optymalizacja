@@ -50,7 +50,7 @@ const html = `<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PMK — Laboratorium optymalizacji</title>
+<title>PMK | Optymalizacja</title>
 <!--
   Interaktywne środowisko do samodzielnej nauki metod optymalizacji.
   Przedmiot: Podstawy Metod Komputerowych w Obliczeniach Inżynierskich (PMK), AGH.
