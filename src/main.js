@@ -11,9 +11,9 @@
     { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
       menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
   ];
-  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: od biegu do mapy kosztu', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
-    menu: 'Skąd bierze się „mapa kosztu”? Przykład z życia: biegaczka trenuje „na tętno” i z danych z zegarka wyznacza tempo dla zadanego tętna. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',
-    icon: '<path d="M10 62 H112 M14 66 V8"/><path class="a" d="M18 56 L108 14"/><circle class="p" cx="30" cy="54" r="3.5"/><circle class="p" cx="48" cy="38" r="3.5"/><circle class="p" cx="66" cy="36" r="3.5"/><circle class="p" cx="84" cy="22" r="3.5"/><circle class="p" cx="100" cy="20" r="3.5"/>' };
+  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: od tętna do mapy kosztu', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
+    menu: 'Skąd bierze się „mapa kosztu” i po co gradient? Przykład z życia: jak szybko tętno wraca do normy po biegu. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',
+    icon: '<path d="M10 62 H112 M14 66 V8"/><path class="a" d="M16 14 C30 44 52 50 108 52"/><circle class="p" cx="22" cy="24" r="3.5"/><circle class="p" cx="36" cy="40" r="3.5"/><circle class="p" cx="56" cy="46" r="3.5"/><circle class="p" cx="78" cy="52" r="3.5"/><circle class="p" cx="100" cy="50" r="3.5"/>' };
   const PARTS = { newton: ['newton-a', 'newton-b'] };   // a topic with two walkthroughs and two sets of missions
 
   /* what the student has already done in a topic, read from the browser store */

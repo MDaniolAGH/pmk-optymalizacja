@@ -1376,7 +1376,7 @@ function ViewSwitch(plot, card, o) {
 /* ---------- 1. tagging symbols in TeX ---------- */
 const G_ATOM = [   // multi-token symbols, most specific first (sticky regexes)
   [/\\tfrac12\\lVert\\mathbf\{r\}\\rVert\^2/y, 'cost'],
-  [/\\hat\{y\}/y, 'yhat'],
+  [/\\hat\{y\}/y, 'yhat'], [/y_\{\\infty\}/y, 'yinf'], [/y_0/y, 'y0'],
   [/J\^\{\\top\}J/y, 'JtJ'], [/J\^\{\\top\}\\mathbf\{r\}/y, 'Jtr'], [/J_\{ij\}/y, 'jac'],
   [/\\nabla\^2/y, 'hess'], [/\\nabla f/y, 'grad'], [/\\nabla/y, 'nabla'],
   [/f\^\{\*\}/y, 'fstar'], [/\\alpha\^\{\*\}/y, 'alphaopt'], [/\\beta\^\{\*\}/y, 'betaopt'],
@@ -1392,11 +1392,11 @@ const G_ATOM = [   // multi-token symbols, most specific first (sticky regexes)
   [/g''/y, 'gprime'], [/g'/y, 'gprime'], [/f''/y, 'fprime'], [/f'/y, 'fprime'],
 ];
 const G_CW = { '\\alpha': 'alpha', '\\beta': 'beta', '\\kappa': 'kappa', '\\lambda': 'lambda', '\\rho': 'rho', '\\sigma': 'sigma',
-  '\\varphi': 'phi', '\\varepsilon': 'eps', '\\theta': 'thetaj', '\\partial': 'partial', '\\top': 'transpose',
+  '\\varphi': 'phi', '\\tau': 'tau', '\\varepsilon': 'eps', '\\theta': 'thetaj', '\\partial': 'partial', '\\top': 'transpose',
   '\\cosh': 'cosh', '\\sinh': 'cosh', '\\ln': 'ln' };
 const G_SKIP = new Set(['\\text', '\\mathrm', '\\operatorname', '\\begin', '\\end', '\\textbf', '\\htmlData']);
 const G_LET = { f: 'f', J: 'jac', H: 'hess', L: 'Lip', m: 'mcurv', h: 'hstep', k: 'kiter', i: 'idx', n: 'ndim', x: 'xscal', g: 'gfun',
-  s: 'subs', v: 'vrate', a: 'slope', b: 'icept', y: 'ymeas', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
+  s: 'subs', v: 'vrate', y: 'ymeas', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
 const G_ITER = /\^\{(\((?:[^(){}]|\{[^{}]*\})*\))\}/y, G_CWRE = /\\([a-zA-Z]+|[\s\S])/y;
 
 /* Compound notation is one clickable unit:
@@ -1542,34 +1542,38 @@ const GLOSS = {
     what: R`Zapis oznaczający najmniejszą wartość wyrażenia stojącego za nim, gdy zmienna podana pod spodem przyjmuje wszystkie możliwe wartości.`,
     how: [R`Potraktuj zmienną spod znaku jako niewiadomą.`, R`Znajdź taką jej wartość, dla której wyrażenie jest najmniejsze. Dla liniowego zadania najmniejszych kwadratów prowadzi to do układu równań normalnych.`],
     why: R`Tak zapisuje się każde zadanie optymalizacji. W metodzie Gaussa–Newtona każdy krok jest rozwiązaniem takiego mniejszego, liniowego zadania.` },
-  slope: { s: 'a', t: 'Współczynnik kierunkowy prostej',
-    what: R`Parametr modelu liniowego $\hat{y}=b+a\,(v-10)$: mówi, o ile zmienia się wielkość przewidywana, gdy zmienna niezależna rośnie o jednostkę. W przykładzie biegaczki jest to przyrost tętna na każdy dodatkowy km/h.`,
-    how: [R`Nie oblicza się go bezpośrednio z jednego pomiaru: jest wynikiem dopasowania prostej do wszystkich pomiarów.`, R`Wybiera się tę wartość, dla której (razem z parametrem $b$) funkcja kosztu $f(a,\ b)$ jest najmniejsza.`],
-    why: R`Jest jedną z dwóch osi mapy kosztu. Razem z parametrem $b$ wyznacza jedną konkretną prostą, czyli jeden punkt tej mapy.` },
-  icept: { s: 'b', t: 'Wyraz wolny modelu (wartość w punkcie odniesienia)',
-    what: R`Parametr modelu liniowego $\hat{y}=b+a\,(v-10)$: wartość przewidywana w punkcie odniesienia $v=10$. W przykładzie biegaczki jest to tętno przy prędkości 10 km/h.`,
-    how: [R`Wyznacza się go razem z parametrem $a$, przez minimalizację funkcji kosztu $f(a,\ b)$.`, R`Odejmowanie $10$ od prędkości sprawia, że parametr ma czytelny sens: opisuje środek zakresu pomiarów, a nie nierealną prędkość $0$.`],
-    why: R`Jest drugą osią mapy kosztu. W praktyce treningowej tętno przy ustalonej prędkości jest prostym wskaźnikiem formy: im niższe, tym mniej wysiłku kosztuje to samo tempo.` },
+  tau: { s: R`\tau`, t: 'Stała czasowa',
+    what: R`Parametr zaniku wykładniczego $e^{-t/\tau}$, wyrażony w sekundach. Mówi, jak szybko wielkość zbliża się do poziomu końcowego: po czasie $\tau$ odległość do tego poziomu maleje do około $37\%$ wartości początkowej, a po $3\tau$ do około $5\%$.`,
+    how: [R`Nie da się jej odczytać z jednego pomiaru ani obliczyć gotowym wzorem, bo stoi w wykładniku.`, R`Wyznacza się ją razem z poziomem końcowym $y_{\infty}$, przez minimalizację funkcji kosztu.`],
+    why: R`Jest jedną z dwóch osi mapy kosztu. W przykładzie biegaczki to właśnie ona odpowiada na pytanie, jak szybko tętno wraca do normy: im mniejsza, tym szybszy powrót.` },
+  yinf: { s: R`y_{\infty}`, t: 'Poziom końcowy',
+    what: R`Wartość, do której model zmierza po długim czasie. W przykładzie biegaczki jest to tętno, na którym krzywa się wypłaszcza kilka minut po zakończeniu biegu.`,
+    how: [R`Wyznacza się go razem ze stałą czasową $\tau$, przez minimalizację funkcji kosztu.`, R`Dobrym pierwszym przybliżeniem jest średnia z ostatnich pomiarów.`],
+    why: R`Jest drugą osią mapy kosztu. Bez niego nie da się poprawnie wyznaczyć stałej czasowej, bo oba parametry częściowo się zastępują.` },
+  y0: { s: R`y_0`, t: 'Wartość początkowa',
+    what: R`Wartość wielkości mierzonej w chwili $t=0$. W przykładzie biegaczki jest to tętno w momencie zatrzymania.`,
+    how: [R`Odczytuje się ją z pomiaru; nie jest parametrem dopasowania.`],
+    why: R`Ustala punkt, z którego krzywa modelu startuje. Dzięki temu model ma tylko dwa nieznane parametry, a funkcję kosztu można narysować jako powierzchnię.` },
+  tsec: { s: 't', t: 'Czas od zatrzymania',
+    what: R`Zmienna niezależna w przykładzie biegaczki: czas, który upłynął od zakończenia biegu, w sekundach. Wartości $t_i$ to chwile kolejnych pomiarów.`,
+    how: [R`Zegarek zapisuje tętno co sekundę, więc $t_i=0,\ 1,\ 2,\ \dots$`],
+    why: R`Model opisuje, jak tętno zależy od tego czasu.` },
   ymeas: { s: 'y_i', t: 'Wartość zmierzona',
-    what: R`Wynik pomiaru o numerze $i$: wielkość, którą model ma odtworzyć. W przykładzie biegaczki jest to średnie tętno na $i$-tym odcinku biegu.`,
+    what: R`Wynik pomiaru o numerze $i$: wielkość, którą model ma odtworzyć. W przykładzie biegaczki jest to tętno zmierzone w $i$-tej sekundzie po zatrzymaniu.`,
     how: [R`Odczytuje się ją z danych; nie zależy od parametrów modelu.`, R`Każdy pomiar zawiera szum, dlatego punkty nie leżą dokładnie na jednej krzywej.`],
     why: R`Do pomiarów dopasowujemy model. Reszta $r_i=\hat{y}_i-y_i$ mówi, jak bardzo model myli się dla danego pomiaru.` },
   yhat: { s: R`\hat{y}`, t: 'Wartość przewidywana przez model',
     what: R`Wartość, którą model zwraca dla danych parametrów. Daszek nad symbolem odróżnia przewidywanie od pomiaru $y_i$.`,
-    how: [R`Podstaw do wzoru modelu aktualne wartości parametrów.`, R`Podstaw wartość zmiennej niezależnej, na przykład prędkość $v_i$ z $i$-tego pomiaru.`],
+    how: [R`Podstaw do wzoru modelu aktualne wartości parametrów.`, R`Podstaw wartość zmiennej niezależnej, na przykład czas $t_i$ $i$-tego pomiaru.`],
     why: R`Porównanie przewidywań z pomiarami jest podstawą funkcji kosztu. Po dopasowaniu model służy do przewidywania wartości, których nie zmierzono.` },
   nmeas: { s: 'n', t: 'Liczba pomiarów',
-    what: R`Liczba punktów danych, do których dopasowujemy model. W przykładzie biegaczki jest to liczba jednominutowych odcinków ze wszystkich biegów.`,
-    how: [R`Policz pary (prędkość, tętno) użyte do dopasowania.`],
+    what: R`Liczba punktów danych, do których dopasowujemy model. W przykładzie biegaczki jest to liczba sekundowych odczytów tętna.`,
+    how: [R`Policz pary (czas, tętno) użyte do dopasowania.`],
     why: R`Dzielimy przez nią sumę kwadratów reszt, aby koszt był średnią i nie rósł tylko dlatego, że zebrano więcej danych. Im więcej pomiarów, tym mniej pojedynczy zaszumiony punkt wpływa na dopasowaną prostą.` },
   rmse: { s: R`\sqrt{2f}`, t: 'Typowy błąd modelu (root-mean-square error, RMSE)',
     what: R`Pierwiastek ze średniego kwadratu reszt: jedna liczba, która mówi, o ile przeciętnie przewidywanie modelu różni się od pomiaru. Ma tę samą jednostkę co wielkość mierzona.`,
     how: [R`Oblicz reszty $r_i$ dla wszystkich pomiarów i podnieś je do kwadratu.`, R`Oblicz średnią tych kwadratów. Jest ona równa $2f$, bo funkcja kosztu to połowa średniego kwadratu reszt.`, R`Wyciągnij pierwiastek.`],
     why: R`Koszt $f$ służy algorytmowi, ale trudno go zinterpretować. Typowy błąd w uderzeniach na minutę mówi wprost, jak dokładne są przewidywania modelu.` },
-  speed: { s: 'v', t: 'Prędkość biegu',
-    what: R`Zmienna niezależna w przykładzie biegaczki: średnia prędkość na odcinku, w km/h. Symbol $v_i$ oznacza prędkość na $i$-tym odcinku.`,
-    how: [R`Zegarek z odbiornikiem GPS wyznacza ją z przebytej drogi i czasu.`],
-    why: R`Od niej zależy tętno. Model opisuje tę zależność, a po dopasowaniu pozwala wyznaczyć prędkość odpowiadającą zadanemu tętnu.` },
   x: { s: R`\mathbf{x}`, t: 'Punkt, czyli wektor zmiennych',
     what: R`Aktualne położenie w przestrzeni zmiennych. Na tej stronie jest to para liczb $(x_0,\ x_1)$, czyli punkt na płaszczyźnie.`,
     how: [R`Punkt startowy wybierasz samodzielnie, na przykład kliknięciem na wykresie poziomic.`, R`Każdy kolejny punkt wyznacza algorytm na podstawie poprzedniego.`],
@@ -1860,7 +1864,7 @@ const GLOSS = {
     why: R`Zbyt wysokie stężenie maksymalne może być toksyczne. Dla teofiliny różnica między stężeniem skutecznym a toksycznym jest niewielka, dlatego dokładny model ma znaczenie.` },
 };
 /* the same symbol can mean something else on some pages */
-const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { vrate: 'speed', ndim: 'nmeas' } };
+const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { time: 'tsec', ndim: 'nmeas' } };
 
 /* ---------- 3. the dialog ---------- */
 const Gloss = (() => {
@@ -3839,118 +3843,116 @@ function BugsPage() {
 
 /* =====================================================================
    Introduction: from a real-life question to a cost surface over two parameters.
-   A runner trains by heart rate and wants the pace that gives a target heart rate.
-   A line "heart rate = b + a (speed - 10)" is fitted to one-minute averages from her watch.
+   Heart-rate recovery after a run: y(t) = y_inf + (y_0 - y_inf) exp(-t / tau), fitted to one sample per second.
+   The model is nonlinear in tau, so there is no formula for the best parameters: a case where an
+   iterative, gradient-based search is really needed.
    The data are synthetic (seeded generator below), which the page says explicitly.
    ===================================================================== */
 function IntroPage() {
-  const V0 = 10, TARGET = 145, ALPHA = 0.3, START = [0, 132], VIEW = [0, 15, 125, 170], MAXK = 400;
-  // ---------- eight runs, thirty one-minute averages each (after the warm-up)
-  const RUNS = [['Spokojny', 8.6, 0], ['Spokojny', 9.1, 0], ['Spokojny', 9.4, 0], ['Długi', 8.9, 0], ['W drugim zakresie', 10.6, 0], ['W drugim zakresie', 11.2, 0], ['Z narastającą prędkością', 8.5, 0.15], ['Tempowy', 12.3, 0]];
-  const g = M.rng(20260), V = [], Y = [], LOG = [];
-  RUNS.forEach(([kind, base, ramp]) => {
-    const day = 2.2 * g.n(); let sv = 0, sy = 0;                      // day-to-day shift of the heart rate
-    for (let k = 0; k < 30; k++) {
-      const v = Math.round((base + ramp * k + 0.32 * g.n()) * 10) / 10, y = Math.round(148 + 7.2 * (v - V0) + day + 3.6 * g.n());
-      V.push(v); Y.push(y); sv += v; sy += y;
-    }
-    LOG.push([kind, sv / 30, sy / 30]);
-  });
-  const N = V.length;
-  const pred = (a, b, v) => b + a * (v - V0);
-  const cost = p => { let s = 0; for (let i = 0; i < N; i++) { const r = pred(p[0], p[1], V[i]) - Y[i]; s += r * r; } return s / (2 * N); };
-  const grad = p => { let ga = 0, gb = 0; for (let i = 0; i < N; i++) { const r = pred(p[0], p[1], V[i]) - Y[i]; ga += r * (V[i] - V0); gb += r; } return [ga / N, gb / N]; };
-  // exact minimum from the normal equations of the line fit
-  const X = V.map(v => v - V0), sxx = X.reduce((s, x) => s + x * x, 0), sx = X.reduce((s, x) => s + x, 0), sxy = X.reduce((s, x, i) => s + x * Y[i], 0), sy = Y.reduce((s, y) => s + y, 0);
-  const BEST = M.solve([[sxx, sx], [sx, N]], [sxy, sy]), FMIN = cost(BEST);
-  const top = Math.max(...[[VIEW[0], VIEW[2]], [VIEW[1], VIEW[2]], [VIEW[0], VIEW[3]], [VIEW[1], VIEW[3]]].map(cost));
-  const FN = { id: 'hr-line', f: cost, view: VIEW, fmin: FMIN, min: BEST, axes: [['a', ''], ['b', '']],
+  const Y0 = 172, LEVEL = 120, ALPHA = 2, START = [20, 125], VIEW = [10, 160, 80, 135], MAXK = 600, TMAX = 300;
+  // ---------- five minutes after the run, one sample per second; slow wander plus sensor noise
+  const g = M.rng(20261), T = [], Y = [];
+  for (let t = 0, w = 0; t <= TMAX; t++) { w = 0.9 * w + 0.9 * g.n(); T.push(t); Y.push(Math.round(104 + (Y0 - 104) * Math.exp(-t / 70) + w + 1.6 * g.n())); }
+  const N = T.length;
+  const pred = (p, t) => p[1] + (Y0 - p[1]) * Math.exp(-t / p[0]);
+  const cost = p => { let s = 0; for (let i = 0; i < N; i++) { const r = pred(p, T[i]) - Y[i]; s += r * r; } return s / (2 * N); };
+  const grad = p => { let a = 0, b = 0; for (let i = 0; i < N; i++) { const e = Math.exp(-T[i] / p[0]), r = p[1] + (Y0 - p[1]) * e - Y[i]; a += r * (Y0 - p[1]) * e * T[i] / (p[0] * p[0]); b += r * (1 - e); } return [a / N, b / N]; };
+  // reference minimum (used for the star on the map): a few Gauss-Newton steps from a sensible guess
+  let BEST = [60, 100];
+  for (let k = 0; k < 40; k++) {
+    let a11 = 0, a12 = 0, a22 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < N; i++) { const e = Math.exp(-T[i] / BEST[0]), r = BEST[1] + (Y0 - BEST[1]) * e - Y[i], j1 = (Y0 - BEST[1]) * e * T[i] / (BEST[0] * BEST[0]), j2 = 1 - e; a11 += j1 * j1; a12 += j1 * j2; a22 += j2 * j2; b1 -= j1 * r; b2 -= j2 * r; }
+    const d = M.solve([[a11, a12], [a12, a22]], [b1, b2]); if (!d) break; BEST = [BEST[0] + d[0], BEST[1] + d[1]];
+  }
+  const FMIN = cost(BEST), top = Math.max(...[[VIEW[0], VIEW[2]], [VIEW[1], VIEW[2]], [VIEW[0], VIEW[3]], [VIEW[1], VIEW[3]]].map(cost));
+  const FN = { id: 'hr-recovery', f: cost, view: VIEW, fmin: FMIN, min: BEST, axes: [['τ', ''], ['y', '∞']],
     levels: Array.from({ length: 12 }, (_, j) => FMIN + (top - FMIN) * ((j + 1) / 13) ** 2.3) };
-  const pace = v => { if (!Number.isFinite(v) || v < 4 || v > 25) return '—'; const s = Math.round(3600 / v); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')} min/km`; };
-  const vAt = p => (p[0] > 0.5 ? V0 + (TARGET - p[1]) / p[0] : NaN);          // speed that gives the target heart rate
+  const drop1 = p => (Y0 - p[1]) * (1 - Math.exp(-60 / p[0]));                                   // predicted fall of the heart rate in the first minute
+  const tLevel = p => (p[1] < LEVEL - 0.5 ? -p[0] * Math.log((LEVEL - p[1]) / (Y0 - p[1])) : NaN);   // time needed to fall to LEVEL
+  const secs = t => (Number.isFinite(t) && t >= 0 && t < 3600 ? `${Math.floor(t / 60)} min ${String(Math.round(t % 60)).padStart(2, '0')} s` : '—');
   const S = { path: [[...START]], k: 0 }, cur = () => S.path[S.path.length - 1];
 
   const root = el('div', 'intro');
   // ---------- the story
   const story = el('div', 'intro-top');
-  story.innerHTML = `<div class="prose">${md(R`**Sytuacja.** Biegaczka trenuje „na tętno”: plan zakłada długie, spokojne biegi przy tętnie około $145$ uderzeń na minutę. Tętno reaguje na zmianę tempa z opóźnieniem, więc wygodniej jest znać prędkość, która temu tętnu odpowiada, i jej się trzymać.
+  story.innerHTML = `<div class="prose">${md(R`**Sytuacja.** Po zakończeniu biegu tętno nie wraca do normy od razu, tylko stopniowo opada. Szybkość tego powrotu jest prostym wskaźnikiem wytrenowania: im szybciej tętno opada, tym lepiej. Zegarek sportowy zapisuje tętno co sekundę, więc dane mamy za darmo.
 
-**Pytanie.** Z jaką prędkością biec, aby tętno wynosiło około $145$?
+**Pytanie.** Jak szybko tętno biegaczki wraca do normy? Odpowiedź ma być liczbą, którą można porównywać z tygodnia na tydzień.
 
-**Dane.** Zegarek z GPS i czujnik tętna zapisały osiem biegów z ostatnich tygodni. Z każdego biegu wzięto $30$ jednominutowych odcinków po rozgrzewce: średnią prędkość $v_i$ i średnie tętno $y_i$. Razem jest $n=${N}$ pomiarów. Punkty nie leżą na jednej prostej: teren, wiatr, zmęczenie i szum czujników dają rozrzut.
+**Model.** Tętno opada szybko na początku i coraz wolniej później. Taki przebieg opisuje zanik wykładniczy o dwóch parametrach:
 
-**Model.** W tym zakresie wysiłku tętno rośnie w przybliżeniu liniowo z prędkością, więc opisujemy je prostą o dwóch parametrach:
+$$\hat{y}(t)=y_{\infty}+(y_0-y_{\infty})\,e^{-t/\tau}$$
 
-$$\hat{y}=b+a\,(v-10)$$
+Tętno $y_0=${Y0}$ w chwili zatrzymania znamy z pomiaru. Parametr $y_{\infty}$ to poziom, do którego tętno zmierza, a parametr $\tau$ to stała czasowa: po czasie $\tau$ odległość do tego poziomu maleje do około $37\%$ wartości początkowej.
 
-Parametr $b$ to tętno przy prędkości 10 km/h, a parametr $a$ to przyrost tętna na każdy dodatkowy km/h.
+**Co optymalizujemy.** Szukamy takiej pary $(\tau,\ y_{\infty})$, dla której krzywa leży najbliżej pomiarów. Odległość mierzymy resztami $r_i=\hat{y}(t_i)-y_i$ i zbieramy w jedną liczbę, funkcję kosztu (cost function), czyli połowę średniego kwadratu reszt:
 
-**Co optymalizujemy.** Nie bieg, tylko model: szukamy takiej pary $(a,\ b)$, dla której prosta leży najbliżej pomiarów. Odległość mierzymy resztami $r_i=\hat{y}_i-y_i$ i zbieramy w jedną liczbę, funkcję kosztu (cost function), czyli połowę średniego kwadratu reszt:
+$$f(\tau,\ y_{\infty})=\frac{1}{2n}\sum_{i} r_i^2$$
 
-$$f(a,\ b)=\frac{1}{2n}\sum_{i} r_i^2$$`)}</div>
-    <div class="card intro-data"><h3 class="card-h">Dziennik biegów z zegarka</h3>
-      <table class="tbl"><thead><tr><th>Bieg</th><th>Odcinków</th><th>Średnia prędkość [km/h]</th><th>Średnie tętno [ud./min]</th></tr></thead>
-      <tbody>${LOG.map(([kind, v, y], i) => `<tr><td>${i + 1}. ${kind}</td><td>30</td><td>${v.toFixed(1)}</td><td>${Math.round(y)}</td></tr>`).join('')}</tbody></table>
-      <p class="note">Każdy z ${N} jednominutowych odcinków jest jednym punktem na wykresie poniżej. Dane są syntetyczne: wygenerowano je na potrzeby tego wprowadzenia tak, aby przypominały zapis z zegarka sportowego.</p></div>`;
+**Dlaczego potrzebny jest gradient.** Parametr $\tau$ stoi w wykładniku, więc nie istnieje wzór, który od razu podaje najlepsze parametry. Trzeba ich szukać krok po kroku, a kierunek każdego kroku wskazuje gradient.`)}</div>
+    <div class="card intro-data"><h3 class="card-h">Dane z zegarka</h3>
+      <dl class="kvs"><div class="kv"><dt>Zapis</dt><dd>${TMAX / 60} minut po zatrzymaniu</dd></div><div class="kv"><dt>Częstość</dt><dd>1 pomiar na sekundę</dd></div><div class="kv"><dt>Liczba pomiarów ${K('n')}</dt><dd>${N}</dd></div>
+        <div class="kv"><dt>Tętno w chwili zatrzymania ${K('y_0')}</dt><dd>${Y0} ud./min</dd></div><div class="kv"><dt>Tętno po 1 minucie</dt><dd>${Y[60]} ud./min</dd></div><div class="kv"><dt>Tętno po ${TMAX / 60} minutach</dt><dd>${Y[TMAX]} ud./min</dd></div></dl>
+      <p class="note">Każdy pomiar jest jednym punktem na wykresie poniżej. Dane są syntetyczne: wygenerowano je na potrzeby tego wprowadzenia tak, aby przypominały zapis z zegarka sportowego (powolne wahania tętna i szum czujnika).</p></div>`;
 
   // ---------- the experiment
   const lab = el('div', 'lab'), side = el('aside', 'lab-side'), main = el('div', 'lab-main');
-  const aS = Slider({ label: R`Parametr $a$: przyrost tętna na każdy km/h`, aria: 'parametr a', min: VIEW[0], max: VIEW[1], step: 0.05, value: START[0] });
-  const bS = Slider({ label: R`Parametr $b$: tętno przy 10 km/h`, aria: 'parametr b', min: VIEW[2], max: VIEW[3], step: 0.5, value: START[1] });
+  const aS = Slider({ label: R`Stała czasowa $\tau$ [s]`, aria: 'stała czasowa tau', min: VIEW[0], max: VIEW[1], step: 0.5, value: START[0] });
+  const bS = Slider({ label: R`Poziom końcowy $y_{\infty}$ [ud./min]`, aria: 'poziom końcowy', min: VIEW[2], max: VIEW[3], step: 0.5, value: START[1] });
   const c1 = el('section', 'card'); c1.innerHTML = '<h3 class="card-h">Parametry modelu</h3>'; c1.append(aS.el, bS.el);
   c1.append(el('small', 'fix3', 'Parametry można też wybrać kliknięciem na mapie kosztu (w widoku poziomic).'));
   const status = el('p', 'status'); status.setAttribute('role', 'status');
-  const bStep = Btn('Krok', '', () => { runner.stop(); step(); draw(); }), bRun = Btn('▶ Uruchom', 'pri', () => { if (done()) setAB(START[0], START[1]); runner.toggle(); }), bReset = Btn('Od nowa', '', () => setAB(START[0], START[1]));
+  const bStep = Btn('Krok', '', () => { runner.stop(); step(); draw(); }), bRun = Btn('▶ Uruchom', 'pri', () => { if (done()) setP(START[0], START[1]); runner.toggle(); }), bReset = Btn('Od nowa', '', () => setP(START[0], START[1]));
   const c2 = el('section', 'card'); c2.innerHTML = '<h3 class="card-h">Zejście po mapie kosztu</h3>';
   const row = el('div', 'btns'); row.append(bStep, bRun, bReset); c2.append(row);
-  c2.append(el('small', 'fix3', mdi(R`Każdy krok przesuwa punkt przeciwnie do gradientu: $(a,\ b)\leftarrow(a,\ b)-\alpha\,\nabla f$, ze współczynnikiem uczenia $\alpha=${ALPHA}$.`)));
+  c2.append(el('small', 'fix3', mdi(R`Każdy krok przesuwa punkt przeciwnie do gradientu: $(\tau,\ y_{\infty})\leftarrow(\tau,\ y_{\infty})-\alpha\,\nabla f$, ze współczynnikiem uczenia $\alpha=${ALPHA}$.`)));
   side.append(c1, c2);
 
-  const pD = new Plot({ xlabel: R`v\ [\text{km/h}]`, ylabel: R`y\ [\text{ud./min}]`, aria: 'Pomiary tętna w funkcji prędkości i dopasowywana prosta' });
-  const pM = new Plot({ xlabel: 'a', ylabel: 'b', aria: 'Mapa kosztu w funkcji parametrów a i b' });
+  const pD = new Plot({ xlabel: R`t\ [\text{s}]`, ylabel: R`y\ [\text{ud./min}]`, aria: 'Pomiary tętna po zakończeniu biegu i dopasowywana krzywa' });
+  const pM = new Plot({ xlabel: R`\tau\ [\text{s}]`, ylabel: R`y_{\infty}`, aria: 'Mapa kosztu w funkcji stałej czasowej i poziomu końcowego' });
   const dCard = plotCard(`Dane i model <small>${N} pomiarów, czerwone odcinki to reszty</small>`, pD,
-    legend([['dot', C.black, 'pomiary'], ['line', C.green, R`model $\hat{y}=b+a\,(v-10)$`], ['line', C.red, R`reszty $r_i$`], ['dash', C.ghost, 'tętno docelowe 145']]));
-  dCard.append(el('p', 'note', 'Kółko na linii przerywanej pokazuje prędkość, przy której model przewiduje tętno 145 ud./min.'));
+    legend([['dot', C.black, 'pomiary'], ['line', C.green, R`model $\hat{y}(t)$`], ['line', C.red, R`reszty $r_i$`], ['dash', C.ghost, `tętno ${LEVEL}`]]));
+  dCard.append(el('p', 'note', `Kółko na linii przerywanej pokazuje chwilę, w której według modelu tętno spada do ${LEVEL} ud./min.`));
   const mCard = plotCard('', pM);
   const view = ViewSwitch(pM, mCard, {
     t2: 'Mapa kosztu <small>kliknij, aby wybrać parametry</small>', t3: 'Powierzchnia kosztu <small>obróć myszą lub strzałkami</small>',
-    n2: 'Każdy punkt mapy to jedna para parametrów, czyli jedna prosta. Poziomice łączą pary o tym samym koszcie.',
+    n2: 'Każdy punkt mapy to jedna para parametrów, czyli jedna krzywa. Poziomice łączą pary o tym samym koszcie.',
     n3: 'Wysokość to koszt w skali spłaszczonej (logarytmicznej), aby dno doliny pozostało czytelne. Parametry wybiera się w widoku poziomic.', redraw: () => draw() });
   mCard.insertAdjacentHTML('beforeend', legend([['line', C.green, 'kolejne kroki'], ['star', C.black, 'najmniejszy koszt']])); mCard.append(view.note);
   const plots = el('div', 'plots'); plots.append(dCard, mCard);
-  const stats = Stats([['f', R`Koszt $f(a,\ b)$`, 'f'], ['rms', 'Typowy błąd modelu', 'rmse'], ['v', 'Prędkość przy tętnie 145', 'speed'], ['p', 'Tempo przy tętnie 145', null], ['k', 'Wykonane kroki', 'kiter']]);
+  const stats = Stats([['f', R`Koszt $f(\tau,\ y_{\infty})$`, 'f'], ['rms', 'Typowy błąd modelu', 'rmse'], ['d', 'Spadek tętna w 1. minucie', null], ['t', `Czas spadku do ${LEVEL} ud./min`, null], ['k', 'Wykonane kroki', 'kiter']]);
   main.append(status, plots, stats.el);
   lab.append(side, main);
 
-  const done = () => S.k >= MAXK || (S.k > 0 && Math.hypot(...grad(cur())) < 1e-4);
-  const r3 = x => Math.round(x * 1000) / 1000, r2 = x => Math.round(x * 100) / 100;   // the controls show rounded values, the path keeps full precision
-  function setAB(a, b, keep) {                       // a new guess: the path starts again from here
+  const done = () => S.k >= MAXK || (S.k > 0 && Math.hypot(...grad(cur())) < 1e-3);
+  const r1 = x => Math.round(x * 10) / 10;          // the controls show rounded values, the path keeps full precision
+  function setP(a, b, keep) {                        // a new guess: the path starts again from here
     runner.stop();
     a = Math.max(VIEW[0], Math.min(VIEW[1], a)); b = Math.max(VIEW[2], Math.min(VIEW[3], b));
-    S.path = [[a, b]]; S.k = 0; if (!keep) { aS.set(r3(a), false); bS.set(r2(b), false); }
+    S.path = [[a, b]]; S.k = 0; if (!keep) { aS.set(r1(a), false); bS.set(r1(b), false); }
     status.className = 'status'; status.textContent = 'Wybrano parametry. Oceń dopasowanie na wykresie danych, a potem wykonaj krok lub uruchom zejście.';
     draw();
   }
   function step() {
     if (done()) return false;
-    const p = cur(), gr = grad(p), q = [p[0] - ALPHA * gr[0], p[1] - ALPHA * gr[1]];
-    S.path.push(q); S.k++; aS.set(r3(q[0]), false); bS.set(r2(q[1]), false);
-    if (done()) { status.textContent = `Gradient zmalał praktycznie do zera po ${S.k} krokach: to dno doliny, czyli najlepiej dopasowana prosta.`; return false; }
-    status.textContent = 'Punkt schodzi po mapie kosztu, a prosta zbliża się do pomiarów.';
+    const p = cur(), gr = grad(p), q = [Math.max(3, p[0] - ALPHA * gr[0]), p[1] - ALPHA * gr[1]];
+    S.path.push(q); S.k++; aS.set(r1(q[0]), false); bS.set(r1(q[1]), false);
+    if (done()) { status.textContent = S.k >= MAXK ? `Wykonano ${MAXK} kroków: punkt jest już bardzo blisko dna doliny.` : `Gradient zmalał praktycznie do zera po ${S.k} krokach: to dno doliny, czyli najlepiej dopasowana krzywa.`; return false; }
+    status.textContent = 'Punkt schodzi po mapie kosztu, a krzywa zbliża się do pomiarów.';
     return true;
   }
-  const DOTS = V.map((v, i) => [v, Y[i]]);
+  const DOTS = T.map((t, i) => [t, Y[i]]);
   function draw() {
-    const [a, b] = cur(), f = cost([a, b]), v = vAt([a, b]);
-    pD.setView(7, 14, 112, 188);
+    const p = cur(), f = cost(p), tl = tLevel(p);
+    pD.setView(0, TMAX, 90, 185);
     pD.draw = q => {
-      q.hline(TARGET, { dash: [5, 4], color: C.ghost });
+      q.hline(LEVEL, { dash: [5, 4], color: C.ghost });
       const c = q.c; c.strokeStyle = C.red; c.globalAlpha = 0.3; c.lineWidth = 1; c.beginPath();   // all residuals in one path
-      for (let i = 0; i < N; i++) { c.moveTo(q.X(V[i]), q.Y(Y[i])); c.lineTo(q.X(V[i]), q.Y(pred(a, b, V[i]))); }
+      for (let i = 0; i < N; i++) { c.moveTo(q.X(T[i]), q.Y(Y[i])); c.lineTo(q.X(T[i]), q.Y(pred(p, T[i]))); }
       c.stroke(); c.globalAlpha = 1;
-      q.dots(DOTS, { color: C.black, r: 2.3, alpha: 0.6 });
-      q.fn(x => pred(a, b, x), { color: C.green, width: 2.8, n: 2 });
-      if (Number.isFinite(v)) { q.seg(v, 112, v, TARGET, { dash: [5, 4], color: C.ghost, width: 1.2 }); q.dots([[v, TARGET]], { fill: '#fff', stroke: C.green, color: C.green, r: 5, lw: 2.2 }); }
+      q.dots(DOTS, { color: C.black, r: 2, alpha: 0.6 });
+      q.fn(t => pred(p, t), { color: C.green, width: 2.8, n: 200 });
+      if (Number.isFinite(tl) && tl <= TMAX) { q.seg(tl, 90, tl, LEVEL, { dash: [5, 4], color: C.ghost, width: 1.2 }); q.dots([[tl, LEVEL]], { fill: '#fff', stroke: C.green, color: C.green, r: 5, lw: 2.2 }); }
     };
     pD.render();
     pM.setView(...VIEW);
@@ -3961,36 +3963,35 @@ $$f(a,\ b)=\frac{1}{2n}\sum_{i} r_i^2$$`)}</div>
     };
     pM.scene = { fn: FN, x0: S.path[0], runs: [{ pts: S.path, color: C.green }] };
     pM.render();
-    stats.set({ f: num(f, 5), rms: num(Math.sqrt(2 * f), 3) + ' ud./min', v: Number.isFinite(v) && v > 4 && v < 25 ? num(v, 4) + ' km/h' : '—', p: pace(v), k: String(S.k) });
+    stats.set({ f: num(f, 5), rms: num(Math.sqrt(2 * f), 3) + ' ud./min', d: num(drop1(p), 3) + ' ud./min', t: secs(tl), k: String(S.k) });
     bStep.disabled = done();
   }
-  const runner = Runner(step, () => 6, on => { bRun.textContent = on ? '❚❚ Pauza' : '▶ Uruchom'; });
+  const runner = Runner(step, () => 25, on => { bRun.textContent = on ? '❚❚ Pauza' : '▶ Uruchom'; });
   runner.onframe = draw;
-  aS.oninput = bS.oninput = () => setAB(aS.value, bS.value, true);
-  pM.pickable((x, y) => setAB(parseFloat(x.toFixed(2)), parseFloat(y.toFixed(1))));
-  root._live = () => { const p = cur(), f = cost(p), v = vAt(p); return {
-    slope: `$a=${tn(p[0], 4)}$ ud./min na każdy km/h`, icept: `$b=${tn(p[1], 5)}$ ud./min`, f: `$f(a,\\ b)=${tn(f, 5)}$`, alpha: `$\\alpha=${ALPHA}$`, nmeas: `$n=${N}$`,
-    kiter: `$k=${S.k}$`, rmse: `$\\sqrt{2f}=${tn(Math.sqrt(2 * f), 3)}$ ud./min`, yhat: `przy 10 km/h: $\\hat{y}=${tn(p[1], 5)}$ ud./min`, speed: `tętnu 145 odpowiada $v=${tn(v, 4)}$ km/h`, grad: `$${tv(grad(p), 4)}$` }; };
+  aS.oninput = bS.oninput = () => setP(aS.value, bS.value, true);
+  pM.pickable((x, y) => setP(r1(x), r1(y)));
+  root._live = () => { const p = cur(), f = cost(p); return {
+    tau: `$\\tau=${tn(p[0], 4)}$ s`, yinf: `$y_{\\infty}=${tn(p[1], 5)}$ ud./min`, y0: `$y_0=${Y0}$ ud./min`, f: `$f(\\tau,\\ y_{\\infty})=${tn(f, 5)}$`, alpha: `$\\alpha=${ALPHA}$`, nmeas: `$n=${N}$`,
+    kiter: `$k=${S.k}$`, rmse: `$\\sqrt{2f}=${tn(Math.sqrt(2 * f), 3)}$ ud./min`, yhat: `po 60 s: $\\hat{y}=${tn(pred(p, 60), 4)}$ ud./min`, grad: `$${tv(grad(p), 4)}$` }; };
 
   // ---------- guided steps
-  const vb = vAt(BEST), rms = Math.sqrt(2 * FMIN);
   const missions = Missions('wstep', [
-    { t: 'Zgadnij prostą', q: R`Ustaw suwakami $a$ i $b$ tak, aby prosta przechodziła przez środek chmury pomiarów. **Zastanów się:** po czym poznajesz, że jedna prosta jest lepsza od drugiej?`,
-      acts: [['Prosta pozioma', () => setAB(0, 132)], ['Prosta zbyt stroma', () => setAB(13, 150)]],
-      a: R`Po długości czerwonych odcinków, czyli reszt $r_i$. Funkcja kosztu $f(a,\ b)$ zbiera je w jedną liczbę: im mniejsza, tym lepsze dopasowanie. Reszty podnosimy do kwadratu, aby dodatnie i ujemne się nie znosiły, a duże błędy liczyły się bardziej niż małe. Dzielenie przez liczbę pomiarów sprawia, że koszt nie zależy od tego, ile danych zebrano.` },
-    { t: 'Jeden punkt mapy to jedna prosta', q: R`Kliknij w kilku miejscach mapy kosztu i obserwuj wykres danych. Potem przełącz mapę na widok „Powierzchnia 3D”. **Zastanów się:** co oznacza położenie punktu na mapie, a co jego wysokość?`,
+    { t: 'Zgadnij krzywą', q: R`Ustaw suwakami $\tau$ i $y_{\infty}$ tak, aby krzywa przechodziła przez środek chmury pomiarów. **Zastanów się:** który parametr zmienia początek krzywej, a który jej koniec? Po czym poznajesz, że jedna krzywa jest lepsza od drugiej?`,
+      acts: [['Powrót zbyt szybki', () => setP(15, 105)], ['Powrót zbyt wolny', () => setP(150, 105)], ['Zły poziom końcowy', () => setP(64, 125)]],
+      a: R`Stała czasowa $\tau$ decyduje o tym, jak stromo krzywa opada na początku, a $y_{\infty}$ o poziomie, na którym się wypłaszcza. Jakość dopasowania widać po długości czerwonych odcinków, czyli reszt $r_i$. Funkcja kosztu zbiera je w jedną liczbę: im mniejsza, tym lepiej. Reszty podnosimy do kwadratu, aby dodatnie i ujemne się nie znosiły, a duże błędy liczyły się bardziej niż małe.` },
+    { t: 'Jeden punkt mapy to jedna krzywa', q: R`Kliknij w kilku miejscach mapy kosztu i obserwuj wykres danych. Potem przełącz mapę na widok „Powierzchnia 3D”. **Zastanów się:** co oznacza położenie punktu na mapie, a co jego wysokość?`,
       acts: [['Poziomice', () => view.set(false)], ['Powierzchnia 3D', () => view.set(true)]],
-      a: R`Położenie to para parametrów $(a,\ b)$, a więc jedna konkretna prosta. Wysokość to koszt tej prostej. Powierzchnia nie jest terenem, po którym biegnie biegaczka: to błąd modelu przedstawiony jako funkcja jego parametrów. Dno doliny odpowiada najlepiej dopasowanej prostej.` },
-    { t: 'Zejście we mgle', q: R`Zacznij od prostej poziomej i klikaj „Krok” albo uruchom zejście. **Zastanów się:** skąd algorytm wie, w którą stronę zmienić $a$ i $b$, skoro nie „widzi” całej mapy? Dlaczego kolejne kroki są coraz krótsze?`,
-      acts: [['Prosta pozioma i start', () => { setAB(START[0], START[1]); runner.start(); }]],
-      a: R`Zna tylko nachylenie mapy w bieżącym punkcie, czyli gradient $\nabla f$. Przesuwa punkt w kierunku przeciwnym do gradientu, o długość wyznaczoną przez współczynnik uczenia $\alpha$. Przypomina to schodzenie z góry we mgle: czujesz jedynie spadek terenu pod stopami. Kroki skracają się same, bo im bliżej dna doliny, tym mniejsze nachylenie, a więc mniejszy gradient. Na dnie gradient jest równy zeru i punkt się zatrzymuje.` },
-    { t: 'Odpowiedź dla biegaczki', q: R`Doprowadź zejście do końca i odczytaj wyniki pod wykresami. **Zastanów się:** z jaką prędkością powinna biec i jak dokładna jest ta odpowiedź?`,
-      acts: [['Najlepsze dopasowanie', () => setAB(BEST[0], BEST[1])]],
-      a: R`Najlepsza prosta ma $a\approx${tn(BEST[0], 3)}$ i $b\approx${tn(BEST[1], 4)}$. Tętnu $145$ odpowiada prędkość około $${tn(vb, 3)}$ km/h, czyli tempo około ${pace(vb)}. Typowa reszta wynosi około $${tn(rms, 2)}$ uderzenia na minutę, więc w pojedynczej minucie biegu tętno może odbiegać od przewidywanego o kilka uderzeń. Model jest uproszczeniem: nie uwzględnia zmęczenia, temperatury ani ukształtowania terenu.` },
+      a: R`Położenie to para parametrów $(\tau,\ y_{\infty})$, a więc jedna konkretna krzywa. Wysokość to koszt tej krzywej. Powierzchnia nie jest wykresem tętna: to błąd modelu przedstawiony jako funkcja jego parametrów. Dno doliny odpowiada najlepiej dopasowanej krzywej. Dolina jest wydłużona i ukośna, bo oba parametry częściowo się zastępują: nieco dłuższą stałą czasową można skompensować nieco niższym poziomem końcowym.` },
+    { t: 'Zejście we mgle', q: R`Wróć do punktu startowego i uruchom zejście. **Zastanów się:** skąd algorytm wie, w którą stronę zmienić parametry, skoro nie „widzi” całej mapy? Dlaczego najpierw porusza się szybko, a potem bardzo powoli?`,
+      acts: [['Punkt startowy i start', () => { setP(START[0], START[1]); runner.start(); }]],
+      a: R`Zna tylko nachylenie mapy w bieżącym punkcie, czyli gradient $\nabla f$. Przesuwa punkt w kierunku przeciwnym do gradientu, o długość wyznaczoną przez współczynnik uczenia $\alpha$. Przypomina to schodzenie z góry we mgle: czujesz jedynie spadek terenu pod stopami. Na początku zbocze jest strome, więc kroki są długie: punkt szybko schodzi w dolinę, przeskakując przy tym z jednego jej zbocza na drugie (zygzak). Wzdłuż doliny nachylenie jest niewielkie, więc dalsza droga do minimum zajmuje większość kroków. Skąd bierze się zygzak i jak skrócić drogę, pokazują kolejne tematy.` },
+    { t: 'Odpowiedź dla biegaczki', q: R`Doprowadź zejście do końca i odczytaj wyniki pod wykresami. **Zastanów się:** jak jedną liczbą opisać szybkość powrotu tętna i jak dokładna jest ta odpowiedź?`,
+      acts: [['Najlepsze dopasowanie', () => setP(BEST[0], BEST[1])]],
+      a: R`Najlepsza krzywa ma stałą czasową $\tau\approx${tn(BEST[0], 2)}$ s i poziom końcowy $y_{\infty}\approx${tn(BEST[1], 3)}$ ud./min. To $\tau$ jest szukaną liczbą: jeśli po kilku tygodniach treningu zmaleje, tętno wraca do normy szybciej. Według modelu w pierwszej minucie tętno spada o około $${tn(drop1(BEST), 2)}$ uderzeń, a poziom ${LEVEL} ud./min osiąga po około ${secs(tLevel(BEST))}. Typowa reszta wynosi około $${tn(Math.sqrt(2 * FMIN), 2)}$ ud./min. Model jest uproszczeniem: prawdziwy powrót tętna nie musi być dokładnie wykładniczy, a wynik zależy od intensywności biegu i warunków pomiaru.` },
   ]);
-  const next = el('div', '', box('nb', 'Co dalej', R`W kolejnych tematach schemat jest ten sam, zmieniają się tylko nazwy. Parametry oznaczamy $x_0$ i $x_1$ (razem: punkt $\mathbf{x}$), a koszt $f(\mathbf{x})$. Każdy temat to inny sposób schodzenia po mapie kosztu: skąd wziąć gradient (temat 1), jak długi zrobić krok (tematy 2 i 4), jak przyspieszyć w wąskiej dolinie (temat 3) i jak wykorzystać krzywiznę (tematy 5 i 6). W tematach 6 i 7 model przestaje być prostą, ale mapa kosztu powstaje dokładnie tak samo.`));
+  const next = el('div', '', box('nb', 'Co dalej', R`W kolejnych tematach schemat jest ten sam, zmieniają się tylko nazwy. Parametry oznaczamy $x_0$ i $x_1$ (razem: punkt $\mathbf{x}$), a koszt $f(\mathbf{x})$. Każdy temat to inny sposób schodzenia po mapie kosztu: skąd wziąć gradient (temat 1), jak długi zrobić krok (tematy 2 i 4), jak przyspieszyć w wąskiej dolinie (temat 3) i jak wykorzystać krzywiznę (tematy 5 i 6). Metody z tematów 5 i 6 rozwiązują takie zadanie w kilku krokach zamiast w kilkuset.`));
   root.append(story, lab, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), missions, next);
-  setAB(START[0], START[1]);
+  setP(START[0], START[1]);
   return { el: root };
 }
 
@@ -4008,9 +4009,9 @@ $$f(a,\ b)=\frac{1}{2n}\sum_{i} r_i^2$$`)}</div>
     { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
       menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
   ];
-  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: od biegu do mapy kosztu', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
-    menu: 'Skąd bierze się „mapa kosztu”? Przykład z życia: biegaczka trenuje „na tętno” i z danych z zegarka wyznacza tempo dla zadanego tętna. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',
-    icon: '<path d="M10 62 H112 M14 66 V8"/><path class="a" d="M18 56 L108 14"/><circle class="p" cx="30" cy="54" r="3.5"/><circle class="p" cx="48" cy="38" r="3.5"/><circle class="p" cx="66" cy="36" r="3.5"/><circle class="p" cx="84" cy="22" r="3.5"/><circle class="p" cx="100" cy="20" r="3.5"/>' };
+  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: od tętna do mapy kosztu', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
+    menu: 'Skąd bierze się „mapa kosztu” i po co gradient? Przykład z życia: jak szybko tętno wraca do normy po biegu. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',
+    icon: '<path d="M10 62 H112 M14 66 V8"/><path class="a" d="M16 14 C30 44 52 50 108 52"/><circle class="p" cx="22" cy="24" r="3.5"/><circle class="p" cx="36" cy="40" r="3.5"/><circle class="p" cx="56" cy="46" r="3.5"/><circle class="p" cx="78" cy="52" r="3.5"/><circle class="p" cx="100" cy="50" r="3.5"/>' };
   const PARTS = { newton: ['newton-a', 'newton-b'] };   // a topic with two walkthroughs and two sets of missions
 
   /* what the student has already done in a topic, read from the browser store */
