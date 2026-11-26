@@ -3875,9 +3875,9 @@ function IntroPage() {
   const root = el('div', 'intro');
   // ---------- the story
   const story = el('div', 'intro-top');
-  story.innerHTML = `<div class="prose">${md(R`**Sytuacja.** Po zakończeniu biegu tętno nie wraca do normy od razu, tylko stopniowo opada. Szybkość tego powrotu jest prostym wskaźnikiem wytrenowania: im szybciej tętno opada, tym lepiej. Zegarek sportowy zapisuje tętno co sekundę, więc dane mamy za darmo.
+  story.innerHTML = `<div class="prose">${md(R`**Sytuacja.** Po zakończeniu biegu tętno nie wraca do normy od razu, tylko stopniowo opada. Szybkość tego powrotu jest prostym wskaźnikiem wydolności: im szybciej tętno opada, tym lepiej. Korzysta się z niego w treningu sportowym, a także w rehabilitacji kardiologicznej, do oceny postępów pacjenta. Zegarek sportowy zapisuje tętno co sekundę, więc dane są łatwo dostępne.
 
-**Pytanie.** Jak szybko tętno biegaczki wraca do normy? Odpowiedź ma być liczbą, którą można porównywać z tygodnia na tydzień.
+**Pytanie.** Jak szybko tętno biegaczki wraca do normy po biegu? Odpowiedź ma być liczbą, którą można porównywać z tygodnia na tydzień.
 
 **Model.** Tętno opada szybko na początku i coraz wolniej później. Taki przebieg opisuje zanik wykładniczy o dwóch parametrach:
 
@@ -4009,7 +4009,7 @@ $$f(\tau,\ y_{\infty})=\frac{1}{2n}\sum_{i} r_i^2$$
     { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
       menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
   ];
-  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: od tętna do mapy kosztu', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
+  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: jak szybko tętno wraca do normy?', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
     menu: 'Skąd bierze się „mapa kosztu” i po co gradient? Przykład z życia: jak szybko tętno wraca do normy po biegu. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',
     icon: '<path d="M10 62 H112 M14 66 V8"/><path class="a" d="M16 14 C30 44 52 50 108 52"/><circle class="p" cx="22" cy="24" r="3.5"/><circle class="p" cx="36" cy="40" r="3.5"/><circle class="p" cx="56" cy="46" r="3.5"/><circle class="p" cx="78" cy="52" r="3.5"/><circle class="p" cx="100" cy="50" r="3.5"/>' };
   const PARTS = { newton: ['newton-a', 'newton-b'] };   // a topic with two walkthroughs and two sets of missions

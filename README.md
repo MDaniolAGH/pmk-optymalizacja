@@ -45,7 +45,7 @@ npm run build    # składa index.html
 | `src/plot3d.js` | widok 3D powierzchni funkcji (własny rzut na canvasie, bez bibliotek) |
 | `src/gloss.js` | słownik symboli i okno objaśnień |
 | `src/t1_…` – `src/t7_…` | treść i eksperymenty poszczególnych tematów |
-| `src/intro.js` | wstęp „Zanim zaczniesz”: od tętna po biegu do mapy kosztu |
+| `src/intro.js` | wstęp „Zanim zaczniesz”: jak szybko tętno wraca do normy po biegu |
 | `src/extras.js` | pytania „Sprawdź się”, strony „Porównaj metody” i „Znajdź błąd” |
 | `src/main.js` | strona główna i nawigacja |
 | `src/style.css` | wygląd |

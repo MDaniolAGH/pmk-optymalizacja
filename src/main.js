@@ -11,7 +11,7 @@
     { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
       menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
   ];
-  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: od tętna do mapy kosztu', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
+  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: jak szybko tętno wraca do normy?', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
     menu: 'Skąd bierze się „mapa kosztu” i po co gradient? Przykład z życia: jak szybko tętno wraca do normy po biegu. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',
     icon: '<path d="M10 62 H112 M14 66 V8"/><path class="a" d="M16 14 C30 44 52 50 108 52"/><circle class="p" cx="22" cy="24" r="3.5"/><circle class="p" cx="36" cy="40" r="3.5"/><circle class="p" cx="56" cy="46" r="3.5"/><circle class="p" cx="78" cy="52" r="3.5"/><circle class="p" cx="100" cy="50" r="3.5"/>' };
   const PARTS = { newton: ['newton-a', 'newton-b'] };   // a topic with two walkthroughs and two sets of missions

@@ -32,9 +32,9 @@ function IntroPage() {
   const root = el('div', 'intro');
   // ---------- the story
   const story = el('div', 'intro-top');
-  story.innerHTML = `<div class="prose">${md(R`**Sytuacja.** Po zakończeniu biegu tętno nie wraca do normy od razu, tylko stopniowo opada. Szybkość tego powrotu jest prostym wskaźnikiem wytrenowania: im szybciej tętno opada, tym lepiej. Zegarek sportowy zapisuje tętno co sekundę, więc dane mamy za darmo.
+  story.innerHTML = `<div class="prose">${md(R`**Sytuacja.** Po zakończeniu biegu tętno nie wraca do normy od razu, tylko stopniowo opada. Szybkość tego powrotu jest prostym wskaźnikiem wydolności: im szybciej tętno opada, tym lepiej. Korzysta się z niego w treningu sportowym, a także w rehabilitacji kardiologicznej, do oceny postępów pacjenta. Zegarek sportowy zapisuje tętno co sekundę, więc dane są łatwo dostępne.
 
-**Pytanie.** Jak szybko tętno biegaczki wraca do normy? Odpowiedź ma być liczbą, którą można porównywać z tygodnia na tydzień.
+**Pytanie.** Jak szybko tętno biegaczki wraca do normy po biegu? Odpowiedź ma być liczbą, którą można porównywać z tygodnia na tydzień.
 
 **Model.** Tętno opada szybko na początku i coraz wolniej później. Taki przebieg opisuje zanik wykładniczy o dwóch parametrach:
 
