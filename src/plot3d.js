@@ -136,16 +136,20 @@ function render3(plot, cw, ch) {
     for (let q = N - 1; q >= 0; q--) { const [u, v] = uv(q); c.lineTo(PX(u, v), PY(u, v, 0)); }
     c.closePath(); c.fillStyle = '#E3E8E5'; c.fill(); c.strokeStyle = C.line2; c.lineWidth = 1; c.stroke();
     const lo = fix === 'v' ? m.x0 : m.y0, hi = fix === 'v' ? m.x1 : m.y1, ticks = linTicks(lo, hi, 5);
-    c.fillStyle = C.ink3; c.strokeStyle = C.line2; c.textAlign = 'center';
+    c.fillStyle = C.ink3; c.strokeStyle = C.line2;
+    const e0 = uv(0), e1 = uv(N - 1), crn = depth(e0[0], e0[1]) < depth(e1[0], e1[1]) ? e0 : e1, oth = crn === e0 ? e1 : e0;   // crn: the corner shared by both walls
+    const kx = PX(crn[0], crn[1]), side = PX(oth[0], oth[1]) < kx ? -1 : 1;
     for (const t of ticks) {
-      const tt = (t.v - lo) / (hi - lo) * 2 - 1, [u, v] = fix === 'v' ? [tt, val] : [val, tt], px = PX(u, v), py = PY(u, v, 0);
-      c.beginPath(); c.moveTo(px, py); c.lineTo(px, py + 4); c.stroke(); c.fillText(t.label, px, py + 6);
+      const tt = (t.v - lo) / (hi - lo) * 2 - 1, [u, v] = fix === 'v' ? [tt, val] : [val, tt], px = PX(u, v), py = PY(u, v, 0), atCorner = Math.abs(px - kx) < 12;
+      c.beginPath(); c.moveTo(px, py); c.lineTo(px, py + 4); c.stroke();
+      c.textAlign = atCorner ? (side < 0 ? 'right' : 'left') : 'center'; c.fillText(t.label, px + (atCorner ? side * 4 : 0), py + 6);   // labels of the two axes must not collide at the corner
     }
+    c.textAlign = 'center';
     // axis name at the end of the edge that is away from the nearest corner
     const ends = [uv(0), uv(N - 1)].sort((p, q) => depth(q[0], q[1]) - depth(p[0], p[1])), far = ends[0];
-    const nx2 = PX(far[0], far[1]), ny2 = PY(far[0], far[1], 0) + 22, name = fix === 'v' ? '0' : '1';
-    c.fillStyle = C.ink2; c.font = `italic 15px KaTeX_Math, "Source Serif 4", serif`; c.fillText('x', nx2 - 3, ny2);
-    c.font = `10.5px KaTeX_Main, serif`; c.fillText(name, nx2 + 5, ny2 + 7); c.font = `500 12px ${FONT_UI}`;
+    const nx2 = PX(far[0], far[1]), ny2 = PY(far[0], far[1], 0) + 22, name = (fn.axes || [['x', '0'], ['x', '1']])[fix === 'v' ? 0 : 1];
+    c.fillStyle = C.ink2; c.font = `italic 15px KaTeX_Math, "Source Serif 4", serif`; c.fillText(name[0], nx2 - 3, ny2);
+    c.font = `10.5px KaTeX_Main, serif`; if (name[1]) c.fillText(name[1], nx2 + 5, ny2 + 7); c.font = `500 12px ${FONT_UI}`;
   }
 
   // a device that cannot keep up gets a coarser grid (never while a cache was being filled)
@@ -153,4 +157,28 @@ function render3(plot, cw, ch) {
     plot._slow3 = performance.now() - t0 > 26 ? (plot._slow3 || 0) + 1 : 0;
     if (plot._slow3 >= 4 && (plot._q3 || 0) < P3.Q.length - 1) { plot._q3 = (plot._q3 || 0) + 1; plot._slow3 = 0; }
   }
+}
+
+/* Switch between the contour plot and the surface for one plot card.
+   o: { t2, t3: titles, n2, n3: notes, redraw() }. Both titles and both notes occupy the same place,
+   so switching the view never changes the height of the card. Returns { note, three, set(on) }. */
+function ViewSwitch(plot, card, o) {
+  const vsw = el('div', 'viewsw'), note = el('div', 'vnote', `<p class="note">${o.n2}</p><p class="note off">${o.n3}</p>`), title = card.querySelector('.plot-t');
+  title.classList.add('two'); title.innerHTML = `<span>${o.t2}</span><span class="off">${o.t3}</span>`;
+  vsw.innerHTML = `<div class="seg" role="group" aria-label="Rodzaj wykresu"><button type="button" class="on" aria-pressed="true">Poziomice</button><button type="button" aria-pressed="false">Powierzchnia 3D</button></div>
+    <div class="rot" role="group" aria-label="Obrót widoku 3D"><button type="button" data-r="l" title="Obróć w lewo" aria-label="Obróć w lewo">◀</button><button type="button" data-r="r" title="Obróć w prawo" aria-label="Obróć w prawo">▶</button><button type="button" data-r="u" title="Widok bardziej z góry" aria-label="Widok bardziej z góry">▲</button><button type="button" data-r="d" title="Widok bardziej z boku" aria-label="Widok bardziej z boku">▼</button><button type="button" data-r="0" class="txt">Widok domyślny</button></div>`;
+  card.insertBefore(vsw, plot.el);
+  const seg = vsw.querySelectorAll('.seg button'), rot = vsw.querySelector('.rot');
+  const api = { note, three: false,
+    set(on) {
+      api.three = !!on; plot.three = on ? (plot._cam || (plot._cam = { az: P3.AZ, el: P3.EL })) : null;
+      plot.el.classList.toggle('three', api.three); rot.classList.toggle('show', api.three);
+      seg.forEach((b, i) => { const act = (i === 1) === api.three; b.classList.toggle('on', act); b.setAttribute('aria-pressed', act); });
+      [title, note].forEach(h => { h.children[0].classList.toggle('off', api.three); h.children[1].classList.toggle('off', !api.three); });
+      o.redraw();
+    } };
+  seg[0].addEventListener('click', () => api.set(false)); seg[1].addEventListener('click', () => api.set(true));
+  rot.addEventListener('click', e => { const r = e.target.dataset && e.target.dataset.r; if (!r || !plot.three) return;
+    if (r === '0') { plot.three.az = P3.AZ; plot.three.el = P3.EL; plot.render(); } else plot.rotate(r === 'l' ? -0.3 : r === 'r' ? 0.3 : 0, r === 'u' ? 0.15 : r === 'd' ? -0.15 : 0); });
+  return api;
 }

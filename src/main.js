@@ -11,6 +11,9 @@
     { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
       menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
   ];
+  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: od biegu do mapy kosztu', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
+    menu: 'Skąd bierze się „mapa kosztu”? Przykład z życia: dopasowanie prostej do danych z zegarka biegaczki. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',
+    icon: '<path d="M10 62 H112 M14 66 V8"/><path class="a" d="M18 56 L108 14"/><circle class="p" cx="30" cy="54" r="3.5"/><circle class="p" cx="48" cy="38" r="3.5"/><circle class="p" cx="66" cy="36" r="3.5"/><circle class="p" cx="84" cy="22" r="3.5"/><circle class="p" cx="100" cy="20" r="3.5"/>' };
   const PARTS = { newton: ['newton-a', 'newton-b'] };   // a topic with two walkthroughs and two sets of missions
 
   /* what the student has already done in a topic, read from the browser store */
@@ -34,7 +37,7 @@
   function bar(cur) {
     const b = el('header', 'bar');
     b.innerHTML = `<div class="bar-in"><a class="brand" href="#menu" title="Podstawy Metod Komputerowych w Obliczeniach Inżynierskich"><b>PMK</b> | Optymalizacja</a>
-      <nav class="nav" aria-label="Tematy">${TOPICS.map(t => `<a href="#${t.id}" class="${cur === t.id ? 'on' : ''}" title="${t.title}"><i>${t.n}</i><span>${t.short}</span></a>`).join('')}</nav><button type="button" class="btn sm gl-open">Słownik symboli</button></div>`;
+      <nav class="nav" aria-label="Tematy"><a href="#${INTRO.id}" class="${cur === INTRO.id ? 'on' : ''}" title="${INTRO.title}"><i>0</i><span>${INTRO.short}</span></a>${TOPICS.map(t => `<a href="#${t.id}" class="${cur === t.id ? 'on' : ''}" title="${t.title}"><i>${t.n}</i><span>${t.short}</span></a>`).join('')}</nav><button type="button" class="btn sm gl-open">Słownik symboli</button></div>`;
     b.querySelector('.gl-open').addEventListener('click', () => Gloss.open('__index', document.body));
     return b;
   }
@@ -60,7 +63,11 @@
       </section>
       <div class="idea"><b>Wspólna idea:</b> lokalnie zastąp funkcję prostszym modelem i przejdź do jego minimum.
         <span>model liniowy <i>→</i> metoda spadku gradientu</span><span>model kwadratowy <i>→</i> metoda Newtona</span><span>${tex(R`$H\approx J^{\top}J$`)} <i>→</i> metoda Gaussa–Newtona</span></div>
-      <section class="topics">${TOPICS.map(t => `
+      <section class="topics"><article class="topic">
+          <span class="topic-n">0</span><svg viewBox="0 0 120 72" aria-hidden="true">${INTRO.icon}</svg>
+          <div><h2><a href="#${INTRO.id}">${INTRO.title}</a><span class="tag">${INTRO.tag}</span></h2><p>${INTRO.menu}</p>${Store.get('m:' + INTRO.id, []).length ? `<div class="tprog"><span class="${Store.get('m:' + INTRO.id, []).length >= (Store.get('mt:' + INTRO.id, 99)) ? 'full' : 'part'}">Misje: ${Store.get('m:' + INTRO.id, []).length} z ${Store.get('mt:' + INTRO.id, 4)}</span></div>` : ''}</div>
+          <div class="topic-foot"><a class="btn pri sm" href="#${INTRO.id}">Zacznij tutaj</a></div>
+        </article>${TOPICS.map(t => `
         <article class="topic">
           <span class="topic-n">${t.n}</span><svg viewBox="0 0 120 72" aria-hidden="true">${t.icon}</svg>
           <div><h2><a href="#${t.id}">${t.title}</a><span class="tag">${t.task}</span></h2><p>${tex(t.menu)}</p>${progress(t)}</div>
@@ -91,7 +98,7 @@
     const key = t.id + ':' + tab;
     if (!cache[key]) cache[key] = tab === 'walk' ? t.walk() : tab === 'lab' ? t.lab() : QuizPage(t.id);
     const pager = el('nav', 'pager'); pager.setAttribute('aria-label', 'Sąsiednie tematy');
-    pager.innerHTML = (prev ? `<a class="btn" href="#${prev.id}">← ${prev.n}. ${prev.title}</a>` : '<span></span>') +
+    pager.innerHTML = (prev ? `<a class="btn" href="#${prev.id}">← ${prev.n}. ${prev.title}</a>` : `<a class="btn" href="#${INTRO.id}">← ${INTRO.title}</a>`) +
       (tab === 'walk' ? `<a class="btn pri" href="#${t.id}-lab">Dalej: eksperymenty →</a>` : tab === 'lab' ? `<a class="btn pri" href="#${t.id}-test">Dalej: sprawdź się →</a>`
         : next ? `<a class="btn pri" href="#${next.id}">Dalej: ${next.n}. ${next.title} →</a>` : `<a class="btn pri" href="#${EXTRA[0].id}">Dalej: ${EXTRA[0].title} →</a>`);
     m.append(head, cache[key].el, pager);
@@ -99,14 +106,15 @@
   }
 
   function extra(x) {
-    const m = el('main'), i = EXTRA.indexOf(x), prev = EXTRA[i - 1], next = EXTRA[i + 1], last = TOPICS[TOPICS.length - 1];
+    const m = el('main'), i = EXTRA.indexOf(x), prev = EXTRA[i - 1], next = EXTRA[i + 1], last = TOPICS[TOPICS.length - 1], first = TOPICS[0];
     m.dataset.ctx = x.id;
     const head = el('div');
     head.innerHTML = `<div class="thead xhead"><h1>${x.title}</h1><div class="crumb"><a href="#menu">← Wszystkie tematy</a><span class="tag">${x.tag}</span></div></div>`;
     hint(head);
     if (!cache[x.id]) cache[x.id] = x.make();
     const pager = el('nav', 'pager'); pager.setAttribute('aria-label', 'Sąsiednie strony');
-    pager.innerHTML = (prev ? `<a class="btn" href="#${prev.id}">← ${prev.title}</a>` : `<a class="btn" href="#${last.id}">← ${last.n}. ${last.title}</a>`) +
+    pager.innerHTML = x === INTRO ? `<a class="btn" href="#menu">← Wszystkie tematy</a><a class="btn pri" href="#${first.id}">Dalej: ${first.n}. ${first.title} →</a>`
+      : (prev ? `<a class="btn" href="#${prev.id}">← ${prev.title}</a>` : `<a class="btn" href="#${last.id}">← ${last.n}. ${last.title}</a>`) +
       (next ? `<a class="btn pri" href="#${next.id}">Dalej: ${next.title} →</a>` : `<a class="btn pri" href="#menu">Wróć do spisu tematów</a>`);
     m.append(head, cache[x.id].el, pager);
     return m;
@@ -114,10 +122,10 @@
 
   function route() {
     stopAll();
-    const h = decodeURIComponent(location.hash.slice(1)), suf = (h.match(/-(lab|test)$/) || [])[1], id = h.replace(/-(lab|test)$/, ''), t = TOPICS.find(x => x.id === id), x = EXTRA.find(e => e.id === h);
+    const h = decodeURIComponent(location.hash.slice(1)), suf = (h.match(/-(lab|test)$/) || [])[1], id = h.replace(/-(lab|test)$/, ''), t = TOPICS.find(x => x.id === id), x = [INTRO, ...EXTRA].find(e => e.id === h);
     const page = t ? topic(t, suf || 'walk') : x ? extra(x) : menu();
     const foot = el('footer', '', 'Materiały do przedmiotu Podstawy Metod Komputerowych w Obliczeniach Inżynierskich, AGH. Strona działa bez połączenia z internetem. Obliczenia są wykonywane w przeglądarce w arytmetyce podwójnej precyzji; zaokrąglane są wyłącznie wyświetlane liczby.');
-    app.replaceChildren(bar(t ? t.id : ''), page, foot);
+    app.replaceChildren(bar(t ? t.id : x ? x.id : ''), page, foot);
     document.title = (t ? `${t.n}. ${t.title} | ` : x ? `${x.title} | ` : '') + 'PMK | Optymalizacja';
     window.scrollTo(0, 0);
   }

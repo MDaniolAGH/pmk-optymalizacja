@@ -438,6 +438,14 @@ details.why[open] { flex-basis: 100%; }
 .vnote > .off, .plot-t.two > .off { visibility: hidden; }
 .plot-t.two small { margin-left: 8px; }
 
+/* ---------- introduction ---------- */
+.intro { display: grid; gap: 18px; }
+.intro-top { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.intro-top .prose { max-width: none; }
+.intro-data .tbl { width: 100%; }
+.intro-data .tbl th { white-space: normal; }
+@media (max-width: 980px) { .intro-top { grid-template-columns: minmax(0, 1fr); } }
+
 </style>
 </head>
 <body>
@@ -1310,16 +1318,20 @@ function render3(plot, cw, ch) {
     for (let q = N - 1; q >= 0; q--) { const [u, v] = uv(q); c.lineTo(PX(u, v), PY(u, v, 0)); }
     c.closePath(); c.fillStyle = '#E3E8E5'; c.fill(); c.strokeStyle = C.line2; c.lineWidth = 1; c.stroke();
     const lo = fix === 'v' ? m.x0 : m.y0, hi = fix === 'v' ? m.x1 : m.y1, ticks = linTicks(lo, hi, 5);
-    c.fillStyle = C.ink3; c.strokeStyle = C.line2; c.textAlign = 'center';
+    c.fillStyle = C.ink3; c.strokeStyle = C.line2;
+    const e0 = uv(0), e1 = uv(N - 1), crn = depth(e0[0], e0[1]) < depth(e1[0], e1[1]) ? e0 : e1, oth = crn === e0 ? e1 : e0;   // crn: the corner shared by both walls
+    const kx = PX(crn[0], crn[1]), side = PX(oth[0], oth[1]) < kx ? -1 : 1;
     for (const t of ticks) {
-      const tt = (t.v - lo) / (hi - lo) * 2 - 1, [u, v] = fix === 'v' ? [tt, val] : [val, tt], px = PX(u, v), py = PY(u, v, 0);
-      c.beginPath(); c.moveTo(px, py); c.lineTo(px, py + 4); c.stroke(); c.fillText(t.label, px, py + 6);
+      const tt = (t.v - lo) / (hi - lo) * 2 - 1, [u, v] = fix === 'v' ? [tt, val] : [val, tt], px = PX(u, v), py = PY(u, v, 0), atCorner = Math.abs(px - kx) < 12;
+      c.beginPath(); c.moveTo(px, py); c.lineTo(px, py + 4); c.stroke();
+      c.textAlign = atCorner ? (side < 0 ? 'right' : 'left') : 'center'; c.fillText(t.label, px + (atCorner ? side * 4 : 0), py + 6);   // labels of the two axes must not collide at the corner
     }
+    c.textAlign = 'center';
     // axis name at the end of the edge that is away from the nearest corner
     const ends = [uv(0), uv(N - 1)].sort((p, q) => depth(q[0], q[1]) - depth(p[0], p[1])), far = ends[0];
-    const nx2 = PX(far[0], far[1]), ny2 = PY(far[0], far[1], 0) + 22, name = fix === 'v' ? '0' : '1';
-    c.fillStyle = C.ink2; c.font = `italic 15px KaTeX_Math, "Source Serif 4", serif`; c.fillText('x', nx2 - 3, ny2);
-    c.font = `10.5px KaTeX_Main, serif`; c.fillText(name, nx2 + 5, ny2 + 7); c.font = `500 12px ${FONT_UI}`;
+    const nx2 = PX(far[0], far[1]), ny2 = PY(far[0], far[1], 0) + 22, name = (fn.axes || [['x', '0'], ['x', '1']])[fix === 'v' ? 0 : 1];
+    c.fillStyle = C.ink2; c.font = `italic 15px KaTeX_Math, "Source Serif 4", serif`; c.fillText(name[0], nx2 - 3, ny2);
+    c.font = `10.5px KaTeX_Main, serif`; if (name[1]) c.fillText(name[1], nx2 + 5, ny2 + 7); c.font = `500 12px ${FONT_UI}`;
   }
 
   // a device that cannot keep up gets a coarser grid (never while a cache was being filled)
@@ -1327,6 +1339,30 @@ function render3(plot, cw, ch) {
     plot._slow3 = performance.now() - t0 > 26 ? (plot._slow3 || 0) + 1 : 0;
     if (plot._slow3 >= 4 && (plot._q3 || 0) < P3.Q.length - 1) { plot._q3 = (plot._q3 || 0) + 1; plot._slow3 = 0; }
   }
+}
+
+/* Switch between the contour plot and the surface for one plot card.
+   o: { t2, t3: titles, n2, n3: notes, redraw() }. Both titles and both notes occupy the same place,
+   so switching the view never changes the height of the card. Returns { note, three, set(on) }. */
+function ViewSwitch(plot, card, o) {
+  const vsw = el('div', 'viewsw'), note = el('div', 'vnote', `<p class="note">${o.n2}</p><p class="note off">${o.n3}</p>`), title = card.querySelector('.plot-t');
+  title.classList.add('two'); title.innerHTML = `<span>${o.t2}</span><span class="off">${o.t3}</span>`;
+  vsw.innerHTML = `<div class="seg" role="group" aria-label="Rodzaj wykresu"><button type="button" class="on" aria-pressed="true">Poziomice</button><button type="button" aria-pressed="false">Powierzchnia 3D</button></div>
+    <div class="rot" role="group" aria-label="Obrót widoku 3D"><button type="button" data-r="l" title="Obróć w lewo" aria-label="Obróć w lewo">◀</button><button type="button" data-r="r" title="Obróć w prawo" aria-label="Obróć w prawo">▶</button><button type="button" data-r="u" title="Widok bardziej z góry" aria-label="Widok bardziej z góry">▲</button><button type="button" data-r="d" title="Widok bardziej z boku" aria-label="Widok bardziej z boku">▼</button><button type="button" data-r="0" class="txt">Widok domyślny</button></div>`;
+  card.insertBefore(vsw, plot.el);
+  const seg = vsw.querySelectorAll('.seg button'), rot = vsw.querySelector('.rot');
+  const api = { note, three: false,
+    set(on) {
+      api.three = !!on; plot.three = on ? (plot._cam || (plot._cam = { az: P3.AZ, el: P3.EL })) : null;
+      plot.el.classList.toggle('three', api.three); rot.classList.toggle('show', api.three);
+      seg.forEach((b, i) => { const act = (i === 1) === api.three; b.classList.toggle('on', act); b.setAttribute('aria-pressed', act); });
+      [title, note].forEach(h => { h.children[0].classList.toggle('off', api.three); h.children[1].classList.toggle('off', !api.three); });
+      o.redraw();
+    } };
+  seg[0].addEventListener('click', () => api.set(false)); seg[1].addEventListener('click', () => api.set(true));
+  rot.addEventListener('click', e => { const r = e.target.dataset && e.target.dataset.r; if (!r || !plot.three) return;
+    if (r === '0') { plot.three.az = P3.AZ; plot.three.el = P3.EL; plot.render(); } else plot.rotate(r === 'l' ? -0.3 : r === 'r' ? 0.3 : 0, r === 'u' ? 0.15 : r === 'd' ? -0.15 : 0); });
+  return api;
 }
 
 
@@ -1340,6 +1376,7 @@ function render3(plot, cw, ch) {
 /* ---------- 1. tagging symbols in TeX ---------- */
 const G_ATOM = [   // multi-token symbols, most specific first (sticky regexes)
   [/\\tfrac12\\lVert\\mathbf\{r\}\\rVert\^2/y, 'cost'],
+  [/\\hat\{y\}/y, 'yhat'],
   [/J\^\{\\top\}J/y, 'JtJ'], [/J\^\{\\top\}\\mathbf\{r\}/y, 'Jtr'], [/J_\{ij\}/y, 'jac'],
   [/\\nabla\^2/y, 'hess'], [/\\nabla f/y, 'grad'], [/\\nabla/y, 'nabla'],
   [/f\^\{\*\}/y, 'fstar'], [/\\alpha\^\{\*\}/y, 'alphaopt'], [/\\beta\^\{\*\}/y, 'betaopt'],
@@ -1359,7 +1396,7 @@ const G_CW = { '\\alpha': 'alpha', '\\beta': 'beta', '\\kappa': 'kappa', '\\lamb
   '\\cosh': 'cosh', '\\sinh': 'cosh', '\\ln': 'ln' };
 const G_SKIP = new Set(['\\text', '\\mathrm', '\\operatorname', '\\begin', '\\end', '\\textbf', '\\htmlData']);
 const G_LET = { f: 'f', J: 'jac', H: 'hess', L: 'Lip', m: 'mcurv', h: 'hstep', k: 'kiter', i: 'idx', n: 'ndim', x: 'xscal', g: 'gfun',
-  s: 'subs', v: 'vrate', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
+  s: 'subs', v: 'vrate', a: 'slope', b: 'icept', y: 'ymeas', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
 const G_ITER = /\^\{(\((?:[^(){}]|\{[^{}]*\})*\))\}/y, G_CWRE = /\\([a-zA-Z]+|[\s\S])/y;
 
 /* Compound notation is one clickable unit:
@@ -1505,6 +1542,26 @@ const GLOSS = {
     what: R`Zapis oznaczający najmniejszą wartość wyrażenia stojącego za nim, gdy zmienna podana pod spodem przyjmuje wszystkie możliwe wartości.`,
     how: [R`Potraktuj zmienną spod znaku jako niewiadomą.`, R`Znajdź taką jej wartość, dla której wyrażenie jest najmniejsze. Dla liniowego zadania najmniejszych kwadratów prowadzi to do układu równań normalnych.`],
     why: R`Tak zapisuje się każde zadanie optymalizacji. W metodzie Gaussa–Newtona każdy krok jest rozwiązaniem takiego mniejszego, liniowego zadania.` },
+  slope: { s: 'a', t: 'Współczynnik kierunkowy prostej',
+    what: R`Parametr modelu liniowego $\hat{y}=b+a\,(v-10)$: mówi, o ile zmienia się wielkość przewidywana, gdy zmienna niezależna rośnie o jednostkę. W przykładzie biegaczki jest to przyrost tętna na każdy dodatkowy km/h.`,
+    how: [R`Nie oblicza się go bezpośrednio z jednego pomiaru: jest wynikiem dopasowania prostej do wszystkich pomiarów.`, R`Wybiera się tę wartość, dla której (razem z parametrem $b$) funkcja kosztu $f(a,\ b)$ jest najmniejsza.`],
+    why: R`Jest jedną z dwóch osi mapy kosztu. Razem z parametrem $b$ wyznacza jedną konkretną prostą, czyli jeden punkt tej mapy.` },
+  icept: { s: 'b', t: 'Wyraz wolny modelu (wartość w punkcie odniesienia)',
+    what: R`Parametr modelu liniowego $\hat{y}=b+a\,(v-10)$: wartość przewidywana w punkcie odniesienia $v=10$. W przykładzie biegaczki jest to tętno przy prędkości 10 km/h.`,
+    how: [R`Wyznacza się go razem z parametrem $a$, przez minimalizację funkcji kosztu $f(a,\ b)$.`, R`Odejmowanie $10$ od prędkości sprawia, że parametr ma czytelny sens: opisuje środek zakresu pomiarów, a nie nierealną prędkość $0$.`],
+    why: R`Jest drugą osią mapy kosztu. W praktyce treningowej tętno przy ustalonej prędkości jest prostym wskaźnikiem formy: im niższe, tym mniej wysiłku kosztuje to samo tempo.` },
+  ymeas: { s: 'y_i', t: 'Wartość zmierzona',
+    what: R`Wynik pomiaru o numerze $i$: wielkość, którą model ma odtworzyć. W przykładzie biegaczki jest to średnie tętno na $i$-tym odcinku biegu.`,
+    how: [R`Odczytuje się ją z danych; nie zależy od parametrów modelu.`, R`Każdy pomiar zawiera szum, dlatego punkty nie leżą dokładnie na jednej krzywej.`],
+    why: R`Do pomiarów dopasowujemy model. Reszta $r_i=\hat{y}_i-y_i$ mówi, jak bardzo model myli się dla danego pomiaru.` },
+  yhat: { s: R`\hat{y}`, t: 'Wartość przewidywana przez model',
+    what: R`Wartość, którą model zwraca dla danych parametrów. Daszek nad symbolem odróżnia przewidywanie od pomiaru $y_i$.`,
+    how: [R`Podstaw do wzoru modelu aktualne wartości parametrów.`, R`Podstaw wartość zmiennej niezależnej, na przykład prędkość $v_i$ z $i$-tego pomiaru.`],
+    why: R`Porównanie przewidywań z pomiarami jest podstawą funkcji kosztu. Po dopasowaniu model służy do przewidywania wartości, których nie zmierzono.` },
+  speed: { s: 'v', t: 'Prędkość biegu',
+    what: R`Zmienna niezależna w przykładzie biegaczki: średnia prędkość na odcinku, w km/h. Symbol $v_i$ oznacza prędkość na $i$-tym odcinku.`,
+    how: [R`Zegarek z odbiornikiem GPS wyznacza ją z przebytej drogi i czasu.`],
+    why: R`Od niej zależy tętno. Model opisuje tę zależność, a po dopasowaniu pozwala wyznaczyć prędkość odpowiadającą zadanemu tętnu.` },
   x: { s: R`\mathbf{x}`, t: 'Punkt, czyli wektor zmiennych',
     what: R`Aktualne położenie w przestrzeni zmiennych. Na tej stronie jest to para liczb $(x_0,\ x_1)$, czyli punkt na płaszczyźnie.`,
     how: [R`Punkt startowy wybierasz samodzielnie, na przykład kliknięciem na wykresie poziomic.`, R`Każdy kolejny punkt wyznacza algorytm na podstawie poprzedniego.`],
@@ -1795,7 +1852,7 @@ const GLOSS = {
     why: R`Zbyt wysokie stężenie maksymalne może być toksyczne. Dla teofiliny różnica między stężeniem skutecznym a toksycznym jest niewielka, dlatego dokładny model ma znaczenie.` },
 };
 /* the same symbol can mean something else on some pages */
-const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' } };
+const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { vrate: 'speed' } };
 
 /* ---------- 3. the dialog ---------- */
 const Gloss = (() => {
@@ -2147,22 +2204,9 @@ function TrajLab(cfg) {
   const lg = el('div'), table = el('div', 'card tblw'), plots = el('div', 'plots' + (cfg.extra ? ' three' : ''));
   const T2D = 'Trajektoria na tle poziomic <small>kliknij, aby wybrać punkt startowy</small>', T3D = 'Trajektoria na powierzchni funkcji <small>obróć myszą lub strzałkami</small>';
   const N2D = 'Poziomice to linie stałej wartości funkcji. Ich poziomy dobrano gęściej w pobliżu minimum.', N3D = 'Wysokość to wartość funkcji w skali spłaszczonej (logarytmicznej), aby dno doliny pozostało czytelne. Punkt startowy wybiera się w widoku poziomic.';
-  const fCard = plotCard('', pF), vsw = el('div', 'viewsw'), vnote = el('div', 'vnote', `<p class="note">${N2D}</p><p class="note off">${N3D}</p>`), ptitle = fCard.querySelector('.plot-t');
-  ptitle.classList.add('two'); ptitle.innerHTML = `<span>${T2D}</span><span class="off">${T3D}</span>`;   // both texts occupy the same place, so switching the view never changes the height of the card
-  vsw.innerHTML = `<div class="seg" role="group" aria-label="Rodzaj wykresu"><button type="button" class="on" aria-pressed="true">Poziomice</button><button type="button" aria-pressed="false">Powierzchnia 3D</button></div>
-    <div class="rot" role="group" aria-label="Obrót widoku 3D"><button type="button" data-r="l" title="Obróć w lewo" aria-label="Obróć w lewo">◀</button><button type="button" data-r="r" title="Obróć w prawo" aria-label="Obróć w prawo">▶</button><button type="button" data-r="u" title="Widok bardziej z góry" aria-label="Widok bardziej z góry">▲</button><button type="button" data-r="d" title="Widok bardziej z boku" aria-label="Widok bardziej z boku">▼</button><button type="button" data-r="0" class="txt">Widok domyślny</button></div>`;
-  fCard.insertBefore(vsw, pF.el); fCard.append(lg, vnote);
-  const segB = vsw.querySelectorAll('.seg button'), rot = vsw.querySelector('.rot');
-  function setThree(on) {   // contour plot or surface; the card keeps its size
-    S.three = !!on; pF.three = on ? (pF._cam || (pF._cam = { az: P3.AZ, el: P3.EL })) : null;
-    pF.el.classList.toggle('three', S.three); rot.classList.toggle('show', S.three);
-    segB.forEach((b, i) => { const act = (i === 1) === S.three; b.classList.toggle('on', act); b.setAttribute('aria-pressed', act); });
-    [ptitle, vnote].forEach(h => { h.children[0].classList.toggle('off', S.three); h.children[1].classList.toggle('off', !S.three); });
-    drawAll();
-  }
-  segB[0].addEventListener('click', () => setThree(false)); segB[1].addEventListener('click', () => setThree(true));
-  rot.addEventListener('click', e => { const r = e.target.dataset && e.target.dataset.r; if (!r || !pF.three) return;
-    if (r === '0') { pF.three.az = P3.AZ; pF.three.el = P3.EL; pF.render(); } else pF.rotate(r === 'l' ? -0.3 : r === 'r' ? 0.3 : 0, r === 'u' ? 0.15 : r === 'd' ? -0.15 : 0); });
+  const fCard = plotCard('', pF), view = ViewSwitch(pF, fCard, { t2: T2D, t3: T3D, n2: N2D, n3: N3D, redraw: () => drawAll() });
+  fCard.append(lg, view.note);
+  function setThree(on) { S.three = !!on; view.set(on); }   // contour plot or surface
   plots.append(fCard, plotCard('Historia kosztu <small>skala logarytmiczna</small>', pC, '<p class="note">Linia przerywana: próg 10⁻⁶. Wartości poniżej 10⁻¹⁴ są rysowane na dolnej krawędzi wykresu.</p>'));
   if (cfg.extra) plots.append(plotCard(cfg.extra.title, cfg.extra.plot, cfg.extra.legend || ''));
   main.append(info, status, plots, table);
@@ -3786,6 +3830,148 @@ function BugsPage() {
 
 
 /* =====================================================================
+   Introduction: from a real-life question to a cost surface over two parameters.
+   A runner prepares for a marathon; a line "heart rate = b + a (speed - 10)" is fitted to watch data.
+   The data are illustrative (made up), which the page says explicitly.
+   ===================================================================== */
+function IntroPage() {
+  const V = [7, 8, 9, 10, 11, 12, 13, 14], Y = [126, 131, 142, 146, 157, 160, 171, 176];   // speed [km/h], heart rate [beats/min]
+  const V0 = 10, TV = 42.195 / 4, HRMAX = 155, ALPHA = 0.02, START = [0, 130], VIEW = [0, 15, 120, 175], MAXK = 400;
+  const pred = (a, b, v) => b + a * (v - V0);
+  const cost = p => { let s = 0; for (let i = 0; i < V.length; i++) { const r = pred(p[0], p[1], V[i]) - Y[i]; s += r * r; } return s / 2; };
+  const grad = p => { let ga = 0, gb = 0; for (let i = 0; i < V.length; i++) { const r = pred(p[0], p[1], V[i]) - Y[i]; ga += r * (V[i] - V0); gb += r; } return [ga, gb]; };
+  // exact minimum from the normal equations of the line fit
+  const X = V.map(v => v - V0), sxx = X.reduce((s, x) => s + x * x, 0), sx = X.reduce((s, x) => s + x, 0), sxy = X.reduce((s, x, i) => s + x * Y[i], 0), sy = Y.reduce((s, y) => s + y, 0);
+  const BEST = M.solve([[sxx, sx], [sx, V.length]], [sxy, sy]), FMIN = cost(BEST);
+  const top = Math.max(...[[VIEW[0], VIEW[2]], [VIEW[1], VIEW[2]], [VIEW[0], VIEW[3]], [VIEW[1], VIEW[3]]].map(cost));
+  const FN = { id: 'hr-line', f: cost, view: VIEW, fmin: FMIN, min: BEST, axes: [['a', ''], ['b', '']],
+    levels: Array.from({ length: 12 }, (_, j) => FMIN + (top - FMIN) * ((j + 1) / 13) ** 2.3) };
+  const hms = h => { if (!Number.isFinite(h) || h <= 0 || h > 12) return '—'; const m = Math.round(h * 60); return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')} min`; };
+  const answer = p => { const hr = pred(p[0], p[1], TV), v = p[0] > 0.5 ? V0 + (HRMAX - p[1]) / p[0] : NaN; return { hr, v, time: Number.isFinite(v) && v > 3 && v < 25 ? 42.195 / v : NaN }; };
+  const S = { path: [[...START]], k: 0 }, cur = () => S.path[S.path.length - 1];
+
+  const root = el('div', 'intro');
+  // ---------- the story
+  const story = el('div', 'intro-top');
+  story.innerHTML = `<div class="prose">${md(R`**Sytuacja.** Biegaczka przygotowuje się do maratonu i chce go ukończyć w 4 godziny. Wymaga to średniej prędkości $42.195/4\approx10.55$ km/h. Z dotychczasowych długich biegów wie, że przez kilka godzin potrafi utrzymać tętno około $155$ uderzeń na minutę.
+
+**Pytanie.** Czy tempo potrzebne na 4 godziny mieści się w jej możliwościach? Aby odpowiedzieć, trzeba wiedzieć, jakie tętno odpowiada jakiej prędkości.
+
+**Dane.** Zegarek z GPS i czujnik tętna zapisały bieg z narastającą prędkością: osiem odcinków po 1 km, każdy szybszy od poprzedniego. Z każdego odcinka mamy średnią prędkość $v_i$ i średnie tętno $y_i$. Punkty nie leżą dokładnie na jednej prostej, bo każdy pomiar zawiera szum.
+
+**Model.** W tym zakresie wysiłku tętno rośnie w przybliżeniu liniowo z prędkością, więc opisujemy je prostą o dwóch parametrach:
+
+$$\hat{y}=b+a\,(v-10)$$
+
+Parametr $b$ to tętno przy prędkości 10 km/h, a parametr $a$ to przyrost tętna na każdy dodatkowy km/h.
+
+**Co optymalizujemy.** Nie bieg, tylko model: szukamy takiej pary $(a,\ b)$, dla której prosta leży najbliżej pomiarów. Odległość mierzymy resztami $r_i=\hat{y}_i-y_i$ i zbieramy w jedną liczbę, funkcję kosztu (cost function):
+
+$$f(a,\ b)=\tfrac12\sum_{i} r_i^2$$`)}</div>
+    <div class="card intro-data"><h3 class="card-h">Dane z zegarka</h3>
+      <table class="tbl"><thead><tr><th>Odcinek</th><th>Prędkość ${K('v_i')} [km/h]</th><th>Tętno ${K('y_i')} [ud./min]</th></tr></thead>
+      <tbody>${V.map((v, i) => `<tr><td>${i + 1}</td><td>${v}</td><td>${Y[i]}</td></tr>`).join('')}</tbody></table>
+      <p class="note">Dane przykładowe, wymyślone na potrzeby tego wprowadzenia.</p></div>`;
+
+  // ---------- the experiment
+  const lab = el('div', 'lab'), side = el('aside', 'lab-side'), main = el('div', 'lab-main');
+  const aS = Slider({ label: R`Parametr $a$: przyrost tętna na każdy km/h`, aria: 'parametr a', min: VIEW[0], max: VIEW[1], step: 0.05, value: START[0] });
+  const bS = Slider({ label: R`Parametr $b$: tętno przy 10 km/h`, aria: 'parametr b', min: VIEW[2], max: VIEW[3], step: 0.5, value: START[1] });
+  const c1 = el('section', 'card'); c1.innerHTML = '<h3 class="card-h">Parametry modelu</h3>'; c1.append(aS.el, bS.el);
+  c1.append(el('small', 'fix3', 'Parametry można też wybrać kliknięciem na mapie kosztu (w widoku poziomic).'));
+  const status = el('p', 'status'); status.setAttribute('role', 'status');
+  const bStep = Btn('Krok', '', () => { runner.stop(); step(); draw(); }), bRun = Btn('▶ Uruchom', 'pri', () => { if (done()) setAB(START[0], START[1]); runner.toggle(); }), bReset = Btn('Od nowa', '', () => setAB(START[0], START[1]));
+  const c2 = el('section', 'card'); c2.innerHTML = '<h3 class="card-h">Zejście po mapie kosztu</h3>';
+  const row = el('div', 'btns'); row.append(bStep, bRun, bReset); c2.append(row);
+  c2.append(el('small', 'fix3', mdi(R`Każdy krok przesuwa punkt przeciwnie do gradientu: $(a,\ b)\leftarrow(a,\ b)-\alpha\,\nabla f$, ze współczynnikiem uczenia $\alpha=${ALPHA}$.`)));
+  side.append(c1, c2);
+
+  const pD = new Plot({ xlabel: R`v\ [\text{km/h}]`, ylabel: R`y\ [\text{ud./min}]`, aria: 'Pomiary tętna w funkcji prędkości i dopasowywana prosta' });
+  const pM = new Plot({ xlabel: 'a', ylabel: 'b', aria: 'Mapa kosztu w funkcji parametrów a i b' });
+  const dCard = plotCard('Dane i model <small>czerwone odcinki to reszty</small>', pD,
+    legend([['dot', C.black, 'pomiary'], ['line', C.green, R`model $\hat{y}=b+a\,(v-10)$`], ['line', C.red, R`reszty $r_i$`], ['dash', C.ghost, 'tempo na 4 h i tętno 155']]));
+  dCard.append(el('p', 'note vnote1', 'Linie przerywane: prędkość potrzebna na 4 godziny (10.55 km/h) i tętno, które biegaczka potrafi utrzymać (155 ud./min).'));
+  const mCard = plotCard('', pM);
+  const view = ViewSwitch(pM, mCard, {
+    t2: 'Mapa kosztu <small>kliknij, aby wybrać parametry</small>', t3: 'Powierzchnia kosztu <small>obróć myszą lub strzałkami</small>',
+    n2: 'Każdy punkt mapy to jedna para parametrów, czyli jedna prosta. Poziomice łączą pary o tym samym koszcie.',
+    n3: 'Wysokość to koszt w skali spłaszczonej (logarytmicznej), aby dno doliny pozostało czytelne. Parametry wybiera się w widoku poziomic.', redraw: () => draw() });
+  mCard.insertAdjacentHTML('beforeend', legend([['line', C.green, 'kolejne kroki'], ['star', C.black, 'najmniejszy koszt']])); mCard.append(view.note);
+  const plots = el('div', 'plots'); plots.append(dCard, mCard);
+  const stats = Stats([['f', R`Koszt $f(a,\ b)$`, 'f'], ['hr', 'Tętno przy 10.55 km/h', 'yhat'], ['v', 'Prędkość przy tętnie 155', 'speed'], ['t', 'Czas maratonu przy tej prędkości', null], ['k', 'Wykonane kroki', 'kiter']]);
+  main.append(status, plots, stats.el);
+  lab.append(side, main);
+
+  const done = () => S.k >= MAXK || (S.k > 0 && Math.hypot(...grad(cur())) < 1e-4);
+  function setAB(a, b, keep) {                       // a new guess: the path starts again from here
+    runner.stop();
+    a = Math.max(VIEW[0], Math.min(VIEW[1], a)); b = Math.max(VIEW[2], Math.min(VIEW[3], b));
+    S.path = [[a, b]]; S.k = 0; if (!keep) { aS.set(Math.round(a * 1000) / 1000, false); bS.set(Math.round(b * 100) / 100, false); }
+    status.className = 'status'; status.textContent = 'Wybrano parametry. Oceń dopasowanie na wykresie danych, a potem wykonaj krok lub uruchom zejście.';
+    draw();
+  }
+  function step() {
+    if (done()) return false;
+    const p = cur(), g = grad(p), q = [p[0] - ALPHA * g[0], p[1] - ALPHA * g[1]];
+    S.path.push(q); S.k++; aS.set(Math.round(q[0] * 1000) / 1000, false); bS.set(Math.round(q[1] * 100) / 100, false);   // the controls show rounded values, the path keeps full precision
+    if (done()) { status.textContent = `Gradient zmalał praktycznie do zera po ${S.k} krokach: to dno doliny, czyli najlepiej dopasowana prosta.`; return false; }
+    status.textContent = 'Punkt schodzi po mapie kosztu, a prosta zbliża się do pomiarów.';
+    return true;
+  }
+  function draw() {
+    const [a, b] = cur(), ans = answer([a, b]);
+    pD.setView(6, 15, 110, 190);
+    pD.draw = q => {
+      q.vline(TV, { dash: [5, 4], color: C.ghost }); q.hline(HRMAX, { dash: [5, 4], color: C.ghost });
+      for (let i = 0; i < V.length; i++) q.seg(V[i], Y[i], V[i], pred(a, b, V[i]), { color: C.red, width: 1.8 });
+      q.fn(v => pred(a, b, v), { color: C.green, width: 2.6, n: 2 });
+      q.dots(V.map((v, i) => [v, Y[i]]), { color: C.black, r: 4.2, stroke: '#fff', lw: 1.2 });
+      q.dots([[TV, pred(a, b, TV)]], { fill: '#fff', stroke: C.green, color: C.green, r: 5, lw: 2.2 });
+    };
+    pD.render();
+    pM.setView(...VIEW);
+    pM.draw = q => {
+      q.contour(FN.id, cost, FN.levels); q.star(BEST[0], BEST[1]);
+      drawRun(q, S.path, { color: C.green });
+      q.dots([S.path[0]], { fill: '#fff', stroke: C.black, color: C.black, r: 4.5 });
+    };
+    pM.scene = { fn: FN, x0: S.path[0], runs: [{ pts: S.path, color: C.green }] };
+    pM.render();
+    stats.set({ f: num(cost([a, b]), 5), hr: num(ans.hr, 4) + ' ud./min', v: Number.isFinite(ans.v) && ans.v > 3 && ans.v < 25 ? num(ans.v, 4) + ' km/h' : '—', t: hms(ans.time), k: String(S.k) });
+    bStep.disabled = done();
+  }
+  const runner = Runner(step, () => 8, on => { bRun.textContent = on ? '❚❚ Pauza' : '▶ Uruchom'; });
+  runner.onframe = draw;
+  aS.oninput = bS.oninput = () => setAB(aS.value, bS.value, true);
+  pM.pickable((x, y) => setAB(parseFloat(x.toFixed(2)), parseFloat(y.toFixed(1))));
+  root._live = () => { const [a, b] = cur(), ans = answer([a, b]); return {
+    slope: `$a=${tn(a, 4)}$ ud./min na każdy km/h`, icept: `$b=${tn(b, 5)}$ ud./min`, f: `$f(a,\\ b)=${tn(cost([a, b]), 5)}$`, alpha: `$\\alpha=${ALPHA}$`,
+    kiter: `$k=${S.k}$`, yhat: `przy 10.55 km/h: $\\hat{y}=${tn(ans.hr, 4)}$ ud./min`, speed: `tętnu 155 odpowiada $v=${tn(ans.v, 4)}$ km/h`, grad: `$${tv(grad([a, b]), 4)}$` }; };
+
+  // ---------- guided steps
+  const fin = answer(BEST);
+  const missions = Missions('wstep', [
+    { t: 'Zgadnij prostą', q: R`Ustaw suwakami $a$ i $b$ tak, aby prosta przechodziła jak najbliżej pomiarów. **Zastanów się:** po czym poznajesz, że jedna prosta jest lepsza od drugiej?`,
+      acts: [['Prosta pozioma', () => setAB(0, 130)], ['Prosta zbyt stroma', () => setAB(12, 150)]],
+      a: R`Po długości czerwonych odcinków, czyli reszt $r_i$. Funkcja kosztu $f(a,\ b)$ zbiera je w jedną liczbę: im mniejsza, tym lepsze dopasowanie. Reszty podnosimy do kwadratu, aby dodatnie i ujemne się nie znosiły, a duże błędy liczyły się bardziej niż małe.` },
+    { t: 'Jeden punkt mapy to jedna prosta', q: R`Kliknij w kilku miejscach mapy kosztu i obserwuj wykres danych. Potem przełącz mapę na widok „Powierzchnia 3D”. **Zastanów się:** co oznacza położenie punktu na mapie, a co jego wysokość?`,
+      acts: [['Poziomice', () => view.set(false)], ['Powierzchnia 3D', () => view.set(true)]],
+      a: R`Położenie to para parametrów $(a,\ b)$, a więc jedna konkretna prosta. Wysokość to koszt tej prostej. Powierzchnia nie jest terenem, po którym biegnie biegaczka: to błąd modelu przedstawiony jako funkcja jego parametrów. Dno doliny odpowiada najlepiej dopasowanej prostej.` },
+    { t: 'Zejście we mgle', q: R`Zacznij od prostej poziomej i klikaj „Krok” albo uruchom zejście. **Zastanów się:** skąd algorytm wie, w którą stronę zmienić $a$ i $b$, skoro nie „widzi” całej mapy?`,
+      acts: [['Prosta pozioma i start', () => { setAB(START[0], START[1]); runner.start(); }]],
+      a: R`Zna tylko nachylenie mapy w bieżącym punkcie, czyli gradient $\nabla f$. Przesuwa punkt w kierunku przeciwnym do gradientu, o długość wyznaczoną przez współczynnik uczenia $\alpha$. Przypomina to schodzenie z góry we mgle: czujesz jedynie spadek terenu pod stopami. Zwróć uwagę, że parametr $a$ ustala się po kilku krokach, a $b$ znacznie wolniej: dolina jest w jednym kierunku stroma, a w drugim łagodna. To zjawisko jest tematem dwóch kolejnych rozdziałów.` },
+    { t: 'Odpowiedź dla biegaczki', q: R`Doprowadź zejście do końca i odczytaj wyniki pod wykresami. **Zastanów się:** czy plan ukończenia maratonu w 4 godziny jest realny?`,
+      acts: [['Najlepsze dopasowanie', () => setAB(BEST[0], BEST[1])]],
+      a: R`Najlepsza prosta ma $a\approx${tn(BEST[0], 3)}$ i $b\approx${tn(BEST[1], 4)}$. Przy prędkości $10.55$ km/h model przewiduje tętno około $${tn(fin.hr, 4)}$ ud./min, czyli mniej niż $155$: plan jest realny, z niewielkim zapasem. Tętnu $155$ odpowiada prędkość około $${tn(fin.v, 3)}$ km/h, co dałoby czas około ${hms(fin.time)}. To prognoza przybliżona: model nie uwzględnia zmęczenia, temperatury ani powolnego wzrostu tętna podczas wielogodzinnego biegu.` },
+  ]);
+  const next = el('div', '', box('nb', 'Co dalej', R`W kolejnych tematach schemat jest ten sam, zmieniają się tylko nazwy. Parametry oznaczamy $x_0$ i $x_1$ (razem: punkt $\mathbf{x}$), a koszt $f(\mathbf{x})$. Każdy temat to inny sposób schodzenia po mapie kosztu: skąd wziąć gradient (temat 1), jak długi zrobić krok (tematy 2 i 4), jak przyspieszyć w wąskiej dolinie (temat 3) i jak wykorzystać krzywiznę (tematy 5 i 6). W tematach 6 i 7 model przestaje być prostą, ale mapa kosztu powstaje dokładnie tak samo.`));
+  root.append(story, lab, el('h3', 'h-sec', 'Misje: najpierw spróbuj przewidzieć, potem poeksperymentuj'), missions, next);
+  setAB(START[0], START[1]);
+  return { el: root };
+}
+
+
+/* =====================================================================
    Menu, routing (#topic, #topic-lab, #topic-test, #porownanie, #bledy) and page chrome
    ===================================================================== */
 (function () {
@@ -3798,6 +3984,9 @@ function BugsPage() {
     { id: 'bledy', title: 'Znajdź błąd', tag: 'Diagnozowanie', make: () => BugsPage(),
       menu: 'Pięć przebiegów wygenerowanych przez implementacje z typowymi błędami. Rozpoznaj przyczynę po kształcie trajektorii i wykresie kosztu.' },
   ];
+  const INTRO = { id: 'wstep', title: 'Zanim zaczniesz: od biegu do mapy kosztu', short: 'Wstęp', tag: 'Wprowadzenie', make: () => IntroPage(),
+    menu: 'Skąd bierze się „mapa kosztu”? Przykład z życia: dopasowanie prostej do danych z zegarka biegaczki. Dwa parametry modelu to dwie osie mapy, a błąd dopasowania to jej wysokość.',
+    icon: '<path d="M10 62 H112 M14 66 V8"/><path class="a" d="M18 56 L108 14"/><circle class="p" cx="30" cy="54" r="3.5"/><circle class="p" cx="48" cy="38" r="3.5"/><circle class="p" cx="66" cy="36" r="3.5"/><circle class="p" cx="84" cy="22" r="3.5"/><circle class="p" cx="100" cy="20" r="3.5"/>' };
   const PARTS = { newton: ['newton-a', 'newton-b'] };   // a topic with two walkthroughs and two sets of missions
 
   /* what the student has already done in a topic, read from the browser store */
@@ -3821,7 +4010,7 @@ function BugsPage() {
   function bar(cur) {
     const b = el('header', 'bar');
     b.innerHTML = `<div class="bar-in"><a class="brand" href="#menu" title="Podstawy Metod Komputerowych w Obliczeniach Inżynierskich"><b>PMK</b> | Optymalizacja</a>
-      <nav class="nav" aria-label="Tematy">${TOPICS.map(t => `<a href="#${t.id}" class="${cur === t.id ? 'on' : ''}" title="${t.title}"><i>${t.n}</i><span>${t.short}</span></a>`).join('')}</nav><button type="button" class="btn sm gl-open">Słownik symboli</button></div>`;
+      <nav class="nav" aria-label="Tematy"><a href="#${INTRO.id}" class="${cur === INTRO.id ? 'on' : ''}" title="${INTRO.title}"><i>0</i><span>${INTRO.short}</span></a>${TOPICS.map(t => `<a href="#${t.id}" class="${cur === t.id ? 'on' : ''}" title="${t.title}"><i>${t.n}</i><span>${t.short}</span></a>`).join('')}</nav><button type="button" class="btn sm gl-open">Słownik symboli</button></div>`;
     b.querySelector('.gl-open').addEventListener('click', () => Gloss.open('__index', document.body));
     return b;
   }
@@ -3847,7 +4036,11 @@ function BugsPage() {
       </section>
       <div class="idea"><b>Wspólna idea:</b> lokalnie zastąp funkcję prostszym modelem i przejdź do jego minimum.
         <span>model liniowy <i>→</i> metoda spadku gradientu</span><span>model kwadratowy <i>→</i> metoda Newtona</span><span>${tex(R`$H\approx J^{\top}J$`)} <i>→</i> metoda Gaussa–Newtona</span></div>
-      <section class="topics">${TOPICS.map(t => `
+      <section class="topics"><article class="topic">
+          <span class="topic-n">0</span><svg viewBox="0 0 120 72" aria-hidden="true">${INTRO.icon}</svg>
+          <div><h2><a href="#${INTRO.id}">${INTRO.title}</a><span class="tag">${INTRO.tag}</span></h2><p>${INTRO.menu}</p>${Store.get('m:' + INTRO.id, []).length ? `<div class="tprog"><span class="${Store.get('m:' + INTRO.id, []).length >= (Store.get('mt:' + INTRO.id, 99)) ? 'full' : 'part'}">Misje: ${Store.get('m:' + INTRO.id, []).length} z ${Store.get('mt:' + INTRO.id, 4)}</span></div>` : ''}</div>
+          <div class="topic-foot"><a class="btn pri sm" href="#${INTRO.id}">Zacznij tutaj</a></div>
+        </article>${TOPICS.map(t => `
         <article class="topic">
           <span class="topic-n">${t.n}</span><svg viewBox="0 0 120 72" aria-hidden="true">${t.icon}</svg>
           <div><h2><a href="#${t.id}">${t.title}</a><span class="tag">${t.task}</span></h2><p>${tex(t.menu)}</p>${progress(t)}</div>
@@ -3878,7 +4071,7 @@ function BugsPage() {
     const key = t.id + ':' + tab;
     if (!cache[key]) cache[key] = tab === 'walk' ? t.walk() : tab === 'lab' ? t.lab() : QuizPage(t.id);
     const pager = el('nav', 'pager'); pager.setAttribute('aria-label', 'Sąsiednie tematy');
-    pager.innerHTML = (prev ? `<a class="btn" href="#${prev.id}">← ${prev.n}. ${prev.title}</a>` : '<span></span>') +
+    pager.innerHTML = (prev ? `<a class="btn" href="#${prev.id}">← ${prev.n}. ${prev.title}</a>` : `<a class="btn" href="#${INTRO.id}">← ${INTRO.title}</a>`) +
       (tab === 'walk' ? `<a class="btn pri" href="#${t.id}-lab">Dalej: eksperymenty →</a>` : tab === 'lab' ? `<a class="btn pri" href="#${t.id}-test">Dalej: sprawdź się →</a>`
         : next ? `<a class="btn pri" href="#${next.id}">Dalej: ${next.n}. ${next.title} →</a>` : `<a class="btn pri" href="#${EXTRA[0].id}">Dalej: ${EXTRA[0].title} →</a>`);
     m.append(head, cache[key].el, pager);
@@ -3886,14 +4079,15 @@ function BugsPage() {
   }
 
   function extra(x) {
-    const m = el('main'), i = EXTRA.indexOf(x), prev = EXTRA[i - 1], next = EXTRA[i + 1], last = TOPICS[TOPICS.length - 1];
+    const m = el('main'), i = EXTRA.indexOf(x), prev = EXTRA[i - 1], next = EXTRA[i + 1], last = TOPICS[TOPICS.length - 1], first = TOPICS[0];
     m.dataset.ctx = x.id;
     const head = el('div');
     head.innerHTML = `<div class="thead xhead"><h1>${x.title}</h1><div class="crumb"><a href="#menu">← Wszystkie tematy</a><span class="tag">${x.tag}</span></div></div>`;
     hint(head);
     if (!cache[x.id]) cache[x.id] = x.make();
     const pager = el('nav', 'pager'); pager.setAttribute('aria-label', 'Sąsiednie strony');
-    pager.innerHTML = (prev ? `<a class="btn" href="#${prev.id}">← ${prev.title}</a>` : `<a class="btn" href="#${last.id}">← ${last.n}. ${last.title}</a>`) +
+    pager.innerHTML = x === INTRO ? `<a class="btn" href="#menu">← Wszystkie tematy</a><a class="btn pri" href="#${first.id}">Dalej: ${first.n}. ${first.title} →</a>`
+      : (prev ? `<a class="btn" href="#${prev.id}">← ${prev.title}</a>` : `<a class="btn" href="#${last.id}">← ${last.n}. ${last.title}</a>`) +
       (next ? `<a class="btn pri" href="#${next.id}">Dalej: ${next.title} →</a>` : `<a class="btn pri" href="#menu">Wróć do spisu tematów</a>`);
     m.append(head, cache[x.id].el, pager);
     return m;
@@ -3901,10 +4095,10 @@ function BugsPage() {
 
   function route() {
     stopAll();
-    const h = decodeURIComponent(location.hash.slice(1)), suf = (h.match(/-(lab|test)$/) || [])[1], id = h.replace(/-(lab|test)$/, ''), t = TOPICS.find(x => x.id === id), x = EXTRA.find(e => e.id === h);
+    const h = decodeURIComponent(location.hash.slice(1)), suf = (h.match(/-(lab|test)$/) || [])[1], id = h.replace(/-(lab|test)$/, ''), t = TOPICS.find(x => x.id === id), x = [INTRO, ...EXTRA].find(e => e.id === h);
     const page = t ? topic(t, suf || 'walk') : x ? extra(x) : menu();
     const foot = el('footer', '', 'Materiały do przedmiotu Podstawy Metod Komputerowych w Obliczeniach Inżynierskich, AGH. Strona działa bez połączenia z internetem. Obliczenia są wykonywane w przeglądarce w arytmetyce podwójnej precyzji; zaokrąglane są wyłącznie wyświetlane liczby.');
-    app.replaceChildren(bar(t ? t.id : ''), page, foot);
+    app.replaceChildren(bar(t ? t.id : x ? x.id : ''), page, foot);
     document.title = (t ? `${t.n}. ${t.title} | ` : x ? `${x.title} | ` : '') + 'PMK | Optymalizacja';
     window.scrollTo(0, 0);
   }

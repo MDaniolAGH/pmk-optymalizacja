@@ -7,7 +7,8 @@ Materiały do przedmiotu **Podstawy Metod Komputerowych w Obliczeniach Inżynier
 
 ## Zawartość
 
-Siedem tematów, każdy w trzech częściach: „Krok po kroku” (jedna iteracja algorytmu rozpisana
+Wstęp „Zanim zaczniesz” (przykład z życia: dopasowanie prostej do danych tętna i prędkości biegu)
+oraz siedem tematów, każdy w trzech częściach: „Krok po kroku” (jedna iteracja algorytmu rozpisana
 na liczbach), „Eksperymentuj” (interaktywne eksperymenty z misjami) oraz „Sprawdź się” (kilka pytań
 z natychmiastową odpowiedzią).
 
@@ -44,6 +45,7 @@ npm run build    # składa index.html
 | `src/plot3d.js` | widok 3D powierzchni funkcji (własny rzut na canvasie, bez bibliotek) |
 | `src/gloss.js` | słownik symboli i okno objaśnień |
 | `src/t1_…` – `src/t7_…` | treść i eksperymenty poszczególnych tematów |
+| `src/intro.js` | wstęp „Zanim zaczniesz”: od danych z zegarka do mapy kosztu |
 | `src/extras.js` | pytania „Sprawdź się”, strony „Porównaj metody” i „Znajdź błąd” |
 | `src/main.js` | strona główna i nawigacja |
 | `src/style.css` | wygląd |

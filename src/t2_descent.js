@@ -41,22 +41,9 @@ function TrajLab(cfg) {
   const lg = el('div'), table = el('div', 'card tblw'), plots = el('div', 'plots' + (cfg.extra ? ' three' : ''));
   const T2D = 'Trajektoria na tle poziomic <small>kliknij, aby wybrać punkt startowy</small>', T3D = 'Trajektoria na powierzchni funkcji <small>obróć myszą lub strzałkami</small>';
   const N2D = 'Poziomice to linie stałej wartości funkcji. Ich poziomy dobrano gęściej w pobliżu minimum.', N3D = 'Wysokość to wartość funkcji w skali spłaszczonej (logarytmicznej), aby dno doliny pozostało czytelne. Punkt startowy wybiera się w widoku poziomic.';
-  const fCard = plotCard('', pF), vsw = el('div', 'viewsw'), vnote = el('div', 'vnote', `<p class="note">${N2D}</p><p class="note off">${N3D}</p>`), ptitle = fCard.querySelector('.plot-t');
-  ptitle.classList.add('two'); ptitle.innerHTML = `<span>${T2D}</span><span class="off">${T3D}</span>`;   // both texts occupy the same place, so switching the view never changes the height of the card
-  vsw.innerHTML = `<div class="seg" role="group" aria-label="Rodzaj wykresu"><button type="button" class="on" aria-pressed="true">Poziomice</button><button type="button" aria-pressed="false">Powierzchnia 3D</button></div>
-    <div class="rot" role="group" aria-label="Obrót widoku 3D"><button type="button" data-r="l" title="Obróć w lewo" aria-label="Obróć w lewo">◀</button><button type="button" data-r="r" title="Obróć w prawo" aria-label="Obróć w prawo">▶</button><button type="button" data-r="u" title="Widok bardziej z góry" aria-label="Widok bardziej z góry">▲</button><button type="button" data-r="d" title="Widok bardziej z boku" aria-label="Widok bardziej z boku">▼</button><button type="button" data-r="0" class="txt">Widok domyślny</button></div>`;
-  fCard.insertBefore(vsw, pF.el); fCard.append(lg, vnote);
-  const segB = vsw.querySelectorAll('.seg button'), rot = vsw.querySelector('.rot');
-  function setThree(on) {   // contour plot or surface; the card keeps its size
-    S.three = !!on; pF.three = on ? (pF._cam || (pF._cam = { az: P3.AZ, el: P3.EL })) : null;
-    pF.el.classList.toggle('three', S.three); rot.classList.toggle('show', S.three);
-    segB.forEach((b, i) => { const act = (i === 1) === S.three; b.classList.toggle('on', act); b.setAttribute('aria-pressed', act); });
-    [ptitle, vnote].forEach(h => { h.children[0].classList.toggle('off', S.three); h.children[1].classList.toggle('off', !S.three); });
-    drawAll();
-  }
-  segB[0].addEventListener('click', () => setThree(false)); segB[1].addEventListener('click', () => setThree(true));
-  rot.addEventListener('click', e => { const r = e.target.dataset && e.target.dataset.r; if (!r || !pF.three) return;
-    if (r === '0') { pF.three.az = P3.AZ; pF.three.el = P3.EL; pF.render(); } else pF.rotate(r === 'l' ? -0.3 : r === 'r' ? 0.3 : 0, r === 'u' ? 0.15 : r === 'd' ? -0.15 : 0); });
+  const fCard = plotCard('', pF), view = ViewSwitch(pF, fCard, { t2: T2D, t3: T3D, n2: N2D, n3: N3D, redraw: () => drawAll() });
+  fCard.append(lg, view.note);
+  function setThree(on) { S.three = !!on; view.set(on); }   // contour plot or surface
   plots.append(fCard, plotCard('Historia kosztu <small>skala logarytmiczna</small>', pC, '<p class="note">Linia przerywana: próg 10⁻⁶. Wartości poniżej 10⁻¹⁴ są rysowane na dolnej krawędzi wykresu.</p>'));
   if (cfg.extra) plots.append(plotCard(cfg.extra.title, cfg.extra.plot, cfg.extra.legend || ''));
   main.append(info, status, plots, table);

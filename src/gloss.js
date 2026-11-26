@@ -8,6 +8,7 @@
 /* ---------- 1. tagging symbols in TeX ---------- */
 const G_ATOM = [   // multi-token symbols, most specific first (sticky regexes)
   [/\\tfrac12\\lVert\\mathbf\{r\}\\rVert\^2/y, 'cost'],
+  [/\\hat\{y\}/y, 'yhat'],
   [/J\^\{\\top\}J/y, 'JtJ'], [/J\^\{\\top\}\\mathbf\{r\}/y, 'Jtr'], [/J_\{ij\}/y, 'jac'],
   [/\\nabla\^2/y, 'hess'], [/\\nabla f/y, 'grad'], [/\\nabla/y, 'nabla'],
   [/f\^\{\*\}/y, 'fstar'], [/\\alpha\^\{\*\}/y, 'alphaopt'], [/\\beta\^\{\*\}/y, 'betaopt'],
@@ -27,7 +28,7 @@ const G_CW = { '\\alpha': 'alpha', '\\beta': 'beta', '\\kappa': 'kappa', '\\lamb
   '\\cosh': 'cosh', '\\sinh': 'cosh', '\\ln': 'ln' };
 const G_SKIP = new Set(['\\text', '\\mathrm', '\\operatorname', '\\begin', '\\end', '\\textbf', '\\htmlData']);
 const G_LET = { f: 'f', J: 'jac', H: 'hess', L: 'Lip', m: 'mcurv', h: 'hstep', k: 'kiter', i: 'idx', n: 'ndim', x: 'xscal', g: 'gfun',
-  s: 'subs', v: 'vrate', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
+  s: 'subs', v: 'vrate', a: 'slope', b: 'icept', y: 'ymeas', t: 'time', C: 'conc', D: 'dose', V: 'vol', F: 'bioav', e: 'euler' };
 const G_ITER = /\^\{(\((?:[^(){}]|\{[^{}]*\})*\))\}/y, G_CWRE = /\\([a-zA-Z]+|[\s\S])/y;
 
 /* Compound notation is one clickable unit:
@@ -173,6 +174,26 @@ const GLOSS = {
     what: R`Zapis oznaczający najmniejszą wartość wyrażenia stojącego za nim, gdy zmienna podana pod spodem przyjmuje wszystkie możliwe wartości.`,
     how: [R`Potraktuj zmienną spod znaku jako niewiadomą.`, R`Znajdź taką jej wartość, dla której wyrażenie jest najmniejsze. Dla liniowego zadania najmniejszych kwadratów prowadzi to do układu równań normalnych.`],
     why: R`Tak zapisuje się każde zadanie optymalizacji. W metodzie Gaussa–Newtona każdy krok jest rozwiązaniem takiego mniejszego, liniowego zadania.` },
+  slope: { s: 'a', t: 'Współczynnik kierunkowy prostej',
+    what: R`Parametr modelu liniowego $\hat{y}=b+a\,(v-10)$: mówi, o ile zmienia się wielkość przewidywana, gdy zmienna niezależna rośnie o jednostkę. W przykładzie biegaczki jest to przyrost tętna na każdy dodatkowy km/h.`,
+    how: [R`Nie oblicza się go bezpośrednio z jednego pomiaru: jest wynikiem dopasowania prostej do wszystkich pomiarów.`, R`Wybiera się tę wartość, dla której (razem z parametrem $b$) funkcja kosztu $f(a,\ b)$ jest najmniejsza.`],
+    why: R`Jest jedną z dwóch osi mapy kosztu. Razem z parametrem $b$ wyznacza jedną konkretną prostą, czyli jeden punkt tej mapy.` },
+  icept: { s: 'b', t: 'Wyraz wolny modelu (wartość w punkcie odniesienia)',
+    what: R`Parametr modelu liniowego $\hat{y}=b+a\,(v-10)$: wartość przewidywana w punkcie odniesienia $v=10$. W przykładzie biegaczki jest to tętno przy prędkości 10 km/h.`,
+    how: [R`Wyznacza się go razem z parametrem $a$, przez minimalizację funkcji kosztu $f(a,\ b)$.`, R`Odejmowanie $10$ od prędkości sprawia, że parametr ma czytelny sens: opisuje środek zakresu pomiarów, a nie nierealną prędkość $0$.`],
+    why: R`Jest drugą osią mapy kosztu. W praktyce treningowej tętno przy ustalonej prędkości jest prostym wskaźnikiem formy: im niższe, tym mniej wysiłku kosztuje to samo tempo.` },
+  ymeas: { s: 'y_i', t: 'Wartość zmierzona',
+    what: R`Wynik pomiaru o numerze $i$: wielkość, którą model ma odtworzyć. W przykładzie biegaczki jest to średnie tętno na $i$-tym odcinku biegu.`,
+    how: [R`Odczytuje się ją z danych; nie zależy od parametrów modelu.`, R`Każdy pomiar zawiera szum, dlatego punkty nie leżą dokładnie na jednej krzywej.`],
+    why: R`Do pomiarów dopasowujemy model. Reszta $r_i=\hat{y}_i-y_i$ mówi, jak bardzo model myli się dla danego pomiaru.` },
+  yhat: { s: R`\hat{y}`, t: 'Wartość przewidywana przez model',
+    what: R`Wartość, którą model zwraca dla danych parametrów. Daszek nad symbolem odróżnia przewidywanie od pomiaru $y_i$.`,
+    how: [R`Podstaw do wzoru modelu aktualne wartości parametrów.`, R`Podstaw wartość zmiennej niezależnej, na przykład prędkość $v_i$ z $i$-tego pomiaru.`],
+    why: R`Porównanie przewidywań z pomiarami jest podstawą funkcji kosztu. Po dopasowaniu model służy do przewidywania wartości, których nie zmierzono.` },
+  speed: { s: 'v', t: 'Prędkość biegu',
+    what: R`Zmienna niezależna w przykładzie biegaczki: średnia prędkość na odcinku, w km/h. Symbol $v_i$ oznacza prędkość na $i$-tym odcinku.`,
+    how: [R`Zegarek z odbiornikiem GPS wyznacza ją z przebytej drogi i czasu.`],
+    why: R`Od niej zależy tętno. Model opisuje tę zależność, a po dopasowaniu pozwala wyznaczyć prędkość odpowiadającą zadanemu tętnu.` },
   x: { s: R`\mathbf{x}`, t: 'Punkt, czyli wektor zmiennych',
     what: R`Aktualne położenie w przestrzeni zmiennych. Na tej stronie jest to para liczb $(x_0,\ x_1)$, czyli punkt na płaszczyźnie.`,
     how: [R`Punkt startowy wybierasz samodzielnie, na przykład kliknięciem na wykresie poziomic.`, R`Każdy kolejny punkt wyznacza algorytm na podstawie poprzedniego.`],
@@ -463,7 +484,7 @@ const GLOSS = {
     why: R`Zbyt wysokie stężenie maksymalne może być toksyczne. Dla teofiliny różnica między stężeniem skutecznym a toksycznym jest niewielka, dlatego dokładny model ma znaczenie.` },
 };
 /* the same symbol can mean something else on some pages */
-const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' } };
+const GLOSS_CTX = { newton1: { xcomp: 'xk', conc: 'cconst' }, newton: { conc: 'cconst' }, wstep: { vrate: 'speed' } };
 
 /* ---------- 3. the dialog ---------- */
 const Gloss = (() => {
